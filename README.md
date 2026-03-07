@@ -22,12 +22,10 @@ Fortran-to-Python scaffold.
 - `lcmodel/cli.py`
   - CLI entrypoint for running the current semantic port scope.
 
-## Compatibility files
+## Hard Cutover Status
 
-- `semantic_overrides.py`
-  - Adapter layer for legacy scaffold function names/signatures.
-- `lcmodel_converted.py`
-  - Thin compatibility module; no longer the primary implementation.
+Compatibility shims were removed. The `lcmodel/` package is the only supported
+runtime surface.
 
 ## Run
 
@@ -40,4 +38,3 @@ python -m lcmodel --title "Example title" --ntitle 2 --output-filename "C:/tmp/p
 ```powershell
 python -m unittest discover -s tests -v
 ```
-

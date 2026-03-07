@@ -1,11 +1,6 @@
 # Migration Note
 
-The generated conversion scaffold is no longer the primary implementation.
+The generated conversion scaffold and its compatibility entrypoints have been
+removed as part of the hard cutover.
 
 Use the Python-first package in `lcmodel/` as described in [README.md](README.md).
-
-Compatibility entrypoints remain available in:
-
-- `lcmodel_converted.py`
-- `semantic_overrides.py`
-

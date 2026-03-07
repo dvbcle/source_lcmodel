@@ -1,7 +1,12 @@
 from __future__ import annotations
 
+import io
+import subprocess
+import sys
 import unittest
+from contextlib import redirect_stdout
 
+from lcmodel.cli import main as cli_main
 from lcmodel.core.array_ops import reverse_first_n
 from lcmodel.core.axis import round_axis_endpoints
 from lcmodel.core.text import (
@@ -66,7 +71,45 @@ class TestPythonFirstPort(unittest.TestCase):
         self.assertGreaterEqual(result.title_layout.line_count, 1)
         self.assertEqual(("abc/", ".ps"), result.output_filename_parts)
 
+    def test_cli_main_output(self):
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            code = cli_main(
+                [
+                    "--title",
+                    "Example (Title) %",
+                    "--ntitle",
+                    "2",
+                    "--output-filename",
+                    "abc.ps",
+                ]
+            )
+        self.assertEqual(0, code)
+        out = buf.getvalue()
+        self.assertIn("title_lines=1", out)
+        self.assertIn("output_split_left=abc_", out)
+        self.assertIn("output_split_right=.ps", out)
+
+    def test_module_entrypoint(self):
+        proc = subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "lcmodel",
+                "--title",
+                "Runner Title",
+                "--ntitle",
+                "2",
+                "--output-filename",
+                "abc/ps",
+            ],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        self.assertIn("output_split_left=abc/", proc.stdout)
+        self.assertIn("output_split_right=.ps", proc.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()
-
