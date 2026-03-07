@@ -24,6 +24,19 @@ This folder now includes a Python conversion scaffold for the Fortran sources:
 - Use the `[file:line]` markers in comments to cross-check behavior in `LCModel.f`.
 - Keep the original statement comments in place until the routine is fully ported.
 
+## Incremental semantic overrides
+
+- `semantic_overrides.py` contains executable Python ports for selected routines.
+- `lcmodel_converted.py` automatically dispatches to these overrides when present.
+- Current overrides include:
+  - `split_filename`
+  - `icharst`
+  - `chstrip_int6`
+  - `split_title`
+  - `revers`
+  - `endrnd`
+  - `strchk`
+
 ## Regenerate the Python scaffold
 
 ```powershell

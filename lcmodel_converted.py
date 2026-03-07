@@ -14,6 +14,12 @@ Sources:
 
 from __future__ import annotations
 
+try:
+    from semantic_overrides import SEMANTIC_OVERRIDES
+except Exception:
+    # Fallback keeps scaffold runnable when overrides are absent.
+    SEMANTIC_OVERRIDES = {}
+
 
 def _identity_state(state):
     if state is None:
@@ -32,6 +38,9 @@ def lcmodl(state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('lcmodl')
+    if override is not None:
+        return override(state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -396,6 +405,9 @@ def anonymous_2(state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('anonymous_2')
+    if override is not None:
+        return override(state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -455,6 +467,9 @@ def mycont(state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('mycont')
+    if override is not None:
+        return override(state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -931,6 +946,9 @@ def check_zero_voxels(state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('check_zero_voxels')
+    if override is not None:
+        return override(state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -991,6 +1009,9 @@ def average(state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('average')
+    if override is not None:
+        return override(state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -1147,6 +1168,9 @@ def restore_settings(state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('restore_settings')
+    if override is not None:
+        return override(state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -1308,6 +1332,9 @@ def update_priors(state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('update_priors')
+    if override is not None:
+        return override(state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -1423,6 +1450,9 @@ def open_output(state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('open_output')
+    if override is not None:
+        return override(state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -1611,6 +1641,9 @@ def split_filename(filename, chtype1, chtype2, chtype3, lchtype, split, state=No
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('split_filename')
+    if override is not None:
+        return override(filename, chtype1, chtype2, chtype3, lchtype, split, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -1672,6 +1705,9 @@ def chstrip_int6(iarg, chi, leni, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('chstrip_int6')
+    if override is not None:
+        return override(iarg, chi, leni, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -1737,6 +1773,9 @@ def split_title(state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('split_title')
+    if override is not None:
+        return override(state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -1807,6 +1846,9 @@ def loadch(state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('loadch')
+    if override is not None:
+        return override(state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -1928,6 +1970,9 @@ def compact_string(str_in, str_out, len_out, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('compact_string')
+    if override is not None:
+        return override(str_in, str_out, len_out, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -1959,6 +2004,9 @@ def dcfft_r(datat, ft, n, ldwfft, dwfftc, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('dcfft_r')
+    if override is not None:
+        return override(datat, ft, n, ldwfft, dwfftc, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -1999,6 +2047,9 @@ def errmes(number, ilevel, chsubp, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('errmes')
+    if override is not None:
+        return override(number, ilevel, chsubp, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -2098,6 +2149,9 @@ def initia(state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('initia')
+    if override is not None:
+        return override(state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -2209,6 +2263,9 @@ def datain(state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('datain')
+    if override is not None:
+        return override(state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -2469,6 +2526,9 @@ def mydata(state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('mydata')
+    if override is not None:
+        return override(state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -2687,6 +2747,9 @@ def phase_with_max_real(state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('phase_with_max_real')
+    if override is not None:
+        return override(state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -2755,6 +2818,9 @@ def smooth_tail(cdatat, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('smooth_tail')
+    if override is not None:
+        return override(cdatat, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -2796,6 +2862,9 @@ def smooth_tail_2(work_in, out, munfil, nunfil, lprint, voxel1, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('smooth_tail_2')
+    if override is not None:
+        return override(work_in, out, munfil, nunfil, lprint, voxel1, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -2832,6 +2901,9 @@ def ecc_truncate(state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('ecc_truncate')
+    if override is not None:
+        return override(state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -2903,6 +2975,9 @@ def igetp(istart, niter, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('igetp')
+    if override is not None:
+        return override(istart, niter, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -2987,6 +3062,9 @@ def mybasi(lstage, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('mybasi')
+    if override is not None:
+        return override(lstage, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -4209,6 +4287,9 @@ def make_cgroup_shift(state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('make_cgroup_shift')
+    if override is not None:
+        return override(state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -4289,6 +4370,9 @@ def parse_chsimu(state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('parse_chsimu')
+    if override is not None:
+        return override(state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -4382,6 +4466,9 @@ def set_lshape_false(state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('set_lshape_false')
+    if override is not None:
+        return override(state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -4412,6 +4499,9 @@ def water_scale(state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('water_scale')
+    if override is not None:
+        return override(state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -4462,6 +4552,9 @@ def getpha(kystrt, kyend, dataf, dataw, nunfil, radian, nypeak, yorig, yinterp, 
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('getpha')
+    if override is not None:
+        return override(kystrt, kyend, dataf, dataw, nunfil, radian, nypeak, yorig, yinterp, degzer_calc, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -4735,6 +4828,9 @@ def integrate(dataf, ppminc2, rinteg, kyend, kystrt, ly, nunfil, nwndo, state=No
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('integrate')
+    if override is not None:
+        return override(dataf, ppminc2, rinteg, kyend, kystrt, ly, nunfil, nwndo, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -4824,6 +4920,9 @@ def combis(state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('combis')
+    if override is not None:
+        return override(state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -5085,6 +5184,9 @@ def startv(ipass, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('startv')
+    if override is not None:
+        return override(ipass, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -5641,6 +5743,9 @@ def ftdata(ishift, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('ftdata')
+    if override is not None:
+        return override(ishift, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -5689,6 +5794,9 @@ def shiftd(ishift, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('shiftd')
+    if override is not None:
+        return override(ishift, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -5724,6 +5832,9 @@ def setup(lstage, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('setup')
+    if override is not None:
+        return override(lstage, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -6087,6 +6198,9 @@ def setup3(state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('setup3')
+    if override is not None:
+        return override(state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -6161,6 +6275,9 @@ def phasta(state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('phasta')
+    if override is not None:
+        return override(state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -6326,6 +6443,9 @@ def gbackg(state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('gbackg')
+    if override is not None:
+        return override(state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -6550,6 +6670,9 @@ def merge_right(lregion, ppmmin, ppmmax, nregion, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('merge_right')
+    if override is not None:
+        return override(lregion, ppmmin, ppmmax, nregion, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -6577,6 +6700,9 @@ def merge_left(lregion, ppmmin, ppmmax, nregion, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('merge_left')
+    if override is not None:
+        return override(lregion, ppmmin, ppmmax, nregion, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -6604,6 +6730,9 @@ def check_chless(state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('check_chless')
+    if override is not None:
+        return override(state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -6676,6 +6805,9 @@ def tworeg(state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('tworeg')
+    if override is not None:
+        return override(state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -6827,6 +6959,9 @@ def tworg1(state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('tworg1')
+    if override is not None:
+        return override(state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -6853,6 +6988,9 @@ def tworeg_sav(state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('tworeg_sav')
+    if override is not None:
+        return override(state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -6883,6 +7021,9 @@ def tworg2(jpass, fixed_degppm_series, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('tworg2')
+    if override is not None:
+        return override(jpass, fixed_degppm_series, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -7064,6 +7205,9 @@ def tworg3(jrepha, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('tworg3')
+    if override is not None:
+        return override(jrepha, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -7190,6 +7334,9 @@ def conc_prior(state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('conc_prior')
+    if override is not None:
+        return override(state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -7419,6 +7566,9 @@ def parse_prior(state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('parse_prior')
+    if override is not None:
+        return override(state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -7475,6 +7625,9 @@ def get_field(chseparator, len_chseparator, ifield_type, iatend, chreturn, fretu
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('get_field')
+    if override is not None:
+        return override(chseparator, len_chseparator, ifield_type, iatend, chreturn, freturn, istart, len_string_in, string_in, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -7580,6 +7733,9 @@ def parse_sum(exrati_arg, substring, len_substring, lratio, csum, denom_absent, 
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('parse_sum')
+    if override is not None:
+        return override(exrati_arg, substring, len_substring, lratio, csum, denom_absent, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -7672,6 +7828,9 @@ def ssrang(irange, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('ssrang')
+    if override is not None:
+        return override(irange, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -7832,6 +7991,9 @@ def rfalsi(ialpha, irange, lrepha, alphb, alphs, assqlo, aalplo, assqhi, aalphi,
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('rfalsi')
+    if override is not None:
+        return override(ialpha, irange, lrepha, alphb, alphs, assqlo, aalplo, assqhi, aalphi, aalpha, prejok, prej1, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -8187,6 +8349,9 @@ def rephas(state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('rephas')
+    if override is not None:
+        return override(state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -8292,6 +8457,9 @@ def plinls(istage, ierror, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('plinls')
+    if override is not None:
+        return override(istage, ierror, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -8627,6 +8795,9 @@ def dump1(lstage, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('dump1')
+    if override is not None:
+        return override(lstage, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -8659,6 +8830,9 @@ def pastep(rstep, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('pastep')
+    if override is not None:
+        return override(rstep, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -8698,6 +8872,9 @@ def solve(lstage, dononl, pmqact, onlyft, lerror, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('solve')
+    if override is not None:
+        return override(lstage, dononl, pmqact, onlyft, lerror, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -9555,6 +9732,9 @@ def savbes(ilevel, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('savbes')
+    if override is not None:
+        return override(ilevel, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -9661,6 +9841,9 @@ def finout(state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('finout')
+    if override is not None:
+        return override(state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -10342,6 +10525,9 @@ def exitps(lstop, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('exitps')
+    if override is not None:
+        return override(lstop, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -10406,6 +10592,9 @@ def errtbl(state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('errtbl')
+    if override is not None:
+        return override(state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -10441,6 +10630,9 @@ def makeps(state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('makeps')
+    if override is not None:
+        return override(state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -10545,6 +10737,9 @@ def revers(x, n, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('revers')
+    if override is not None:
+        return override(x, n, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -10570,6 +10765,9 @@ def onepag(ncurve, yfit, ydata, lchlin, nsubti, pagex, pagey, subtit, state=None
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('onepag')
+    if override is not None:
+        return override(ncurve, yfit, ydata, lchlin, nsubti, pagex, pagey, subtit, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -11283,6 +11481,9 @@ def end_table(ycurr, xboxlo, ytop_column, column_width, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('end_table')
+    if override is not None:
+        return override(ycurr, xboxlo, ytop_column, column_width, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -11307,6 +11508,9 @@ def check_bottom(ycurr, decrement, xboxlo, outside, ytop_column, column_width, x
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('check_bottom')
+    if override is not None:
+        return override(ycurr, decrement, xboxlo, outside, ytop_column, column_width, xboxlo_max, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -11350,6 +11554,9 @@ def hex(val, inum, flush, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('hex')
+    if override is not None:
+        return override(val, inum, flush, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -11390,6 +11597,9 @@ def remove_blank_start(str, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('remove_blank_start')
+    if override is not None:
+        return override(str, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -11420,6 +11630,9 @@ def toupper_lower(lupper_out, str, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('toupper_lower')
+    if override is not None:
+        return override(lupper_out, str, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -11459,6 +11672,9 @@ def fix_g77_namelist(lunit, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('fix_g77_namelist')
+    if override is not None:
+        return override(lunit, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -11525,6 +11741,9 @@ def endrnd(xmn, xmx, xstep, xinc, xmnrnd, xmxrnd, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('endrnd')
+    if override is not None:
+        return override(xmn, xmx, xstep, xinc, xmnrnd, xmxrnd, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -11551,6 +11770,9 @@ def strchk(st, ps, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('strchk')
+    if override is not None:
+        return override(st, ps, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -11669,6 +11891,9 @@ def tick(ang, ox, oy, length, gmn, gmx, tckbeg, tckinc, grid, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('tick')
+    if override is not None:
+        return override(ang, ox, oy, length, gmn, gmx, tckbeg, tckinc, grid, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -11710,6 +11935,9 @@ def axis(ang, ox, oy, length, gmn, gmx, tckbeg, tckinc, pos, ljust1, state=None)
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('axis')
+    if override is not None:
+        return override(ang, ox, oy, length, gmn, gmx, tckbeg, tckinc, pos, ljust1, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -11764,6 +11992,9 @@ def linewd(width, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('linewd')
+    if override is not None:
+        return override(width, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -11789,6 +12020,9 @@ def rgb(rgbv, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('rgb')
+    if override is not None:
+        return override(rgbv, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -11814,6 +12048,9 @@ def dash(idshpt, dshpat, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('dash')
+    if override is not None:
+        return override(idshpt, dshpat, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -11844,6 +12081,9 @@ def plot(n, x, y, xmn, xmx, ymn, ymx, ox, oy, wd, ht, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('plot')
+    if override is not None:
+        return override(n, x, y, xmn, xmx, ymn, ymx, ox, oy, wd, ht, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -11888,6 +12128,9 @@ def plot_gap(n, x, y, xmn, xmx, ymn, ymx, ox, oy, wd, ht, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('plot_gap')
+    if override is not None:
+        return override(n, x, y, xmn, xmx, ymn, ymx, ox, oy, wd, ht, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -11942,6 +12185,9 @@ def box(ox, oy, wd, ht, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('box')
+    if override is not None:
+        return override(ox, oy, wd, ht, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -11982,6 +12228,9 @@ def line(ox, oy, wd, ht, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('line')
+    if override is not None:
+        return override(ox, oy, wd, ht, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -12008,6 +12257,9 @@ def psetup(top_of_file, wd, ht, landsc, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('psetup')
+    if override is not None:
+        return override(top_of_file, wd, ht, landsc, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -12073,6 +12325,9 @@ def font(pitch, police, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('font')
+    if override is not None:
+        return override(pitch, police, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -12114,6 +12369,9 @@ def string(flush, ang, ox, oy, st, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('string')
+    if override is not None:
+        return override(flush, ang, ox, oy, st, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -12160,6 +12418,9 @@ def show(flush, st, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('show')
+    if override is not None:
+        return override(flush, st, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -12182,6 +12443,9 @@ def showpg(state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('showpg')
+    if override is not None:
+        return override(state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -12204,6 +12468,9 @@ def endps(state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('endps')
+    if override is not None:
+        return override(state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -12224,6 +12491,9 @@ def strpou(state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('strpou')
+    if override is not None:
+        return override(state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -12273,6 +12543,9 @@ def csft_r(datat, ft, ncap, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('csft_r')
+    if override is not None:
+        return override(datat, ft, ncap, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -12319,6 +12592,9 @@ def csftin_r(ft, ftwork, ftinv, ncap, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('csftin_r')
+    if override is not None:
+        return override(ft, ftwork, ftinv, ncap, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -12368,6 +12644,9 @@ def seqtot(datat, dataf, nunfil, lwfft, wfftc, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('seqtot')
+    if override is not None:
+        return override(datat, dataf, nunfil, lwfft, wfftc, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -12458,6 +12737,9 @@ def cfftin(ft, ftinv, n, lwfft, wfftc, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('cfftin')
+    if override is not None:
+        return override(ft, ftinv, n, lwfft, wfftc, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -12492,6 +12774,9 @@ def cfftin_r(ft, ftwork, ftinv, n, lwfft, wfftc, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('cfftin_r')
+    if override is not None:
+        return override(ft, ftwork, ftinv, n, lwfft, wfftc, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -12537,6 +12822,9 @@ def cfft(datat, ft, n, lwfft, wfftc, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('cfft')
+    if override is not None:
+        return override(datat, ft, n, lwfft, wfftc, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -12571,6 +12859,9 @@ def cfft_r(datat, ft, n, lwfft, wfftc, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('cfft_r')
+    if override is not None:
+        return override(datat, ft, n, lwfft, wfftc, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -12611,6 +12902,9 @@ def df2tcf(n, c, yout, wsave, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('df2tcf')
+    if override is not None:
+        return override(n, c, yout, wsave, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -12637,6 +12931,9 @@ def dcftf1(n, c, ch, wa, ifac, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('dcftf1')
+    if override is not None:
+        return override(n, c, ch, wa, ifac, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -12714,6 +13011,9 @@ def dpasf(nac, ido, ip, l1, idl1, cc, c1, c2, ch, ch2, wa, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('dpasf')
+    if override is not None:
+        return override(nac, ido, ip, l1, idl1, cc, c1, c2, ch, ch2, wa, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -12844,6 +13144,9 @@ def dpasf5(ido, l1, cc, ch, wa1, wa2, wa3, wa4, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('dpasf5')
+    if override is not None:
+        return override(ido, l1, cc, ch, wa1, wa2, wa3, wa4, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -12933,6 +13236,9 @@ def dpasf3(ido, l1, cc, ch, wa1, wa2, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('dpasf3')
+    if override is not None:
+        return override(ido, l1, cc, ch, wa1, wa2, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -12990,6 +13296,9 @@ def dpasf2(ido, l1, cc, ch, wa1, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('dpasf2')
+    if override is not None:
+        return override(ido, l1, cc, ch, wa1, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -13028,6 +13337,9 @@ def dpasf4(ido, l1, cc, ch, wa1, wa2, wa3, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('dpasf4')
+    if override is not None:
+        return override(ido, l1, cc, ch, wa1, wa2, wa3, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -13094,6 +13406,9 @@ def dfftci(n, wsave, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('dfftci')
+    if override is not None:
+        return override(n, wsave, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -13117,6 +13432,9 @@ def dcfti1(n, wa, ifac, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('dcfti1')
+    if override is not None:
+        return override(n, wa, ifac, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -13193,6 +13511,9 @@ def f2tcf(n, c, yout, wsave, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('f2tcf')
+    if override is not None:
+        return override(n, c, yout, wsave, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -13219,6 +13540,9 @@ def cfftf1(n, c, ch, wa, ifac, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('cfftf1')
+    if override is not None:
+        return override(n, c, ch, wa, ifac, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -13295,6 +13619,9 @@ def passf(nac, ido, ip, l1, idl1, cc, c1, c2, ch, ch2, wa, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('passf')
+    if override is not None:
+        return override(nac, ido, ip, l1, idl1, cc, c1, c2, ch, ch2, wa, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -13424,6 +13751,9 @@ def passf5(ido, l1, cc, ch, wa1, wa2, wa3, wa4, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('passf5')
+    if override is not None:
+        return override(ido, l1, cc, ch, wa1, wa2, wa3, wa4, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -13512,6 +13842,9 @@ def passf3(ido, l1, cc, ch, wa1, wa2, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('passf3')
+    if override is not None:
+        return override(ido, l1, cc, ch, wa1, wa2, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -13568,6 +13901,9 @@ def passf2(ido, l1, cc, ch, wa1, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('passf2')
+    if override is not None:
+        return override(ido, l1, cc, ch, wa1, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -13605,6 +13941,9 @@ def passf4(ido, l1, cc, ch, wa1, wa2, wa3, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('passf4')
+    if override is not None:
+        return override(ido, l1, cc, ch, wa1, wa2, wa3, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -13670,6 +14009,9 @@ def f2tcb(n, c, yout, wsave, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('f2tcb')
+    if override is not None:
+        return override(n, c, yout, wsave, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -13696,6 +14038,9 @@ def cfftb1(n, c, ch, wa, ifac, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('cfftb1')
+    if override is not None:
+        return override(n, c, ch, wa, ifac, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -13772,6 +14117,9 @@ def passb(nac, ido, ip, l1, idl1, cc, c1, c2, ch, ch2, wa, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('passb')
+    if override is not None:
+        return override(nac, ido, ip, l1, idl1, cc, c1, c2, ch, ch2, wa, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -13901,6 +14249,9 @@ def passb5(ido, l1, cc, ch, wa1, wa2, wa3, wa4, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('passb5')
+    if override is not None:
+        return override(ido, l1, cc, ch, wa1, wa2, wa3, wa4, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -13989,6 +14340,9 @@ def passb3(ido, l1, cc, ch, wa1, wa2, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('passb3')
+    if override is not None:
+        return override(ido, l1, cc, ch, wa1, wa2, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -14045,6 +14399,9 @@ def passb2(ido, l1, cc, ch, wa1, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('passb2')
+    if override is not None:
+        return override(ido, l1, cc, ch, wa1, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -14082,6 +14439,9 @@ def passb4(ido, l1, cc, ch, wa1, wa2, wa3, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('passb4')
+    if override is not None:
+        return override(ido, l1, cc, ch, wa1, wa2, wa3, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -14147,6 +14507,9 @@ def fftci(n, wsave, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('fftci')
+    if override is not None:
+        return override(n, wsave, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -14170,6 +14533,9 @@ def cffti1(n, wa, ifac, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('cffti1')
+    if override is not None:
+        return override(n, wa, ifac, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -14245,6 +14611,9 @@ def fishni(f, df1, df2, nout, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('fishni')
+    if override is not None:
+        return override(f, df1, df2, nout, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -14313,6 +14682,9 @@ def betain(x, a, b, nout, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('betain')
+    if override is not None:
+        return override(x, a, b, nout, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -14422,6 +14794,9 @@ def pnnls(a, mda, m, n, b, x, dvar, w, zz, index, mode, range, nonneg, dvarac, n
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('pnnls')
+    if override is not None:
+        return override(a, mda, m, n, b, x, dvar, w, zz, index, mode, range, nonneg, dvarac, nsetp, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -14744,6 +15119,9 @@ def g1(a, b, cos, sin, sig, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('g1')
+    if override is not None:
+        return override(a, b, cos, sin, sig, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -14804,6 +15182,9 @@ def g2(cos, sin, x, y, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('g2')
+    if override is not None:
+        return override(cos, sin, x, y, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -14825,6 +15206,9 @@ def h12(mode, lpivot, l1, m, u, iue, up, c, ice, icv, ncv, range, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('h12')
+    if override is not None:
+        return override(mode, lpivot, l1, m, u, iue, up, c, ice, icv, ncv, range, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -14927,6 +15311,9 @@ def plprin(x, y1, y2, n, only1, nout, srange, nlinf, ng, my1, yerr, plterr, stat
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('plprin')
+    if override is not None:
+        return override(x, y1, y2, n, only1, nout, srange, nlinf, ng, my1, yerr, plterr, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -15006,6 +15393,9 @@ def eigvrs(nm, n, a, w, z, fv1, fv2, ierr, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('eigvrs')
+    if override is not None:
+        return override(nm, n, a, w, z, fv1, fv2, ierr, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -15063,6 +15453,9 @@ def tql2(nm, n, d, e, z, ierr, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('tql2')
+    if override is not None:
+        return override(nm, n, d, e, z, ierr, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.
@@ -15245,6 +15638,9 @@ def tred2(nm, n, a, d, e, z, state=None):
     if state is None:
         state = {}
     _ = state
+    override = SEMANTIC_OVERRIDES.get('tred2')
+    if override is not None:
+        return override(nm, n, a, d, e, z, state)
     # Porting note:
     # - Insert semantic Python logic above the preserved Fortran comments.
     # - Keep source-line references intact for traceability during review.

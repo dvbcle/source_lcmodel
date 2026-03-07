@@ -244,7 +244,8 @@ def emit_unit(unit: Unit, ordinal: int) -> str:
     elif unit.kind == "BLOCK DATA":
         py_name = py_name or f"block_data_{ordinal}"
 
-    args = unit.args.copy()
+    arg_names = unit.args.copy()
+    args = arg_names.copy()
     args.append("state=None")
 
     lines: list[str] = []
@@ -256,6 +257,10 @@ def emit_unit(unit: Unit, ordinal: int) -> str:
     lines.append("    if state is None:")
     lines.append("        state = {}")
     lines.append("    _ = state")
+    call_args = ", ".join(arg_names + ["state"]) if arg_names else "state"
+    lines.append(f"    override = SEMANTIC_OVERRIDES.get('{py_name}')")
+    lines.append("    if override is not None:")
+    lines.append(f"        return override({call_args})")
     lines.append("    # Porting note:")
     lines.append("    # - Insert semantic Python logic above the preserved Fortran comments.")
     lines.append("    # - Keep source-line references intact for traceability during review.")
@@ -296,6 +301,12 @@ def emit_module(
     out.append('"""')
     out.append("")
     out.append("from __future__ import annotations")
+    out.append("")
+    out.append("try:")
+    out.append("    from semantic_overrides import SEMANTIC_OVERRIDES")
+    out.append("except Exception:")
+    out.append("    # Fallback keeps scaffold runnable when overrides are absent.")
+    out.append("    SEMANTIC_OVERRIDES = {}")
     out.append("")
     out.append("")
     out.append("def _identity_state(state):")
