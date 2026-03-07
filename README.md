@@ -33,6 +33,11 @@ runtime surface.
 python -m lcmodel --title "Example title" --ntitle 2 --output-filename "C:/tmp/ps"
 ```
 
+## User Documentation
+
+- End-user CLI guide: `docs/END_USER_GUIDE.md`
+- Python API guide: `docs/PYTHON_API_GUIDE.md`
+
 ## Tests
 
 ```powershell
