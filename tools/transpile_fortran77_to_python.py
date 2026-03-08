@@ -152,7 +152,9 @@ def preprocess_fixed_form(path: pathlib.Path) -> list[Statement]:
 
 
 HEADER_RE = re.compile(
-    r"^(PROGRAM|SUBROUTINE|FUNCTION|BLOCK\s+DATA)(?:\s+([A-Za-z_][\w$]*))?\s*(?:\((.*)\))?$",
+    r"^(?:(REAL|INTEGER|LOGICAL|COMPLEX|DOUBLE\s+PRECISION|CHARACTER(?:\*\d+)?)\s+)?"
+    r"(PROGRAM|SUBROUTINE|FUNCTION|BLOCK\s+DATA)"
+    r"(?:\s+([A-Za-z_][\w$]*))?\s*(?:\((.*)\))?\s*(?:.*)?$",
     flags=re.IGNORECASE,
 )
 
@@ -189,9 +191,9 @@ def parse_units(
         text = st.text.strip()
         m = HEADER_RE.match(text)
         if m:
-            kind = re.sub(r"\s+", " ", m.group(1).upper())
-            raw_name = (m.group(2) or f"anonymous_{len(units)+1}").strip()
-            arg_text = (m.group(3) or "").strip()
+            kind = re.sub(r"\s+", " ", m.group(2).upper())
+            raw_name = (m.group(3) or f"anonymous_{len(units)+1}").strip()
+            arg_text = (m.group(4) or "").strip()
 
             if current is not None:
                 units.append(current)
