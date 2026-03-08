@@ -36,6 +36,10 @@ def build_fit_table_text(fit: FitResult) -> str:
     lines.append(f"# relative_residual={fit.relative_residual:.12g}")
     lines.append(f"# snr_estimate={fit.snr_estimate:.12g}")
     lines.append(f"# alignment_shift_points={fit.alignment_shift_points}")
+    lines.append(f"# alignment_shift_fractional_points={fit.alignment_shift_fractional_points:.12g}")
+    lines.append(f"# linewidth_sigma_points={fit.linewidth_sigma_points:.12g}")
+    lines.append(f"# integrated_data_area={fit.integrated_data_area:.12g}")
+    lines.append(f"# integrated_fit_area={fit.integrated_fit_area:.12g}")
     lines.append(f"# data_points_used={fit.data_points_used}")
     return "\n".join(lines) + "\n"
 

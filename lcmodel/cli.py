@@ -153,6 +153,18 @@ def build_parser() -> argparse.ArgumentParser:
         help="Iterations for fractional shift refinement search.",
     )
     parser.add_argument(
+        "--linewidth-scan-points",
+        type=int,
+        default=None,
+        help="Number of points in global linewidth scan (0 disables).",
+    )
+    parser.add_argument(
+        "--linewidth-scan-max-sigma-points",
+        type=float,
+        default=None,
+        help="Maximum Gaussian sigma (in points) for linewidth scan.",
+    )
+    parser.add_argument(
         "--baseline-order",
         type=int,
         default=None,
@@ -248,6 +260,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         config = replace(config, fractional_shift_refine=True)
     if args.fractional_shift_iterations is not None:
         config = replace(config, fractional_shift_iterations=args.fractional_shift_iterations)
+    if args.linewidth_scan_points is not None:
+        config = replace(config, linewidth_scan_points=args.linewidth_scan_points)
+    if args.linewidth_scan_max_sigma_points is not None:
+        config = replace(config, linewidth_scan_max_sigma_points=args.linewidth_scan_max_sigma_points)
     if args.baseline_order is not None:
         config = replace(config, baseline_order=args.baseline_order)
     if args.baseline_knots is not None:
@@ -300,6 +316,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"fit_snr_estimate={result.fit_result.snr_estimate:.12g}")
         print(f"fit_alignment_shift_points={result.fit_result.alignment_shift_points}")
         print(f"fit_alignment_shift_fractional_points={result.fit_result.alignment_shift_fractional_points:.12g}")
+        print(f"fit_linewidth_sigma_points={result.fit_result.linewidth_sigma_points:.12g}")
         print(f"fit_integrated_data_area={result.fit_result.integrated_data_area:.12g}")
         print(f"fit_integrated_fit_area={result.fit_result.integrated_fit_area:.12g}")
         if result.fit_result.combined:

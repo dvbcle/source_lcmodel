@@ -36,6 +36,8 @@ class TestReportOutput(unittest.TestCase):
         self.assertIn("# method=test_method", text)
         self.assertIn("# relative_residual=", text)
         self.assertIn("# snr_estimate=", text)
+        self.assertIn("# alignment_shift_fractional_points=", text)
+        self.assertIn("# linewidth_sigma_points=", text)
 
     def test_write_fit_table(self):
         p = self._make_local_tmpdir()

@@ -18,6 +18,7 @@ from lcmodel.models import BatchRunResult, FitResult, RunConfig, RunResult
 from lcmodel.pipeline.alignment import align_vector_by_fractional_shift, align_vector_by_integer_shift
 from lcmodel.pipeline.fitting import FitConfig, run_fit_stage
 from lcmodel.pipeline.integration import integrate_peak_with_local_baseline
+from lcmodel.pipeline.lineshape import apply_global_gaussian_lineshape
 from lcmodel.pipeline.metrics import compute_fit_quality_metrics
 from lcmodel.pipeline.postprocess import compute_combinations
 from lcmodel.pipeline.priors import augment_system_with_soft_priors
@@ -97,7 +98,39 @@ class LCModelRunner:
                 fractional_shift = float(frac_alignment.shift_points)
                 aligned_vector = list(frac_alignment.vector)
 
-            fit_matrix = [list(row) for row in setup.matrix]
+            best_linewidth_sigma = 0.0
+            fit_matrix: list[list[float]] = [list(row) for row in setup.matrix]
+            if (
+                self.config.linewidth_scan_points > 0
+                and self.config.linewidth_scan_max_sigma_points > 0.0
+            ):
+                best_residual = float("inf")
+                steps = int(self.config.linewidth_scan_points)
+                for idx in range(steps):
+                    if steps == 1:
+                        sigma = float(self.config.linewidth_scan_max_sigma_points)
+                    else:
+                        frac = idx / float(steps - 1)
+                        sigma = float(self.config.linewidth_scan_max_sigma_points) * frac
+                    candidate_matrix = apply_global_gaussian_lineshape(
+                        setup.matrix,
+                        sigma,
+                        circular=self.config.alignment_circular,
+                    )
+                    candidate_stage = run_fit_stage(
+                        candidate_matrix,
+                        aligned_vector,
+                        FitConfig(
+                            baseline_order=self.config.baseline_order,
+                            baseline_knots=self.config.baseline_knots,
+                            baseline_smoothness=self.config.baseline_smoothness,
+                        ),
+                    )
+                    if candidate_stage.residual_norm < best_residual - 1e-12:
+                        best_residual = candidate_stage.residual_norm
+                        best_linewidth_sigma = sigma
+                        fit_matrix = [list(row) for row in candidate_matrix]
+
             fit_vector = aligned_vector
             if self.config.priors_file:
                 priors = load_soft_priors(self.config.priors_file)
@@ -179,6 +212,7 @@ class LCModelRunner:
                 snr_estimate=snr_estimate,
                 alignment_shift_points=alignment.shift_points,
                 alignment_shift_fractional_points=fractional_shift,
+                linewidth_sigma_points=best_linewidth_sigma,
                 integrated_data_area=integrated_data_area,
                 integrated_fit_area=integrated_fit_area,
             )

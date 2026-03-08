@@ -174,6 +174,18 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
             fractional_shift_iterations = max(4, int(nml["nshifit"]))
         except Exception:
             fractional_shift_iterations = 18
+    linewidth_scan_points = 0
+    if "nlwscn" in nml:
+        try:
+            linewidth_scan_points = max(0, int(nml["nlwscn"]))
+        except Exception:
+            linewidth_scan_points = 0
+    linewidth_scan_max_sigma_points = 0.0
+    if "lwscmx" in nml:
+        try:
+            linewidth_scan_max_sigma_points = max(0.0, float(nml["lwscmx"]))
+        except Exception:
+            linewidth_scan_max_sigma_points = 0.0
     dwell_time_s = 0.0
     if "deltat" in nml:
         try:
@@ -270,6 +282,8 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
         alignment_circular=alignment_circular,
         fractional_shift_refine=fractional_shift_refine,
         fractional_shift_iterations=fractional_shift_iterations,
+        linewidth_scan_points=linewidth_scan_points,
+        linewidth_scan_max_sigma_points=linewidth_scan_max_sigma_points,
         baseline_order=baseline_order,
         baseline_knots=baseline_knots,
         baseline_smoothness=baseline_smoothness,

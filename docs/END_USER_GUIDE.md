@@ -83,6 +83,10 @@ output_split_right=.ps
   - Enable sub-point shift refinement after integer shift search.
 - `--fractional-shift-iterations`
   - Search iterations used for fractional shift refinement.
+- `--linewidth-scan-points`
+  - Number of global linewidth scan points (`0` disables).
+- `--linewidth-scan-max-sigma-points`
+  - Maximum Gaussian sigma (in points) explored by linewidth scan.
 - `--baseline-order`
   - Polynomial baseline degree for alternating fit (`-1` disables baseline).
 - `--baseline-knots`
@@ -122,6 +126,8 @@ output_split_right=.ps
   - Integer shift selected during pre-fit alignment.
 - `fit_alignment_shift_fractional_points`
   - Refined continuous shift value when fractional refinement is enabled.
+- `fit_linewidth_sigma_points`
+  - Selected global linewidth broadening sigma from scan stage.
 - `fit_integrated_data_area`, `fit_integrated_fit_area`
   - Baseline-corrected peak areas from a local-window integration step.
 - `fit_combinations`
