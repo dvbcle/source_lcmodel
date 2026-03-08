@@ -24,6 +24,14 @@ from lcmodel.core.legacy_math import (
 )
 from lcmodel.core.legacy_linear import g1, g2, h12
 from lcmodel.core.legacy_eigen import jacobi_symmetric, tridiagonal_from_symmetric
+from lcmodel.core.legacy_parsing import (
+    build_conc_prior,
+    chreal,
+    get_field_from_string,
+    parse_chsimu_strings,
+    parse_prior_strings,
+    parse_sum_terms,
+)
 
 __all__ = [
     "FFTPlan",
@@ -49,4 +57,10 @@ __all__ = [
     "h12",
     "jacobi_symmetric",
     "tridiagonal_from_symmetric",
+    "build_conc_prior",
+    "chreal",
+    "get_field_from_string",
+    "parse_chsimu_strings",
+    "parse_prior_strings",
+    "parse_sum_terms",
 ]

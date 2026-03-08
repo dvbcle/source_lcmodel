@@ -33,6 +33,14 @@ from lcmodel.core.legacy_math import (
     nextre as nextre_compat,
     pythag as pythag_compat,
 )
+from lcmodel.core.legacy_parsing import (
+    build_conc_prior,
+    chreal as chreal_compat,
+    get_field_from_string,
+    parse_chsimu_strings,
+    parse_prior_strings,
+    parse_sum_terms,
+)
 from lcmodel.core.text import int_to_compact_text, split_title_lines
 from lcmodel.core.text import escape_postscript_text, first_non_space_index
 from lcmodel.io.pathing import split_output_filename_for_voxel
@@ -812,6 +820,137 @@ def _ov_phase_with_max_real(state: dict[str, Any] | None = None) -> dict[str, An
     return out
 
 
+def _ov_get_field(
+    chseparator: str,
+    len_chseparator: int,
+    ifield_type: int,
+    iatend: int,
+    chreturn: Any,
+    freturn: Any,
+    istart: Any,
+    len_string_in: int,
+    string_in: str,
+    state: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    _ = (len_string_in, state)
+    sep = builtins.str(chseparator)[: int(len_chseparator)] if int(len_chseparator) > 0 else ""
+    cur = int(istart[0]) if isinstance(istart, MutableSequence) and istart else int(istart)
+    next_start, value = get_field_from_string(sep, int(ifield_type), int(iatend), cur, builtins.str(string_in))
+    _assign_scalar(istart, next_start)
+    if int(ifield_type) == 1:
+        _assign_scalar(chreturn, builtins.str(value))
+    elif int(ifield_type) == 2:
+        _assign_scalar(freturn, float(value))
+    return {"istart": next_start, "value": value}
+
+
+def _ov_parse_prior(state: dict[str, Any] | None = None) -> dict[str, Any]:
+    out = state if state is not None else {}
+    chrato = out.get("chrato", ())
+    parsed = parse_prior_strings(tuple(builtins.str(v) for v in chrato))
+    out["parsed_prior"] = parsed
+    out["chrati"] = tuple(builtins.str(v["chrati"]) for v in parsed)
+    out["chratw"] = tuple(builtins.str(v["chratw"]) for v in parsed)
+    out["exrati"] = tuple(float(v["exrati"]) for v in parsed)
+    out["sdrati"] = tuple(float(v["sdrati"]) for v in parsed)
+    out["nratio"] = len(parsed)
+    return out
+
+
+def _ov_parse_sum(
+    exrati_arg: float,
+    substring: str,
+    len_substring: int,
+    lratio: int,
+    csum: Any,
+    denom_absent: Any,
+    state: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    out = state if state is not None else {}
+    names = tuple(builtins.str(v) for v in out.get("nacomb", ()))
+    solbes = tuple(float(v) for v in out.get("solbes", ()))
+    row, add_sum, is_absent = parse_sum_terms(
+        builtins.str(substring)[: int(len_substring)],
+        names,
+        solbes,
+        float(exrati_arg),
+    )
+    old_sum = float(csum[0]) if isinstance(csum, MutableSequence) and csum else float(csum)
+    _assign_scalar(csum, old_sum + add_sum)
+    if isinstance(denom_absent, MutableSequence) and denom_absent:
+        denom_absent[0] = bool(denom_absent[0]) and bool(is_absent)
+    elif isinstance(denom_absent, MutableSequence):
+        denom_absent.append(bool(is_absent))
+    cprior = out.get("cprior")
+    lr = int(lratio) - 1
+    if isinstance(cprior, MutableSequence) and 0 <= lr < len(cprior):
+        crow = cprior[lr]
+        if isinstance(crow, MutableSequence):
+            for j in range(min(len(crow), len(row))):
+                crow[j] = float(crow[j]) + row[j]
+    out["parse_sum_last"] = {
+        "row": tuple(row),
+        "csum_add": add_sum,
+        "denom_absent": bool(is_absent),
+    }
+    return out
+
+
+def _ov_conc_prior(state: dict[str, Any] | None = None) -> dict[str, Any]:
+    out = state if state is not None else {}
+    if "parsed_prior" not in out:
+        _ov_parse_prior(out)
+    nacomb = tuple(builtins.str(v) for v in out.get("nacomb", ()))
+    solbes = tuple(float(v) for v in out.get("solbes", ()))
+    norato = tuple(builtins.str(v) for v in out.get("norato", ()))
+    rows, used = build_conc_prior(
+        out.get("parsed_prior", ()),
+        nacomb,
+        solbes,
+        norato=norato,
+        fcsum=float(out.get("fcsum", 1.0e-2)),
+    )
+    out["cprior"] = tuple(tuple(float(v) for v in row) for row in rows)
+    out["nratio_used"] = len(rows)
+    out["prior_used"] = tuple(used)
+    return out
+
+
+def _ov_parse_chsimu(state: dict[str, Any] | None = None) -> dict[str, Any]:
+    out = state if state is not None else {}
+    chsimu = tuple(builtins.str(v) for v in out.get("chsimu", ()))
+    parsed = parse_chsimu_strings(chsimu)
+    out["parsed_chsimu"] = tuple(parsed)
+    out["nsimul"] = len(parsed)
+    return out
+
+
+def _ov_chreal(x: float, xstep: float, ljust: bool, state: dict[str, Any] | None = None) -> str:
+    _ = state
+    return chreal_compat(float(x), float(xstep), bool(ljust))
+
+
+def _ov_check_chless(state: dict[str, Any] | None = None) -> dict[str, Any]:
+    out = state if state is not None else {}
+    chless = tuple(builtins.str(v) for v in out.get("chless", ()))
+    chmore = builtins.str(out.get("chmore", ""))
+    rlesmo = float(out.get("rlesmo", 0.0))
+    nacomb = tuple(builtins.str(v) for v in out.get("nacomb", ()))
+    solbes = tuple(float(v) for v in out.get("solbes", ()))
+    omit = False
+    if chmore and rlesmo > 0.0 and chless:
+        conc_more = sum(solbes[j] for j, name in enumerate(nacomb) if name.startswith(chmore))
+        for prefix in chless:
+            if not prefix:
+                continue
+            conc_less = sum(solbes[j] for j, name in enumerate(nacomb) if name.startswith(prefix))
+            if conc_more > 0.0 and conc_less / conc_more > rlesmo:
+                omit = True
+                break
+    out["omit_chless"] = omit
+    return out
+
+
 def _ov_split_filename(
     filename: str,
     chtype1: str,
@@ -1411,6 +1550,13 @@ SEMANTIC_OVERRIDES = {
     "smooth_tail": _ov_smooth_tail,
     "fix_g77_namelist": _ov_fix_g77_namelist,
     "phase_with_max_real": _ov_phase_with_max_real,
+    "get_field": _ov_get_field,
+    "parse_prior": _ov_parse_prior,
+    "parse_sum": _ov_parse_sum,
+    "conc_prior": _ov_conc_prior,
+    "parse_chsimu": _ov_parse_chsimu,
+    "chreal": _ov_chreal,
+    "check_chless": _ov_check_chless,
     "split_filename": _ov_split_filename,
     "chstrip_int6": _ov_chstrip_int6,
     "split_title": _ov_split_title,

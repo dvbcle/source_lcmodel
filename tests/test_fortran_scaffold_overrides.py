@@ -175,6 +175,57 @@ class TestFortranScaffoldOverrides(unittest.TestCase):
         st = fs.phase_with_max_real(state={"datat": [1j, 1j, 1j, 1j]})
         self.assertIn("phase_with_max_real_radians", st)
 
+    def test_prior_parsing_overrides(self):
+        chreturn = [""]
+        freturn = [0.0]
+        istart = [1]
+        st = fs.get_field("=", 1, 1, 0, chreturn, freturn, istart, 3, "A=B", state={})
+        self.assertEqual("A", chreturn[0])
+        self.assertIn("value", st)
+
+        state = fs.parse_prior(
+            state={"chrato": ["NAA/Cr=1.5+-0.2+WT=Cho"]}
+        )
+        self.assertEqual(1, state["nratio"])
+        self.assertEqual("NAA/Cr", state["chrati"][0])
+
+        ps_state = {
+            "nacomb": ["NAA", "Cr", "Cho"],
+            "solbes": [1.0, 1.0, 1.0],
+            "cprior": [[0.0, 0.0, 0.0]],
+        }
+        csum = [0.0]
+        denom_absent = [True]
+        fs.parse_sum(1.5, "Cr+Cho", 6, 1, csum, denom_absent, state=ps_state)
+        self.assertGreater(csum[0], 0.0)
+        self.assertFalse(denom_absent[0])
+
+        cp_state = fs.conc_prior(
+            state={
+                "chrato": ["NAA/Cr=1.0+-0.5"],
+                "nacomb": ["NAA", "Cr"],
+                "solbes": [2.0, 2.0],
+            }
+        )
+        self.assertEqual(1, cp_state["nratio_used"])
+
+        sim_state = fs.parse_chsimu(
+            state={"chsimu": ["MM09 @ .91 +- .02 FWHM= .05 < .06 +- .01 AMP= 3. @ 1.2"]}
+        )
+        self.assertEqual(1, sim_state["nsimul"])
+
+        self.assertTrue(fs.chreal(0.0, 0.1, False, state={}).strip().startswith("0"))
+        cl_state = fs.check_chless(
+            state={
+                "chless": ["L09"],
+                "chmore": "L13",
+                "rlesmo": 0.1,
+                "nacomb": ["L09a", "L13a"],
+                "solbes": [2.0, 1.0],
+            }
+        )
+        self.assertTrue(cl_state["omit_chless"])
+
 
 if __name__ == "__main__":
     unittest.main()
