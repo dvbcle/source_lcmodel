@@ -220,16 +220,24 @@ class LCModelRunner:
             setup.matrix,
             setup.vector,
             stage.coefficients,
+            baseline=stage.baseline,
         )
         plot_data_values = tuple(float(v) for v in setup.vector)
         if ppm_axis is not None:
             plot_x_values = tuple(float(ppm_axis[i]) for i in setup.row_indices)
         else:
             plot_x_values = tuple(float(i) for i in range(len(setup.vector)))
-        plot_fit_values = tuple(
-            sum(float(setup.matrix[i][j]) * float(stage.coefficients[j]) for j in range(len(stage.coefficients)))
-            for i in range(len(setup.vector))
-        )
+        if stage.baseline and len(stage.baseline) == len(setup.vector):
+            plot_fit_values = tuple(
+                sum(float(setup.matrix[i][j]) * float(stage.coefficients[j]) for j in range(len(stage.coefficients)))
+                + float(stage.baseline[i])
+                for i in range(len(setup.vector))
+            )
+        else:
+            plot_fit_values = tuple(
+                sum(float(setup.matrix[i][j]) * float(stage.coefficients[j]) for j in range(len(stage.coefficients)))
+                for i in range(len(setup.vector))
+            )
         integrated_data_area, integrated_fit_area = self._compute_integration_areas(
             setup_vector=setup.vector,
             plot_fit_values=plot_fit_values,

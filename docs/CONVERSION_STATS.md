@@ -1,6 +1,6 @@
 # Conversion Statistics Snapshot
 
-Generated on: 2026-03-08 17:21:58 -04:00
+Generated on: 2026-03-08 18:18:40 -04:00
 
 This snapshot compares original Fortran source size with the resulting Python codebase.
 
@@ -20,11 +20,11 @@ This snapshot compares original Fortran source size with the resulting Python co
 | Scope | Files | Total | Code | Comment | Blank |
 |---|---:|---:|---:|---:|---:|
 | Fortran (`*.f`, `*.inc`) | 7 | 19,469 | 14,267 | 4,919 | 283 |
-| Python (all `*.py`) | 86 | 12,133 | 10,362 | 202 | 1,569 |
-| Python runtime (`lcmodel/`) | 52 | 8,821 | 7,512 | 183 | 1,126 |
-| Python tests (`tests/`) | 29 | 2,387 | 2,067 | 15 | 305 |
+| Python (all `*.py`) | 86 | 12,154 | 10,381 | 205 | 1,568 |
+| Python runtime (`lcmodel/`) | 52 | 8,839 | 7,528 | 186 | 1,125 |
+| Python tests (`tests/`) | 29 | 2,390 | 2,070 | 15 | 305 |
 | Python tools (`tools/`) | 5 | 925 | 783 | 4 | 138 |
-| Python pure runtime surface (`lcmodel/` excl. `overrides/`) | 47 | 6,371 | 5,403 | 120 | 848 |
+| Python pure runtime surface (`lcmodel/` excl. `overrides/`) | 47 | 6,389 | 5,419 | 123 | 847 |
 | Python legacy routine-reference overrides (`lcmodel/overrides/`) | 5 | 2,450 | 2,109 | 63 | 278 |
 
 ## Notes
@@ -32,6 +32,7 @@ This snapshot compares original Fortran source size with the resulting Python co
 - Fortran comments are identified via fixed-form first-column markers (`C/c`, `*`, `!`).
 - Python comments count only `#...` lines; triple-quoted docstrings count as code.
 - Statistics reflect the post-cutover pure runtime surface where generated scaffold files are removed from runtime.
-- Refreshed and re-verified on 2026-03-08 17:21:58 -04:00 after replacing
-  PostScript polyline output with Fortran-style packed-hex `plot/plot_gap`
-  emission and aligning page-setup scaffolding to the legacy stream format.
+- Refreshed and re-verified on 2026-03-08 18:18:40 -04:00 after further
+  parity work: carrying spline-baseline terms through fit output/metrics,
+  enabling Fortran-like time-domain baseline defaults, and defaulting
+  zero-order auto-phasing for control-file time-domain runs.

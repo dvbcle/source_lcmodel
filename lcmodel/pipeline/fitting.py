@@ -27,6 +27,7 @@ class FitStageResult:
     iterations: int
     method: str
     coefficient_sds: tuple[float, ...] = ()
+    baseline: tuple[float, ...] = ()
 
 
 def _residual_norm(matrix: Sequence[Sequence[float]], vector: Sequence[float], x: Sequence[float]) -> float:
@@ -125,6 +126,7 @@ def _pnnls_active_set(
                     residual_norm=_residual_norm(matrix, vector, x),
                     iterations=itmax,
                     method="pnnls_active_set",
+                    baseline=(),
                 )
 
             z = _solve_passive_least_squares(matrix, vector, passive, n)
@@ -168,6 +170,7 @@ def _pnnls_active_set(
         residual_norm=_residual_norm(matrix, vector, x),
         iterations=iterations,
         method="pnnls_active_set",
+        baseline=(),
     )
 
 
@@ -416,6 +419,7 @@ def _alternating_nnls_with_baseline(
         residual_norm=resnorm,
         iterations=alt,
         method="alt_pnnls_bspline_baseline" if config.baseline_knots >= 4 else "alt_pnnls_poly_baseline",
+        baseline=tuple(float(v) for v in baseline),
     )
 
 
@@ -528,4 +532,5 @@ def run_fit_stage(
         iterations=stage.iterations,
         method=stage.method,
         coefficient_sds=sds,
+        baseline=stage.baseline,
     )

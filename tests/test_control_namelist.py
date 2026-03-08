@@ -198,6 +198,9 @@ $END
             )
             cfg = load_run_config_from_control_file(ctl)
             self.assertTrue(cfg.time_domain_input)
+            self.assertTrue(cfg.auto_phase_zero_order)
+            self.assertEqual(28, cfg.baseline_knots)
+            self.assertAlmostEqual(0.17, cfg.baseline_smoothness)
         finally:
             shutil.rmtree(p, ignore_errors=True)
 

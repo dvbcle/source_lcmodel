@@ -277,18 +277,20 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
             phase_objective = "smooth_real"
         except Exception:
             phase_smoothness_power = 6
-    baseline_knots = 0
+    # Fortran SETUP/GBACKG baseline defaults are active for time-domain runs
+    # even when NBACKG/ALPHAB are omitted from control files.
+    baseline_knots = 28 if time_domain_input else 0
     if "nbackg" in nml:
         try:
             baseline_knots = max(0, int(nml["nbackg"]))
         except Exception:
-            baseline_knots = 0
-    baseline_smoothness = 0.0
+            baseline_knots = 28 if time_domain_input else 0
+    baseline_smoothness = 0.17 if time_domain_input else 0.0
     if "alphab" in nml:
         try:
             baseline_smoothness = max(0.0, float(nml["alphab"]))
         except Exception:
-            baseline_smoothness = 0.0
+            baseline_smoothness = 0.17 if time_domain_input else 0.0
     integration_border_points = 4
     if "nwndo" in nml:
         try:
@@ -360,7 +362,8 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
         basis_names_file=str(nml["filnam"]) if isinstance(nml.get("filnam"), str) and nml["filnam"].strip() else None,
         priors_file=str(nml["filprr"]) if isinstance(nml.get("filprr"), str) and nml["filprr"].strip() else None,
         time_domain_input=time_domain_input,
-        auto_phase_zero_order=bool(nml.get("autoph0", False)),
+        # Fortran time-domain path applies zero-order phasing by default.
+        auto_phase_zero_order=bool(nml.get("autoph0", time_domain_input)),
         auto_phase_first_order=bool(nml.get("autoph1", False)),
         phase_objective=phase_objective,
         phase_smoothness_power=phase_smoothness_power,

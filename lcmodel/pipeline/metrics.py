@@ -10,6 +10,7 @@ def compute_fit_quality_metrics(
     matrix: Sequence[Sequence[float]],
     vector: Sequence[float],
     coeffs: Sequence[float],
+    baseline: Sequence[float] | None = None,
 ) -> tuple[float, float]:
     """Return `(relative_residual, snr_estimate)` for fitted data."""
 
@@ -23,6 +24,8 @@ def compute_fit_quality_metrics(
         pred = 0.0
         for j, aij in enumerate(row):
             pred += float(aij) * float(coeffs[j])
+        if baseline is not None and i < len(baseline):
+            pred += float(baseline[i])
         yi = float(vector[i])
         residuals.append(yi - pred)
         data_norm_sq += yi * yi
@@ -37,4 +40,3 @@ def compute_fit_quality_metrics(
     noise_sd = math.sqrt(max(1e-30, var))
     snr = peak / noise_sd
     return rel, snr
-
