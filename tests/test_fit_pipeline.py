@@ -1,0 +1,94 @@
+from __future__ import annotations
+
+import io
+from contextlib import redirect_stdout
+from pathlib import Path
+import shutil
+import unittest
+import uuid
+
+from lcmodel.cli import main as cli_main
+from lcmodel.engine import LCModelRunner
+from lcmodel.io.numeric import load_numeric_matrix, load_numeric_vector, save_numeric_vector
+from lcmodel.models import RunConfig
+from lcmodel.pipeline.fitting import run_fit_stage
+
+
+class TestFitPipeline(unittest.TestCase):
+    def _make_local_tmpdir(self) -> Path:
+        root = Path("tests/.tmp")
+        root.mkdir(parents=True, exist_ok=True)
+        path = root / str(uuid.uuid4())
+        path.mkdir(parents=True, exist_ok=True)
+        return path
+
+    def test_loaders_and_save(self):
+        p = self._make_local_tmpdir()
+        try:
+            vec_file = p / "vec.txt"
+            mat_file = p / "mat.txt"
+            save_numeric_vector(vec_file, [1.0, 2.5, 3.25])
+            mat_file.write_text("1,0\n0,1\n1,1\n", encoding="utf-8")
+            self.assertEqual([1.0, 2.5, 3.25], load_numeric_vector(vec_file))
+            self.assertEqual([[1.0, 0.0], [0.0, 1.0], [1.0, 1.0]], load_numeric_matrix(mat_file))
+        finally:
+            shutil.rmtree(p, ignore_errors=True)
+
+    def test_run_fit_stage_identity(self):
+        fit = run_fit_stage([[1.0, 0.0], [0.0, 1.0]], [2.0, 3.0])
+        self.assertAlmostEqual(2.0, fit.coefficients[0], places=3)
+        self.assertAlmostEqual(3.0, fit.coefficients[1], places=3)
+        self.assertLess(fit.residual_norm, 1e-3)
+
+    def test_runner_with_fit_inputs(self):
+        p = self._make_local_tmpdir()
+        try:
+            vec_file = p / "vec.txt"
+            mat_file = p / "mat.txt"
+            vec_file.write_text("2\n3\n", encoding="utf-8")
+            mat_file.write_text("1 0\n0 1\n", encoding="utf-8")
+            result = LCModelRunner(
+                RunConfig(
+                    title="Fit run",
+                    ntitle=2,
+                    raw_data_file=str(vec_file),
+                    basis_file=str(mat_file),
+                )
+            ).run()
+            self.assertIsNotNone(result.fit_result)
+            assert result.fit_result is not None
+            self.assertAlmostEqual(2.0, result.fit_result.coefficients[0], places=3)
+            self.assertAlmostEqual(3.0, result.fit_result.coefficients[1], places=3)
+        finally:
+            shutil.rmtree(p, ignore_errors=True)
+
+    def test_cli_with_fit_inputs(self):
+        p = self._make_local_tmpdir()
+        try:
+            vec_file = p / "vec.txt"
+            mat_file = p / "mat.txt"
+            vec_file.write_text("1\n2\n", encoding="utf-8")
+            mat_file.write_text("1 0\n0 1\n", encoding="utf-8")
+            buf = io.StringIO()
+            with redirect_stdout(buf):
+                code = cli_main(
+                    [
+                        "--title",
+                        "Fit cli",
+                        "--raw-data-file",
+                        str(vec_file),
+                        "--basis-file",
+                        str(mat_file),
+                    ]
+                )
+            self.assertEqual(0, code)
+            out = buf.getvalue()
+            self.assertIn("fit_method=", out)
+            self.assertIn("fit_coefficients=", out)
+        finally:
+            shutil.rmtree(p, ignore_errors=True)
+
+
+if __name__ == "__main__":
+    unittest.main()
+

@@ -1,0 +1,107 @@
+from __future__ import annotations
+
+import io
+from pathlib import Path
+import shutil
+import unittest
+import uuid
+from contextlib import redirect_stdout
+
+from lcmodel.pipeline.mydata import MyDataConfig, run_mydata_stage
+from lcmodel.validation.oracle_cli import main as oracle_cli_main
+from lcmodel.validation.oracle import (
+    compare_numeric_vectors,
+    compare_text_files,
+    run_command,
+)
+
+
+class TestOracleAndMyData(unittest.TestCase):
+    def _make_local_tmpdir(self) -> Path:
+        root = Path("tests/.tmp")
+        root.mkdir(parents=True, exist_ok=True)
+        path = root / str(uuid.uuid4())
+        path.mkdir(parents=True, exist_ok=True)
+        return path
+
+    def test_mydata_zero_fill_and_fft(self):
+        result = run_mydata_stage(
+            [1 + 0j, 0 + 0j, 0 + 0j],
+            MyDataConfig(zero_fill_to=4, compute_fft=True),
+        )
+        self.assertEqual(4, len(result.time_domain))
+        self.assertIsNotNone(result.frequency_domain)
+        self.assertEqual((1 + 0j), result.frequency_domain[0])
+        self.assertIn("zero_fill_to=4", result.processing_log)
+
+    def test_mydata_conjugate_and_truncate(self):
+        result = run_mydata_stage(
+            [1 + 2j, 3 + 4j, 5 + 6j],
+            MyDataConfig(truncate_to=2, conjugate_input=True, compute_fft=False),
+        )
+        self.assertEqual((1 - 2j, 3 - 4j), result.time_domain)
+        self.assertIsNone(result.frequency_domain)
+        self.assertIn("truncate_to=2", result.processing_log)
+        self.assertIn("conjugate_input=true", result.processing_log)
+
+    def test_run_command(self):
+        cmd = ["python", "-c", "print('ok')"]
+        result = run_command(cmd)
+        self.assertEqual(0, result.returncode)
+        self.assertIn("ok", result.stdout)
+
+    def test_compare_text_files(self):
+        p = self._make_local_tmpdir()
+        try:
+            f1 = p / "a.txt"
+            f2 = p / "b.txt"
+            f1.write_text("line1\nline2\n", encoding="utf-8")
+            f2.write_text("line1\nlineX\n", encoding="utf-8")
+            same = compare_text_files(f1, f1)
+            diff = compare_text_files(f1, f2)
+            self.assertTrue(same.match)
+            self.assertFalse(diff.match)
+            self.assertGreater(len(diff.diff_lines), 0)
+        finally:
+            shutil.rmtree(p, ignore_errors=True)
+
+    def test_compare_numeric_vectors(self):
+        ok = compare_numeric_vectors([1.0, 2.0], [1.0, 2.0000001], abs_tol=1e-6, rel_tol=1e-6)
+        bad = compare_numeric_vectors([1.0, 2.0], [1.0, 2.01], abs_tol=1e-6, rel_tol=1e-6)
+        self.assertTrue(ok.match)
+        self.assertFalse(bad.match)
+        self.assertGreater(bad.max_abs_error, 0.0)
+
+    def test_oracle_cli_smoke(self):
+        p = self._make_local_tmpdir()
+        try:
+            expected = p / "expected.txt"
+            actual = p / "actual.txt"
+            expected.write_text("same\n", encoding="utf-8")
+            actual.write_text("same\n", encoding="utf-8")
+
+            buf = io.StringIO()
+            with redirect_stdout(buf):
+                code = oracle_cli_main(
+                    [
+                        "--cwd",
+                        str(p),
+                        "--fortran-cmd",
+                        "python -c \"print('fortran-ok')\"",
+                        "--python-cmd",
+                        "python -c \"print('python-ok')\"",
+                        "--compare",
+                        "expected.txt::actual.txt",
+                    ]
+                )
+            self.assertEqual(0, code)
+            out = buf.getvalue()
+            self.assertIn("fortran_returncode=0", out)
+            self.assertIn("python_returncode=0", out)
+            self.assertIn("status=match", out)
+        finally:
+            shutil.rmtree(p, ignore_errors=True)
+
+
+if __name__ == "__main__":
+    unittest.main()

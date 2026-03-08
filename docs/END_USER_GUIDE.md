@@ -36,6 +36,10 @@ output_split_right=.ps
   - `2` allows split logic when needed.
 - `--output-filename`
   - Optional output path used to calculate insertion points for voxel IDs.
+- `--raw-data-file`
+  - Optional numeric vector file for the fit stage.
+- `--basis-file`
+  - Optional numeric matrix file for the fit stage.
 
 ## 4. Interpreting Output
 
@@ -47,6 +51,10 @@ output_split_right=.ps
   - Filename parts around where voxel tags can be inserted.
 - `output_split=<not requested>`
   - You did not pass `--output-filename`.
+- `fit_result=<not requested>`
+  - You did not pass both `--raw-data-file` and `--basis-file`.
+- `fit_coefficients`
+  - Nonnegative fit coefficients from the current semantic fit stage.
 
 ## 5. Common Usage Patterns
 
@@ -62,9 +70,14 @@ Filename split for `.ps` output:
 python -m lcmodel --title "Subject 001" --output-filename "results/report.ps"
 ```
 
+Run fit stage:
+
+```powershell
+python -m lcmodel --raw-data-file data\\raw.txt --basis-file data\\basis.txt
+```
+
 ## 6. Troubleshooting
 
 - If command is not found, run `python --version` to confirm Python is installed.
 - If module import fails, ensure you are in the repository root when running commands.
 - If output filename split is unexpected, verify that the filename ends in a `ps` variant (`ps`, `PS`, `Ps`).
-

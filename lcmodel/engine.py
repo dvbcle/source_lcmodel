@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+from lcmodel.io.numeric import load_numeric_matrix, load_numeric_vector
 from lcmodel.io.pathing import split_output_filename_for_voxel
-from lcmodel.models import RunConfig, RunResult
+from lcmodel.models import FitResult, RunConfig, RunResult
+from lcmodel.pipeline.fitting import run_fit_stage
 from lcmodel.core.text import split_title_lines
 
 
@@ -23,8 +25,20 @@ class LCModelRunner:
                 self.config.output_filename, ("ps", "PS", "Ps")
             )
 
+        fit_result: FitResult | None = None
+        if self.config.raw_data_file and self.config.basis_file:
+            vector = load_numeric_vector(self.config.raw_data_file)
+            matrix = load_numeric_matrix(self.config.basis_file)
+            stage = run_fit_stage(matrix, vector)
+            fit_result = FitResult(
+                coefficients=stage.coefficients,
+                residual_norm=stage.residual_norm,
+                iterations=stage.iterations,
+                method=stage.method,
+            )
+
         return RunResult(
             title_layout=title_layout,
             output_filename_parts=filename_parts,
+            fit_result=fit_result,
         )
-

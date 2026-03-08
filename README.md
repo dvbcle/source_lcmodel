@@ -19,6 +19,12 @@ Fortran-to-Python scaffold.
   - Basic in-place array helpers (`reverse_first_n`).
 - `lcmodel/io/pathing.py`
   - Output filename split logic for voxel insertion.
+- `lcmodel/pipeline/mydata.py`
+  - Initial semantic scaffold for the legacy `MYDATA` preprocessing stage.
+- `lcmodel/validation/oracle.py`
+  - Utilities to run Fortran/Python commands and compare outputs for parity.
+- `lcmodel/validation/oracle_cli.py`
+  - CLI harness for simple oracle comparisons.
 - `lcmodel/cli.py`
   - CLI entrypoint for running the current semantic port scope.
 
@@ -33,10 +39,17 @@ runtime surface.
 python -m lcmodel --title "Example title" --ntitle 2 --output-filename "C:/tmp/ps"
 ```
 
+Fit-stage run example:
+
+```powershell
+python -m lcmodel --raw-data-file data\\raw.txt --basis-file data\\basis.txt
+```
+
 ## User Documentation
 
 - End-user CLI guide: `docs/END_USER_GUIDE.md`
 - Python API guide: `docs/PYTHON_API_GUIDE.md`
+- Fortran parity workflow: `docs/FORTRAN_PARITY_WORKFLOW.md`
 
 ## Tests
 

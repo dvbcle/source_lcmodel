@@ -25,6 +25,16 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Output filename to split for voxel identifier insertion.",
     )
+    parser.add_argument(
+        "--raw-data-file",
+        default=None,
+        help="Path to numeric vector file for fit stage (one value per line).",
+    )
+    parser.add_argument(
+        "--basis-file",
+        default=None,
+        help="Path to numeric basis matrix file for fit stage.",
+    )
     return parser
 
 
@@ -37,6 +47,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             title=args.title,
             ntitle=args.ntitle,
             output_filename=args.output_filename,
+            raw_data_file=args.raw_data_file,
+            basis_file=args.basis_file,
         )
     )
     result = runner.run()
@@ -50,9 +62,16 @@ def main(argv: Sequence[str] | None = None) -> int:
         left, right = result.output_filename_parts
         print(f"output_split_left={left}")
         print(f"output_split_right={right}")
+    if result.fit_result is None:
+        print("fit_result=<not requested>")
+    else:
+        print(f"fit_method={result.fit_result.method}")
+        print(f"fit_iterations={result.fit_result.iterations}")
+        print(f"fit_residual_norm={result.fit_result.residual_norm:.12g}")
+        coeffs = ",".join(f"{v:.12g}" for v in result.fit_result.coefficients)
+        print(f"fit_coefficients={coeffs}")
     return 0
 
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
