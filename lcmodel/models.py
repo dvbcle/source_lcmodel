@@ -36,6 +36,8 @@ class RunConfig:
     fit_ppm_start: float | None = None
     fit_ppm_end: float | None = None
     exclude_ppm_ranges: tuple[tuple[float, float], ...] = ()
+    sptype: str = ""
+    apply_sptype_presets: bool = True
     include_metabolites: tuple[str, ...] = ()
     combine_expressions: tuple[str, ...] = ()
     shift_search_points: int = 0

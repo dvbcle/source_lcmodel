@@ -38,6 +38,7 @@ from lcmodel.pipeline.phasing import (
 from lcmodel.pipeline.postprocess import compute_combinations
 from lcmodel.pipeline.priors import augment_system_with_soft_priors
 from lcmodel.pipeline.spectral import SpectralFitInputs, prepare_frequency_fit_from_time_domain
+from lcmodel.pipeline.sptype_presets import SptypePreset, apply_sptype_preset
 from lcmodel.pipeline.setup import SetupResult, prepare_fit_inputs
 
 __all__ = [
@@ -59,6 +60,7 @@ __all__ = [
     "MyDataResult",
     "SpectralFitInputs",
     "SetupResult",
+    "SptypePreset",
     "align_vector_by_integer_shift",
     "align_vector_by_fractional_shift",
     "augment_system_with_soft_priors",
@@ -83,4 +85,5 @@ __all__ = [
     "prepare_fit_inputs",
     "run_fit_stage",
     "run_mydata_stage",
+    "apply_sptype_preset",
 ]

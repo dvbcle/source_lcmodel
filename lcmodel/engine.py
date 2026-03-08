@@ -23,6 +23,7 @@ from lcmodel.pipeline.nonlinear import NonlinearConfig, run_nonlinear_refinement
 from lcmodel.pipeline.postprocess import compute_combinations
 from lcmodel.pipeline.priors import augment_system_with_soft_priors
 from lcmodel.pipeline.spectral import prepare_frequency_fit_from_time_domain
+from lcmodel.pipeline.sptype_presets import apply_sptype_preset
 from lcmodel.pipeline.setup import prepare_fit_inputs
 from lcmodel.core.text import split_title_lines
 
@@ -31,7 +32,12 @@ class LCModelRunner:
     """High-level runner for incremental semantic-port behavior."""
 
     def __init__(self, config: RunConfig):
-        self.config = config
+        # Apply legacy SPTYPE defaults once at runner construction time so both
+        # CLI and direct API usage share the same behavior.
+        if config.apply_sptype_presets:
+            self.config = apply_sptype_preset(config)
+        else:
+            self.config = config
 
     def run(self) -> RunResult:
         """Execute currently ported preprocessing behaviors."""

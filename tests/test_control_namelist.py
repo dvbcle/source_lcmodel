@@ -51,7 +51,7 @@ $LCMODL
             ctl.write_text(
                 (
                     "$LCMODL\n"
-                    " TITLE='Control Title', NTITLE=1, FILRAW='a.txt', FILRAWL='raw_list.txt', FILCSV='batch.csv', FILBAS='b.txt', FILPS='c.ps', FILTAB='tab.out', FILPRR='priors.txt', NDEGZ=2, NSHIFW=3, SHFTCYC=.false., FSHREF=.true., NSHIFIT=14, NLWSCN=5, LWSCMX=2.5, NLREF=.true., NLITER=6, NLTOL=1E-7, TIMDOM=.true., AUTOPH0=.true., AUTOPH1=.true., DELTAT=0.0005, LBHZ=4.0, NBACKG=8, ALPHAB=0.25, NWNDO=5, IPOWPH=7,\n"
+                    " TITLE='Control Title', NTITLE=1, FILRAW='a.txt', FILRAWL='raw_list.txt', FILCSV='batch.csv', FILBAS='b.txt', FILPS='c.ps', FILTAB='tab.out', FILPRR='priors.txt', SPTYPE='tumor', NDEGZ=2, NSHIFW=3, SHFTCYC=.false., FSHREF=.true., NSHIFIT=14, NLWSCN=5, LWSCMX=2.5, NLREF=.true., NLITER=6, NLTOL=1E-7, TIMDOM=.true., AUTOPH0=.true., AUTOPH1=.true., DELTAT=0.0005, LBHZ=4.0, NBACKG=8, ALPHAB=0.25, NWNDO=5, IPOWPH=7,\n"
                     " CHUSE1(1)='NAA', CHUSE1(2)='Cr', CHCOMB(1)='NAA+Cr', PPMST=3.2, PPMEND=2.0, PPMGAP(1,1)=4.9, PPMGAP(2,1)=4.5, FILPPM='ppm.txt', FILNAM='names.txt', /\n"
                 ),
                 encoding="utf-8",
@@ -83,16 +83,56 @@ $LCMODL
             self.assertEqual(8, cfg.baseline_knots)
             self.assertEqual(0.25, cfg.baseline_smoothness)
             self.assertEqual(5, cfg.integration_border_points)
+            # Explicit PPMST/PPMEND in control file should take precedence over
+            # any SPTYPE defaults.
             self.assertEqual(3.2, cfg.fit_ppm_start)
             self.assertEqual(2.0, cfg.fit_ppm_end)
             self.assertEqual(((4.9, 4.5),), cfg.exclude_ppm_ranges)
             self.assertEqual("ppm.txt", cfg.ppm_axis_file)
             self.assertEqual("names.txt", cfg.basis_names_file)
+            self.assertEqual("tumor", cfg.sptype)
             self.assertTrue(cfg.time_domain_input)
             self.assertTrue(cfg.auto_phase_zero_order)
             self.assertTrue(cfg.auto_phase_first_order)
             self.assertEqual("smooth_real", cfg.phase_objective)
             self.assertEqual(7, cfg.phase_smoothness_power)
+        finally:
+            shutil.rmtree(p, ignore_errors=True)
+
+    def test_load_run_config_applies_sptype_default_window(self):
+        p = self._make_local_tmpdir()
+        try:
+            ctl = p / "control.in"
+            ctl.write_text(
+                (
+                    "$LCMODL\n"
+                    " TITLE='Preset Window', SPTYPE='tumor', /\n"
+                ),
+                encoding="utf-8",
+            )
+            cfg = load_run_config_from_control_file(ctl)
+            self.assertEqual("tumor", cfg.sptype)
+            self.assertEqual(4.0, cfg.fit_ppm_start)
+            self.assertEqual(0.2, cfg.fit_ppm_end)
+        finally:
+            shutil.rmtree(p, ignore_errors=True)
+
+    def test_load_run_config_can_disable_sptype_defaults(self):
+        p = self._make_local_tmpdir()
+        try:
+            ctl = p / "control.in"
+            ctl.write_text(
+                (
+                    "$LCMODL\n"
+                    " TITLE='No Preset Window', SPTYPE='tumor', APPLySPTYPE=.false., /\n"
+                ),
+                encoding="utf-8",
+            )
+            cfg = load_run_config_from_control_file(ctl)
+            self.assertEqual("tumor", cfg.sptype)
+            self.assertFalse(cfg.apply_sptype_presets)
+            self.assertIsNone(cfg.fit_ppm_start)
+            self.assertIsNone(cfg.fit_ppm_end)
         finally:
             shutil.rmtree(p, ignore_errors=True)
 

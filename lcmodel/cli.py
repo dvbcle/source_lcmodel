@@ -135,6 +135,16 @@ def build_parser() -> argparse.ArgumentParser:
         help="Comma-separated combination expressions, e.g. NAA+Cr,Glu+Gln.",
     )
     parser.add_argument(
+        "--sptype",
+        default=None,
+        help="Legacy SPTYPE profile key (e.g. tumor, liver-1, muscle-2).",
+    )
+    parser.add_argument(
+        "--no-sptype-presets",
+        action="store_true",
+        help="Disable automatic SPTYPE-derived defaults.",
+    )
+    parser.add_argument(
         "--shift-search-points",
         type=int,
         default=None,
@@ -285,6 +295,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.combine_expressions is not None:
         exprs = tuple(p.strip() for p in args.combine_expressions.split(",") if p.strip())
         config = replace(config, combine_expressions=exprs)
+    if args.sptype is not None:
+        config = replace(config, sptype=args.sptype)
+    if args.no_sptype_presets:
+        config = replace(config, apply_sptype_presets=False)
     if args.shift_search_points is not None:
         config = replace(config, shift_search_points=args.shift_search_points)
     if args.alignment_mode is not None:

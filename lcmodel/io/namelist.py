@@ -7,6 +7,7 @@ import re
 from typing import Any
 
 from lcmodel.models import RunConfig
+from lcmodel.pipeline.sptype_presets import apply_sptype_preset
 
 
 _TRUE_VALUES = {".true.", "true", "t"}
@@ -298,8 +299,13 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
     table_output_file = None
     if isinstance(nml.get("filtab"), str) and nml["filtab"].strip():
         table_output_file = str(nml["filtab"])
-
-    return RunConfig(
+    sptype = ""
+    if isinstance(nml.get("sptype"), str):
+        sptype = str(nml["sptype"]).strip()
+    apply_sptype_presets = True
+    if "applysptype" in nml:
+        apply_sptype_presets = bool(nml.get("applysptype"))
+    config = RunConfig(
         title=title,
         ntitle=ntitle,
         output_filename=output_filename,
@@ -336,4 +342,9 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
         baseline_knots=baseline_knots,
         baseline_smoothness=baseline_smoothness,
         integration_border_points=integration_border_points,
+        sptype=sptype,
+        apply_sptype_presets=apply_sptype_presets,
     )
+    if config.apply_sptype_presets:
+        return apply_sptype_preset(config)
+    return config
