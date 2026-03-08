@@ -92,6 +92,7 @@ python -m lcmodel --control-file data\\control.in
 - Python API guide: `docs/PYTHON_API_GUIDE.md`
 - Python architecture guide: `docs/PYTHON_ARCHITECTURE.md`
 - Fortran parity workflow: `docs/FORTRAN_PARITY_WORKFLOW.md`
+- External regression proof (`test_lcm`): `docs/EXTERNAL_REGRESSION_PROOF.md`
 - Fortran routine map: `docs/FORTRAN_ROUTINE_MAP.md`
 - Conversion statistics snapshot: `docs/CONVERSION_STATS.md`
 
