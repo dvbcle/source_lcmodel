@@ -6,6 +6,27 @@ Fortran sources.
 For first-time visitors: start with `Project goals`, then run `Quick start`,
 then check `Current status` for migration and compatibility details.
 
+Most migration and refactoring work in this repository was completed using
+OpenAI Codex tooling, with project-owner direction and acceptance validation.
+
+## Human oversight
+
+Project-owner oversight covered product and engineering governance rather than
+line-by-line manual transcription of every change:
+
+1. Scope and priority control:
+   defined sequencing (parity, cutover, architecture cleanup, docs) and
+   accepted/rejected proposed directions.
+2. Acceptance criteria:
+   required repeatable checks (unit tests, parity audits, external regression)
+   before milestones were considered complete.
+3. Release and repository decisions:
+   approved branch/repo operations, publication steps, and runtime-surface
+   cutover choices.
+4. Quality gates:
+   requested iterative refactors, documentation improvements, and traceability
+   guarantees for collaborator onboarding and legacy-user transparency.
+
 ## Project goals
 
 1. Keep numerical and behavioral parity with the reference Fortran baseline.
