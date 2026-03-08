@@ -48,7 +48,7 @@ $LCMODL
             ctl.write_text(
                 (
                     "$LCMODL\n"
-                    " TITLE='Control Title', NTITLE=1, FILRAW='a.txt', FILRAWL='raw_list.txt', FILCSV='batch.csv', FILBAS='b.txt', FILPS='c.ps', FILTAB='tab.out', FILPRR='priors.txt', NDEGZ=2, NSHIFW=3, TIMDOM=.true., AUTOPH0=.true., AUTOPH1=.true., DELTAT=0.0005, LBHZ=4.0, NBACKG=8, ALPHAB=0.25,\n"
+                    " TITLE='Control Title', NTITLE=1, FILRAW='a.txt', FILRAWL='raw_list.txt', FILCSV='batch.csv', FILBAS='b.txt', FILPS='c.ps', FILTAB='tab.out', FILPRR='priors.txt', NDEGZ=2, NSHIFW=3, TIMDOM=.true., AUTOPH0=.true., AUTOPH1=.true., DELTAT=0.0005, LBHZ=4.0, NBACKG=8, ALPHAB=0.25, NWNDO=5,\n"
                     " CHUSE1(1)='NAA', CHUSE1(2)='Cr', CHCOMB(1)='NAA+Cr', PPMST=3.2, PPMEND=2.0, FILPPM='ppm.txt', FILNAM='names.txt', /\n"
                 ),
                 encoding="utf-8",
@@ -71,6 +71,7 @@ $LCMODL
             self.assertEqual(4.0, cfg.line_broadening_hz)
             self.assertEqual(8, cfg.baseline_knots)
             self.assertEqual(0.25, cfg.baseline_smoothness)
+            self.assertEqual(5, cfg.integration_border_points)
             self.assertEqual(3.2, cfg.fit_ppm_start)
             self.assertEqual(2.0, cfg.fit_ppm_end)
             self.assertEqual("ppm.txt", cfg.ppm_axis_file)

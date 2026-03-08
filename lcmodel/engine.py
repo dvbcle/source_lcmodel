@@ -17,6 +17,7 @@ from lcmodel.io.report import write_fit_table
 from lcmodel.models import BatchRunResult, FitResult, RunConfig, RunResult
 from lcmodel.pipeline.alignment import align_vector_by_integer_shift
 from lcmodel.pipeline.fitting import FitConfig, run_fit_stage
+from lcmodel.pipeline.integration import integrate_peak_with_local_baseline
 from lcmodel.pipeline.metrics import compute_fit_quality_metrics
 from lcmodel.pipeline.postprocess import compute_combinations
 from lcmodel.pipeline.priors import augment_system_with_soft_priors
@@ -110,6 +111,45 @@ class LCModelRunner:
                 setup.vector,
                 stage.coefficients,
             )
+            integrated_data_area = 0.0
+            integrated_fit_area = 0.0
+            if setup.vector:
+                peak_index = max(range(len(setup.vector)), key=lambda idx: abs(float(setup.vector[idx])))
+                half_width = max(1, int(self.config.integration_half_width_points))
+                window_start = max(0, peak_index - half_width)
+                window_end = min(len(setup.vector) - 1, peak_index + half_width)
+                border = max(1, int(self.config.integration_border_points))
+                spacing = 1.0
+                if ppm_axis is not None and len(setup.row_indices) > 1:
+                    first = setup.row_indices[0]
+                    second = setup.row_indices[1]
+                    spacing = abs(float(ppm_axis[second]) - float(ppm_axis[first]))
+                fit_curve = [
+                    sum(float(setup.matrix[i][j]) * float(stage.coefficients[j]) for j in range(len(stage.coefficients)))
+                    for i in range(len(setup.vector))
+                ]
+                try:
+                    int_data = integrate_peak_with_local_baseline(
+                        setup.vector,
+                        peak_index=peak_index,
+                        start_index=window_start,
+                        end_index=window_end,
+                        border_width=border,
+                        spacing=spacing,
+                    )
+                    int_fit = integrate_peak_with_local_baseline(
+                        fit_curve,
+                        peak_index=peak_index,
+                        start_index=window_start,
+                        end_index=window_end,
+                        border_width=border,
+                        spacing=spacing,
+                    )
+                    integrated_data_area = float(int_data.area)
+                    integrated_fit_area = float(int_fit.area)
+                except ValueError:
+                    integrated_data_area = 0.0
+                    integrated_fit_area = 0.0
             fit_result = FitResult(
                 coefficients=stage.coefficients,
                 residual_norm=stage.residual_norm,
@@ -122,6 +162,8 @@ class LCModelRunner:
                 relative_residual=relative_residual,
                 snr_estimate=snr_estimate,
                 alignment_shift_points=alignment.shift_points,
+                integrated_data_area=integrated_data_area,
+                integrated_fit_area=integrated_fit_area,
             )
 
         table_written = None

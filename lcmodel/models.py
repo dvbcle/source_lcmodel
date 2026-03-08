@@ -39,6 +39,8 @@ class RunConfig:
     baseline_order: int = -1
     baseline_knots: int = 0
     baseline_smoothness: float = 0.0
+    integration_half_width_points: int = 8
+    integration_border_points: int = 4
 
 
 @dataclass(frozen=True)
@@ -56,6 +58,8 @@ class FitResult:
     relative_residual: float = 0.0
     snr_estimate: float = 0.0
     alignment_shift_points: int = 0
+    integrated_data_area: float = 0.0
+    integrated_fit_area: float = 0.0
 
 
 @dataclass(frozen=True)

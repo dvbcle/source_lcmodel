@@ -165,6 +165,8 @@ class TestFitPipeline(unittest.TestCase):
             self.assertIn("fit_relative_residual=", out)
             self.assertIn("fit_snr_estimate=", out)
             self.assertIn("fit_alignment_shift_points=", out)
+            self.assertIn("fit_integrated_data_area=", out)
+            self.assertIn("fit_integrated_fit_area=", out)
             self.assertIn("fit_combinations=", out)
             self.assertIn("table_output_file=", out)
             self.assertTrue(tab_file.exists())

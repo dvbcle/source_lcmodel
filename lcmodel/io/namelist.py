@@ -188,6 +188,12 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
             baseline_smoothness = max(0.0, float(nml["alphab"]))
         except Exception:
             baseline_smoothness = 0.0
+    integration_border_points = 4
+    if "nwndo" in nml:
+        try:
+            integration_border_points = max(1, int(nml["nwndo"]))
+        except Exception:
+            integration_border_points = 4
 
     include_metabolites: tuple[str, ...] = ()
     if isinstance(nml.get("chuse1"), list):
@@ -240,4 +246,5 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
         baseline_order=baseline_order,
         baseline_knots=baseline_knots,
         baseline_smoothness=baseline_smoothness,
+        integration_border_points=integration_border_points,
     )

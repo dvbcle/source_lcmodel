@@ -141,6 +141,18 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Spline smoothness penalty weight (maps to baseline regularization strength).",
     )
+    parser.add_argument(
+        "--integration-half-width-points",
+        type=int,
+        default=None,
+        help="Initial half-width (points) used for peak integration around dominant peak.",
+    )
+    parser.add_argument(
+        "--integration-border-points",
+        type=int,
+        default=None,
+        help="Points on each side used to estimate integration baseline.",
+    )
     return parser
 
 
@@ -203,6 +215,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         config = replace(config, baseline_knots=args.baseline_knots)
     if args.baseline_smoothness is not None:
         config = replace(config, baseline_smoothness=args.baseline_smoothness)
+    if args.integration_half_width_points is not None:
+        config = replace(config, integration_half_width_points=args.integration_half_width_points)
+    if args.integration_border_points is not None:
+        config = replace(config, integration_border_points=args.integration_border_points)
 
     runner = LCModelRunner(config)
     if config.raw_data_list_file:
@@ -244,6 +260,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"fit_relative_residual={result.fit_result.relative_residual:.12g}")
         print(f"fit_snr_estimate={result.fit_result.snr_estimate:.12g}")
         print(f"fit_alignment_shift_points={result.fit_result.alignment_shift_points}")
+        print(f"fit_integrated_data_area={result.fit_result.integrated_data_area:.12g}")
+        print(f"fit_integrated_fit_area={result.fit_result.integrated_fit_area:.12g}")
         if result.fit_result.combined:
             combo = ",".join(f"{name}:{value:.12g}:{sd:.12g}" for name, value, sd in result.fit_result.combined)
             print(f"fit_combinations={combo}")

@@ -79,6 +79,10 @@ output_split_right=.ps
   - Cubic B-spline knot count for baseline modeling (`>=4` enables spline mode).
 - `--baseline-smoothness`
   - Smoothness penalty weight for spline baseline regularization.
+- `--integration-half-width-points`
+  - Initial half-window used for peak-area integration.
+- `--integration-border-points`
+  - Border window width used to estimate local integration baseline.
 
 ## 4. Interpreting Output
 
@@ -106,6 +110,8 @@ output_split_right=.ps
   - Simple peak/residual-noise SNR estimate.
 - `fit_alignment_shift_points`
   - Integer shift selected during pre-fit alignment.
+- `fit_integrated_data_area`, `fit_integrated_fit_area`
+  - Baseline-corrected peak areas from a local-window integration step.
 - `fit_combinations`
   - Combined outputs in `name:value:sd` format.
 

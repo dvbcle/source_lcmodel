@@ -2,6 +2,7 @@
 
 from lcmodel.pipeline.alignment import AlignmentResult, align_vector_by_integer_shift
 from lcmodel.pipeline.fitting import FitConfig, FitStageResult, run_fit_stage
+from lcmodel.pipeline.integration import IntegrationResult, integrate_peak_with_local_baseline
 from lcmodel.pipeline.metrics import compute_fit_quality_metrics
 from lcmodel.pipeline.mydata import MyDataConfig, MyDataResult, run_mydata_stage
 from lcmodel.pipeline.phasing import (
@@ -19,6 +20,7 @@ __all__ = [
     "AlignmentResult",
     "FitConfig",
     "FitStageResult",
+    "IntegrationResult",
     "SpectralFitInputs",
     "SetupResult",
     "align_vector_by_integer_shift",
@@ -27,6 +29,7 @@ __all__ = [
     "apply_zero_order_phase",
     "compute_fit_quality_metrics",
     "compute_combinations",
+    "integrate_peak_with_local_baseline",
     "estimate_zero_first_order_phase",
     "estimate_zero_order_phase",
     "prepare_frequency_fit_from_time_domain",
