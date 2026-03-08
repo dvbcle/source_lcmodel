@@ -45,6 +45,7 @@ def prepare_frequency_fit_from_time_domain(
     basis_time: Sequence[Sequence[complex]],
     *,
     auto_phase_zero_order: bool = False,
+    auto_phase_first_order: bool = False,
     dwell_time_s: float = 0.0,
     line_broadening_hz: float = 0.0,
 ) -> SpectralFitInputs:
@@ -55,6 +56,7 @@ def prepare_frequency_fit_from_time_domain(
         MyDataConfig(
             compute_fft=True,
             auto_phase_zero_order=auto_phase_zero_order,
+            auto_phase_first_order=auto_phase_first_order,
             dwell_time_s=dwell_time_s,
             line_broadening_hz=line_broadening_hz,
         ),

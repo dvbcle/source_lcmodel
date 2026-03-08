@@ -217,6 +217,7 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
         priors_file=str(nml["filprr"]) if isinstance(nml.get("filprr"), str) and nml["filprr"].strip() else None,
         time_domain_input=bool(nml.get("timdom", False)),
         auto_phase_zero_order=bool(nml.get("autoph0", False)),
+        auto_phase_first_order=bool(nml.get("autoph1", False)),
         dwell_time_s=dwell_time_s,
         line_broadening_hz=line_broadening_hz,
         fit_ppm_start=ppm_start,

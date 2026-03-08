@@ -66,7 +66,7 @@ python -m lcmodel --raw-data-list-file data\\raw_list.txt --basis-file data\\bas
 Time-domain (complex) fit example:
 
 ```powershell
-python -m lcmodel --raw-data-file data\\raw_td.txt --basis-file data\\basis_td.txt --time-domain-input --auto-phase-zero-order --dwell-time 0.0005 --line-broadening-hz 4.0
+python -m lcmodel --raw-data-file data\\raw_td.txt --basis-file data\\basis_td.txt --time-domain-input --auto-phase-first-order --dwell-time 0.0005 --line-broadening-hz 4.0
 ```
 
 Control-file driven run:

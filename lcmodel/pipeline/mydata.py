@@ -16,7 +16,12 @@ from dataclasses import dataclass
 import math
 from typing import Sequence
 
-from lcmodel.pipeline.phasing import apply_zero_order_phase, estimate_zero_order_phase
+from lcmodel.pipeline.phasing import (
+    apply_phase,
+    apply_zero_order_phase,
+    estimate_zero_first_order_phase,
+    estimate_zero_order_phase,
+)
 
 
 def _coerce_complex_vector(values: Sequence[complex]) -> list[complex]:
@@ -64,7 +69,10 @@ class MyDataConfig:
     conjugate_input: bool = False
     compute_fft: bool = True
     auto_phase_zero_order: bool = False
+    auto_phase_first_order: bool = False
     phase_search_steps: int = 720
+    phase1_search_steps: int = 41
+    phase1_search_range_radians: float = 1.5
     dwell_time_s: float = 0.0
     line_broadening_hz: float = 0.0
 
@@ -77,6 +85,7 @@ class MyDataResult:
     frequency_domain: tuple[complex, ...] | None
     processing_log: tuple[str, ...]
     zero_order_phase_radians: float | None = None
+    first_order_phase_radians: float | None = None
 
 
 def run_mydata_stage(
@@ -128,15 +137,24 @@ def run_mydata_stage(
         log.append(f"zero_fill_to={target_len}")
 
     spectrum: tuple[complex, ...] | None = None
-    phase_radians: float | None = None
+    phase0: float | None = None
+    phase1: float | None = None
     if config.compute_fft:
         spectrum = tuple(_fft(data))
-        if config.auto_phase_zero_order:
-            phase_radians = estimate_zero_order_phase(
-                spectrum, search_steps=config.phase_search_steps
+        if config.auto_phase_first_order:
+            phase0, phase1 = estimate_zero_first_order_phase(
+                spectrum,
+                zero_steps=config.phase_search_steps,
+                first_steps=config.phase1_search_steps,
+                first_range_radians=config.phase1_search_range_radians,
             )
-            spectrum = apply_zero_order_phase(spectrum, phase_radians)
-            log.append(f"phase0={phase_radians:.12g}")
+            spectrum = apply_phase(spectrum, phase0, phase1)
+            log.append(f"phase0={phase0:.12g}")
+            log.append(f"phase1={phase1:.12g}")
+        elif config.auto_phase_zero_order:
+            phase0 = estimate_zero_order_phase(spectrum, search_steps=config.phase_search_steps)
+            spectrum = apply_zero_order_phase(spectrum, phase0)
+            log.append(f"phase0={phase0:.12g}")
         log.append("fft=enabled")
     else:
         log.append("fft=disabled")
@@ -145,5 +163,6 @@ def run_mydata_stage(
         time_domain=tuple(data),
         frequency_domain=spectrum,
         processing_log=tuple(log),
-        zero_order_phase_radians=phase_radians,
+        zero_order_phase_radians=phase0,
+        first_order_phase_radians=phase1,
     )

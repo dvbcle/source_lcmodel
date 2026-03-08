@@ -44,6 +44,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Enable zero-order auto-phasing for time-domain raw input conversion.",
     )
     parser.add_argument(
+        "--auto-phase-first-order",
+        action="store_true",
+        help="Enable joint zero/first-order auto-phasing for time-domain conversion.",
+    )
+    parser.add_argument(
         "--dwell-time",
         type=float,
         default=None,
@@ -148,6 +153,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         config = replace(config, time_domain_input=True)
     if args.auto_phase_zero_order:
         config = replace(config, auto_phase_zero_order=True)
+    if args.auto_phase_first_order:
+        config = replace(config, auto_phase_first_order=True)
     if args.dwell_time is not None:
         config = replace(config, dwell_time_s=args.dwell_time)
     if args.line_broadening_hz is not None:

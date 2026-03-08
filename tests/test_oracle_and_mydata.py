@@ -8,7 +8,12 @@ import uuid
 from contextlib import redirect_stdout
 
 from lcmodel.pipeline.mydata import MyDataConfig, run_mydata_stage
-from lcmodel.pipeline.phasing import apply_zero_order_phase, estimate_zero_order_phase
+from lcmodel.pipeline.phasing import (
+    apply_phase,
+    apply_zero_order_phase,
+    estimate_zero_first_order_phase,
+    estimate_zero_order_phase,
+)
 from lcmodel.validation.oracle_cli import main as oracle_cli_main
 from lcmodel.validation.oracle import (
     compare_numeric_vectors,
@@ -73,6 +78,31 @@ class TestOracleAndMyData(unittest.TestCase):
         imag_sum = sum(abs(v.imag) for v in corrected)
         self.assertLess(imag_sum, 0.05)
         self.assertLess(abs(est - phi), math.pi / 20)
+
+    def test_first_order_phase_estimation(self):
+        import cmath
+
+        base = [1 + 0j, 2 + 0j, 3 + 0j, 4 + 0j, 5 + 0j]
+        x = [-1.0, -0.5, 0.0, 0.5, 1.0]
+        ph0 = 0.4
+        ph1 = 0.8
+        spectrum = [v * cmath.exp(1j * (ph0 + ph1 * xi)) for v, xi in zip(base, x)]
+        est0, est1 = estimate_zero_first_order_phase(
+            spectrum, zero_steps=360, first_steps=81, first_range_radians=1.5
+        )
+        corrected = apply_phase(spectrum, est0, est1)
+        imag_sum = sum(abs(v.imag) for v in corrected)
+        self.assertLess(imag_sum, 0.2)
+
+    def test_mydata_auto_phase_first_order(self):
+        n = 16
+        # This test validates first-order mode wiring and output fields.
+        result = run_mydata_stage(
+            [1 + 0j] + [0j] * (n - 1),
+            MyDataConfig(compute_fft=True, auto_phase_first_order=True),
+        )
+        self.assertIsNotNone(result.zero_order_phase_radians)
+        self.assertIsNotNone(result.first_order_phase_radians)
 
     def test_mydata_conjugate_and_truncate(self):
         result = run_mydata_stage(

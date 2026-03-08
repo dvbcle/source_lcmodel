@@ -45,6 +45,8 @@ output_split_right=.ps
   - Treat raw and basis files as complex time-domain values (`re im` format).
 - `--auto-phase-zero-order`
   - Apply auto-estimated zero-order phase after FFT conversion.
+- `--auto-phase-first-order`
+  - Apply joint zero/first-order auto-phasing after FFT conversion.
 - `--dwell-time`
   - Time between time-domain samples (seconds).
 - `--line-broadening-hz`

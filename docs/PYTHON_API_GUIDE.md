@@ -68,7 +68,7 @@ from lcmodel.io.pathing import split_output_filename_for_voxel
 from lcmodel.io.priors import load_soft_priors
 from lcmodel.io.report import write_fit_table
 from lcmodel.pipeline.fitting import FitConfig, run_fit_stage
-from lcmodel.pipeline.phasing import estimate_zero_order_phase, apply_zero_order_phase
+from lcmodel.pipeline.phasing import estimate_zero_order_phase, estimate_zero_first_order_phase, apply_zero_order_phase, apply_phase
 from lcmodel.pipeline.priors import augment_system_with_soft_priors
 from lcmodel.pipeline.spectral import prepare_frequency_fit_from_time_domain
 from lcmodel.pipeline.setup import prepare_fit_inputs
@@ -80,6 +80,8 @@ fit = run_fit_stage([[1, 0], [0, 1]], [2, 3])
 fit_with_baseline = run_fit_stage([[1], [0], [0]], [2, 0.1, 0.1], FitConfig(baseline_order=0))
 phase = estimate_zero_order_phase([1j, 1j, 1j])
 rot = apply_zero_order_phase([1j, 1j, 1j], phase)
+phase0, phase1 = estimate_zero_first_order_phase([1j, 1j, 1j, 1j, 1j])
+rot2 = apply_phase([1j, 1j, 1j, 1j, 1j], phase0, phase1)
 setup = prepare_fit_inputs([[1, 2], [3, 4]], [10, 20], basis_names=["NAA", "Cr"], include_metabolites=("Cr",))
 spectral = prepare_frequency_fit_from_time_domain([1+0j, 0+0j, 0+0j, 0+0j], [[1+0j], [0+0j], [0+0j], [0+0j]], auto_phase_zero_order=True)
 spectral_apodized = prepare_frequency_fit_from_time_domain([1+0j, 0+0j, 0+0j, 0+0j], [[1+0j], [0+0j], [0+0j], [0+0j]], dwell_time_s=0.0005, line_broadening_hz=4.0)
