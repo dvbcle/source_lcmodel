@@ -5,6 +5,17 @@ porting from the legacy Fortran LCModel codebase.
 """
 
 from lcmodel.engine import LCModelRunner
+from lcmodel.core.fftpack_compat import (
+    FFTPlan,
+    cfftb,
+    cfftf,
+    cfft_r,
+    cfftin_r,
+    csft_r,
+    csftin_r,
+    fftci,
+    seqtot,
+)
 from lcmodel.models import BatchRunResult, FitResult, RunConfig, RunResult, TitleLayout
 from lcmodel.pipeline.alignment import (
     AlignmentResult,
@@ -31,6 +42,7 @@ from lcmodel.pipeline.setup import SetupResult, prepare_fit_inputs
 
 __all__ = [
     "LCModelRunner",
+    "FFTPlan",
     "AlignmentResult",
     "FractionalAlignmentResult",
     "FitConfig",
@@ -57,6 +69,14 @@ __all__ = [
     "integrate_peak_with_local_baseline",
     "apply_global_gaussian_lineshape",
     "run_nonlinear_refinement",
+    "cfftb",
+    "cfftf",
+    "cfft_r",
+    "cfftin_r",
+    "csft_r",
+    "csftin_r",
+    "fftci",
+    "seqtot",
     "estimate_zero_first_order_phase",
     "estimate_zero_order_phase",
     "prepare_frequency_fit_from_time_domain",

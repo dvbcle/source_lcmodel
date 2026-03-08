@@ -63,6 +63,7 @@ You can also call lower-level helpers:
 
 ```python
 from lcmodel.core.text import split_title_lines, escape_postscript_text
+from lcmodel.core.fftpack_compat import fftci, cfftf, cfftb, seqtot
 from lcmodel.io.namelist import load_run_config_from_control_file
 from lcmodel.io.pathing import split_output_filename_for_voxel
 from lcmodel.io.postscript import write_fit_postscript
@@ -77,6 +78,10 @@ from lcmodel.pipeline.setup import prepare_fit_inputs
 
 layout = split_title_lines("Long title ...", ntitle=2)
 escaped = escape_postscript_text("Value (A)%")
+plan = fftci(4)
+ft = cfftf([1+0j, 0+0j, 0+0j, 0+0j], plan)
+back = cfftb(ft, plan)
+ft_zerofill = seqtot([1+0j, 0+0j, 0+0j])
 left, right = split_output_filename_for_voxel("report.ps", ("ps", "PS", "Ps"))
 fit = run_fit_stage([[1, 0], [0, 1]], [2, 3])
 fit_with_baseline = run_fit_stage([[1], [0], [0]], [2, 0.1, 0.1], FitConfig(baseline_order=0))
@@ -130,6 +135,7 @@ print(result.processing_log)
 - Optional fractional shift refinement performs continuous sub-point alignment.
 - Optional global linewidth scanning applies Gaussian basis broadening and picks the best residual.
 - Optional nonlinear outer-loop refinement repeats shift/linewidth optimization until convergence.
+- FFTPACK compatibility wrappers are available with LCModel-style routine names (`cfftf`, `cfftb`, `cfft_r`, `cfftin_r`, `seqtot`).
 - This is still not the full original LCModel nonlinear optimization stack.
 - `split_output_filename_for_voxel` handles three extension cases:
   - `.../ps` -> left ends with `/`, right starts with `.ps`

@@ -13,6 +13,8 @@ Fortran-to-Python scaffold.
   - Minimal behavior-critical compatibility helpers (`ilen`, `fortran_nint`).
 - `lcmodel/core/text.py`
   - Text and title utilities (`split_title_lines`, PostScript escaping, compact integer formatting).
+- `lcmodel/core/fftpack_compat.py`
+  - FFTPACK-style compatibility wrappers (`cfftf`, `cfftb`, `cfft_r`, `seqtot`).
 - `lcmodel/core/axis.py`
   - Axis endpoint rounding logic (`round_axis_endpoints`).
 - `lcmodel/core/array_ops.py`

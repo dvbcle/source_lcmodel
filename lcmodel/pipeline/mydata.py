@@ -16,6 +16,7 @@ from dataclasses import dataclass
 import math
 from typing import Sequence
 
+from lcmodel.core.fftpack_compat import cfft_r
 from lcmodel.pipeline.phasing import (
     apply_phase,
     apply_zero_order_phase,
@@ -34,29 +35,8 @@ def _next_pow2(n: int) -> int:
     return 1 << (n - 1).bit_length()
 
 
-def _naive_dft(values: Sequence[complex]) -> list[complex]:
-    # Fallback path if numpy is unavailable. Used for small validation cases.
-    import cmath
-    import math
-
-    n = len(values)
-    out: list[complex] = []
-    for k in range(n):
-        total = 0j
-        for t, vt in enumerate(values):
-            angle = -2.0 * math.pi * k * t / n
-            total += vt * cmath.exp(1j * angle)
-        out.append(total)
-    return out
-
-
 def _fft(values: Sequence[complex]) -> list[complex]:
-    try:
-        import numpy as np  # type: ignore
-
-        return list(np.fft.fft(np.asarray(values, dtype=np.complex128)))
-    except Exception:
-        return _naive_dft(values)
+    return list(cfft_r(values))
 
 
 @dataclass(frozen=True)
