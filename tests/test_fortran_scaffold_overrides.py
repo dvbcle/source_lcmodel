@@ -123,6 +123,17 @@ class TestFortranScaffoldOverrides(unittest.TestCase):
         st = fs.plprin([0.0, 1.0], [1.0, 2.0], [0.5, 1.5], 2, False, 6, 1e10, 0, 0, 0, [0.0, 0.0], False, state={})
         self.assertIn("plprin_text", st)
 
+    def test_eigen_overrides(self):
+        a = [[2.0, 1.0], [1.0, 2.0]]
+        w = [0.0, 0.0]
+        z = [[0.0, 0.0], [0.0, 0.0]]
+        ierr = [99]
+        state = fs.eigvrs(2, 2, a, w, z, [0.0, 0.0], [0.0, 0.0], ierr, state={})
+        self.assertEqual(0, ierr[0])
+        self.assertAlmostEqual(1.0, w[0], places=6)
+        self.assertAlmostEqual(3.0, w[1], places=6)
+        self.assertIn("eigvrs_eigenvalues", state)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -23,6 +23,7 @@ from lcmodel.core.legacy_math import (
     pythag,
 )
 from lcmodel.core.legacy_linear import g1, g2, h12
+from lcmodel.core.legacy_eigen import jacobi_symmetric, tridiagonal_from_symmetric
 
 __all__ = [
     "FFTPlan",
@@ -46,4 +47,6 @@ __all__ = [
     "g1",
     "g2",
     "h12",
+    "jacobi_symmetric",
+    "tridiagonal_from_symmetric",
 ]

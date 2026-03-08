@@ -20,6 +20,7 @@ from lcmodel.core.fftpack_compat import (
     seqtot as seqtot_compat,
 )
 from lcmodel.core.fortran_compat import ilen as ilen_compat
+from lcmodel.core.legacy_eigen import jacobi_symmetric, tridiagonal_from_symmetric
 from lcmodel.core.legacy_linear import g1 as g1_compat, g2 as g2_compat, h12 as h12_compat
 from lcmodel.core.legacy_math import (
     betain as betain_compat,
@@ -401,6 +402,104 @@ def _ov_plprin(
             )
     out["plprin_text"] = "\n".join(lines) + ("\n" if lines else "")
     out["plprin_plterr"] = bool(plterr)
+    return out
+
+
+def _ov_tred2(
+    nm: int,
+    n: int,
+    a: Sequence[Sequence[float]],
+    d: Any,
+    e: Any,
+    z: Any,
+    state: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    _ = nm
+    out = state if state is not None else {}
+    n_use = int(n)
+    matrix = [[float(a[i][j]) for j in range(n_use)] for i in range(n_use)]
+    dvals, evals = tridiagonal_from_symmetric(matrix)
+    if isinstance(d, MutableSequence):
+        for i in range(min(len(d), n_use)):
+            d[i] = dvals[i]
+    if isinstance(e, MutableSequence):
+        for i in range(min(len(e), n_use)):
+            e[i] = evals[i]
+    if isinstance(z, MutableSequence):
+        for i in range(min(len(z), n_use)):
+            row = z[i]
+            if isinstance(row, MutableSequence):
+                for j in range(min(len(row), n_use)):
+                    row[j] = matrix[i][j]
+    out["tred2_matrix"] = tuple(tuple(row) for row in matrix)
+    return out
+
+
+def _ov_tql2(
+    nm: int,
+    n: int,
+    d: Any,
+    e: Any,
+    z: Any,
+    ierr: Any,
+    state: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    _ = (nm, e)
+    out = state if state is not None else {}
+    n_use = int(n)
+    matrix: list[list[float]]
+    if isinstance(z, MutableSequence) and len(z) >= n_use and isinstance(z[0], MutableSequence):
+        matrix = [
+            [float(z[i][j]) for j in range(n_use)]
+            for i in range(n_use)
+        ]
+    else:
+        diag = [float(d[i]) for i in range(n_use)] if isinstance(d, MutableSequence) else [0.0] * n_use
+        matrix = [[0.0] * n_use for _ in range(n_use)]
+        for i in range(n_use):
+            matrix[i][i] = diag[i]
+    wvals, vecs = jacobi_symmetric(matrix)
+    if isinstance(d, MutableSequence):
+        for i in range(min(len(d), n_use)):
+            d[i] = wvals[i]
+    if isinstance(z, MutableSequence):
+        for i in range(min(len(z), n_use)):
+            row = z[i]
+            if isinstance(row, MutableSequence):
+                for j in range(min(len(row), n_use)):
+                    row[j] = vecs[i][j]
+    _assign_scalar(ierr, 0)
+    out["tql2_eigenvalues"] = tuple(wvals)
+    return out
+
+
+def _ov_eigvrs(
+    nm: int,
+    n: int,
+    a: Sequence[Sequence[float]],
+    w: Any,
+    z: Any,
+    fv1: Any,
+    fv2: Any,
+    ierr: Any,
+    state: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    _ = (nm, fv1, fv2)
+    out = state if state is not None else {}
+    n_use = int(n)
+    matrix = [[float(a[i][j]) for j in range(n_use)] for i in range(n_use)]
+    wvals, vecs = jacobi_symmetric(matrix)
+    if isinstance(w, MutableSequence):
+        for i in range(min(len(w), n_use)):
+            w[i] = wvals[i]
+    if isinstance(z, MutableSequence):
+        for i in range(min(len(z), n_use)):
+            row = z[i]
+            if isinstance(row, MutableSequence):
+                for j in range(min(len(row), n_use)):
+                    row[j] = vecs[i][j]
+    _assign_scalar(ierr, 0)
+    out["eigvrs_eigenvalues"] = tuple(wvals)
     return out
 
 
@@ -975,6 +1074,9 @@ SEMANTIC_OVERRIDES = {
     "h12": _ov_h12,
     "pnnls": _ov_pnnls,
     "plprin": _ov_plprin,
+    "eigvrs": _ov_eigvrs,
+    "tql2": _ov_tql2,
+    "tred2": _ov_tred2,
     "split_filename": _ov_split_filename,
     "chstrip_int6": _ov_chstrip_int6,
     "split_title": _ov_split_title,
