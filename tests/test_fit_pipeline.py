@@ -54,20 +54,30 @@ class TestFitPipeline(unittest.TestCase):
         try:
             vec_file = p / "vec.txt"
             mat_file = p / "mat.txt"
+            ppm_file = p / "ppm.txt"
+            names_file = p / "names.txt"
             vec_file.write_text("2\n3\n", encoding="utf-8")
             mat_file.write_text("1 0\n0 1\n", encoding="utf-8")
+            ppm_file.write_text("3.0\n2.0\n", encoding="utf-8")
+            names_file.write_text("NAA\nCr\n", encoding="utf-8")
             result = LCModelRunner(
                 RunConfig(
                     title="Fit run",
                     ntitle=2,
                     raw_data_file=str(vec_file),
                     basis_file=str(mat_file),
+                    ppm_axis_file=str(ppm_file),
+                    basis_names_file=str(names_file),
+                    fit_ppm_start=3.2,
+                    fit_ppm_end=2.8,
+                    include_metabolites=("NAA",),
                 )
             ).run()
             self.assertIsNotNone(result.fit_result)
             assert result.fit_result is not None
             self.assertAlmostEqual(2.0, result.fit_result.coefficients[0], places=3)
-            self.assertAlmostEqual(3.0, result.fit_result.coefficients[1], places=3)
+            self.assertEqual(("NAA",), result.fit_result.metabolite_names)
+            self.assertEqual(1, result.fit_result.data_points_used)
         finally:
             shutil.rmtree(p, ignore_errors=True)
 

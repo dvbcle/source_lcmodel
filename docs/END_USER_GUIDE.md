@@ -43,6 +43,14 @@ output_split_right=.ps
   - Optional numeric vector file for the fit stage.
 - `--basis-file`
   - Optional numeric matrix file for the fit stage.
+- `--ppm-axis-file`
+  - Optional ppm values aligned with each data row.
+- `--basis-names-file`
+  - Optional metabolite names aligned with basis columns.
+- `--ppm-start`, `--ppm-end`
+  - Optional ppm window boundaries for row selection before fitting.
+- `--include-metabolites`
+  - Optional comma-separated metabolite names to keep in the fit.
 - `--baseline-order`
   - Polynomial baseline degree for alternating fit (`-1` disables baseline).
 
@@ -60,6 +68,10 @@ output_split_right=.ps
   - You did not pass both `--raw-data-file` and `--basis-file`.
 - `fit_coefficients`
   - Nonnegative fit coefficients from the current semantic fit stage.
+- `fit_metabolites`
+  - Metabolite names corresponding to coefficient order.
+- `fit_points_used`
+  - Number of rows used after setup-stage selection.
 
 ## 5. Common Usage Patterns
 

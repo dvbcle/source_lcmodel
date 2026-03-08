@@ -11,6 +11,7 @@ from lcmodel.models import RunConfig
 
 _TRUE_VALUES = {".true.", "true", "t"}
 _FALSE_VALUES = {".false.", "false", "f"}
+_INDEXED_KEY_RE = re.compile(r"^([A-Za-z_]\w*)\((\d+)\)$")
 
 
 def _strip_inline_comment(line: str) -> str:
@@ -111,7 +112,21 @@ def parse_fortran_namelist(text: str, expected_name: str | None = None) -> dict[
         if "=" not in token:
             continue
         key, raw_value = token.split("=", 1)
-        result[key.strip().lower()] = _parse_scalar(raw_value)
+        key = key.strip().lower()
+        value = _parse_scalar(raw_value)
+        m = _INDEXED_KEY_RE.match(key)
+        if m:
+            base = m.group(1).lower()
+            idx = int(m.group(2)) - 1
+            existing = result.get(base)
+            if not isinstance(existing, list):
+                existing = []
+            while len(existing) <= idx:
+                existing.append("")
+            existing[idx] = value
+            result[base] = existing
+        else:
+            result[key] = value
     return result
 
 
@@ -131,6 +146,26 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
             baseline_order = int(nml["ndegz"])
         except Exception:
             baseline_order = -1
+    ppm_start = None
+    ppm_end = None
+    if "ppmst" in nml:
+        try:
+            ppm_start = float(nml["ppmst"])
+        except Exception:
+            ppm_start = None
+    if "ppmend" in nml:
+        try:
+            ppm_end = float(nml["ppmend"])
+        except Exception:
+            ppm_end = None
+
+    include_metabolites: tuple[str, ...] = ()
+    if isinstance(nml.get("chuse1"), list):
+        names = [str(v).strip() for v in nml["chuse1"] if str(v).strip()]
+        include_metabolites = tuple(names)
+    elif isinstance(nml.get("chuse1"), str):
+        one = str(nml["chuse1"]).strip()
+        include_metabolites = (one,) if one else ()
 
     output_filename = None
     for key in ("filps", "filcoo", "filtab", "filpri"):
@@ -145,5 +180,10 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
         output_filename=output_filename,
         raw_data_file=str(raw_data_file) if raw_data_file else None,
         basis_file=str(basis_file) if basis_file else None,
+        ppm_axis_file=str(nml["filppm"]) if isinstance(nml.get("filppm"), str) and nml["filppm"].strip() else None,
+        basis_names_file=str(nml["filnam"]) if isinstance(nml.get("filnam"), str) and nml["filnam"].strip() else None,
+        fit_ppm_start=ppm_start,
+        fit_ppm_end=ppm_end,
+        include_metabolites=include_metabolites,
         baseline_order=baseline_order,
     )

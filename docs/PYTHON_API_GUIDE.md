@@ -53,6 +53,7 @@ from lcmodel.io.namelist import load_run_config_from_control_file
 from lcmodel.io.pathing import split_output_filename_for_voxel
 from lcmodel.pipeline.fitting import FitConfig, run_fit_stage
 from lcmodel.pipeline.phasing import estimate_zero_order_phase, apply_zero_order_phase
+from lcmodel.pipeline.setup import prepare_fit_inputs
 
 layout = split_title_lines("Long title ...", ntitle=2)
 escaped = escape_postscript_text("Value (A)%")
@@ -61,6 +62,7 @@ fit = run_fit_stage([[1, 0], [0, 1]], [2, 3])
 fit_with_baseline = run_fit_stage([[1], [0], [0]], [2, 0.1, 0.1], FitConfig(baseline_order=0))
 phase = estimate_zero_order_phase([1j, 1j, 1j])
 rot = apply_zero_order_phase([1j, 1j, 1j], phase)
+setup = prepare_fit_inputs([[1, 2], [3, 4]], [10, 20], basis_names=["NAA", "Cr"], include_metabolites=("Cr",))
 cfg = load_run_config_from_control_file("data/control.in")
 ```
 

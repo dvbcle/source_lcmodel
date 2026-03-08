@@ -27,19 +27,28 @@ $LCMODL
  FILRAW='raw.txt',
  FILBAS='basis.txt',
  FILPS='out.ps',
+ CHUSE1(1)='NAA',
+ CHUSE1(2)='Cr',
+ PPMST=3.2,
+ PPMEND=2.0,
 /
 """
         nml = parse_fortran_namelist(text, expected_name="LCMODL")
         self.assertEqual("My Run", nml["title"])
         self.assertEqual(2, nml["ntitle"])
         self.assertEqual("raw.txt", nml["filraw"])
+        self.assertEqual(["NAA", "Cr"], nml["chuse1"])
 
     def test_load_run_config_from_control_file(self):
         p = self._make_local_tmpdir()
         try:
             ctl = p / "control.in"
             ctl.write_text(
-                "$LCMODL\n TITLE='Control Title', NTITLE=1, FILRAW='a.txt', FILBAS='b.txt', FILPS='c.ps', NDEGZ=2, /\n",
+                (
+                    "$LCMODL\n"
+                    " TITLE='Control Title', NTITLE=1, FILRAW='a.txt', FILBAS='b.txt', FILPS='c.ps', NDEGZ=2,\n"
+                    " CHUSE1(1)='NAA', CHUSE1(2)='Cr', PPMST=3.2, PPMEND=2.0, FILPPM='ppm.txt', FILNAM='names.txt', /\n"
+                ),
                 encoding="utf-8",
             )
             cfg = load_run_config_from_control_file(ctl)
@@ -49,6 +58,11 @@ $LCMODL
             self.assertEqual("b.txt", cfg.basis_file)
             self.assertEqual("c.ps", cfg.output_filename)
             self.assertEqual(2, cfg.baseline_order)
+            self.assertEqual(("NAA", "Cr"), cfg.include_metabolites)
+            self.assertEqual(3.2, cfg.fit_ppm_start)
+            self.assertEqual(2.0, cfg.fit_ppm_end)
+            self.assertEqual("ppm.txt", cfg.ppm_axis_file)
+            self.assertEqual("names.txt", cfg.basis_names_file)
         finally:
             shutil.rmtree(p, ignore_errors=True)
 

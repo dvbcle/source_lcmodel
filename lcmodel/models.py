@@ -20,6 +20,11 @@ class RunConfig:
     output_filename: str | None = None
     raw_data_file: str | None = None
     basis_file: str | None = None
+    ppm_axis_file: str | None = None
+    basis_names_file: str | None = None
+    fit_ppm_start: float | None = None
+    fit_ppm_end: float | None = None
+    include_metabolites: tuple[str, ...] = ()
     baseline_order: int = -1
 
 
@@ -31,6 +36,8 @@ class FitResult:
     residual_norm: float
     iterations: int
     method: str
+    metabolite_names: tuple[str, ...] = ()
+    data_points_used: int = 0
 
 
 @dataclass(frozen=True)

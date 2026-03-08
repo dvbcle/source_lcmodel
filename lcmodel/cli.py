@@ -39,6 +39,33 @@ def build_parser() -> argparse.ArgumentParser:
         help="Path to numeric basis matrix file for fit stage.",
     )
     parser.add_argument(
+        "--ppm-axis-file",
+        default=None,
+        help="Optional ppm-axis file aligned with raw data rows.",
+    )
+    parser.add_argument(
+        "--basis-names-file",
+        default=None,
+        help="Optional basis-metabolite names file (one per basis column).",
+    )
+    parser.add_argument(
+        "--ppm-start",
+        type=float,
+        default=None,
+        help="Optional ppm window start for selecting fit rows.",
+    )
+    parser.add_argument(
+        "--ppm-end",
+        type=float,
+        default=None,
+        help="Optional ppm window end for selecting fit rows.",
+    )
+    parser.add_argument(
+        "--include-metabolites",
+        default=None,
+        help="Comma-separated metabolite names to include from basis_names_file.",
+    )
+    parser.add_argument(
         "--baseline-order",
         type=int,
         default=None,
@@ -66,6 +93,17 @@ def main(argv: Sequence[str] | None = None) -> int:
         config = replace(config, raw_data_file=args.raw_data_file)
     if args.basis_file is not None:
         config = replace(config, basis_file=args.basis_file)
+    if args.ppm_axis_file is not None:
+        config = replace(config, ppm_axis_file=args.ppm_axis_file)
+    if args.basis_names_file is not None:
+        config = replace(config, basis_names_file=args.basis_names_file)
+    if args.ppm_start is not None:
+        config = replace(config, fit_ppm_start=args.ppm_start)
+    if args.ppm_end is not None:
+        config = replace(config, fit_ppm_end=args.ppm_end)
+    if args.include_metabolites is not None:
+        names = tuple(p.strip() for p in args.include_metabolites.split(",") if p.strip())
+        config = replace(config, include_metabolites=names)
     if args.baseline_order is not None:
         config = replace(config, baseline_order=args.baseline_order)
 
@@ -89,6 +127,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"fit_residual_norm={result.fit_result.residual_norm:.12g}")
         coeffs = ",".join(f"{v:.12g}" for v in result.fit_result.coefficients)
         print(f"fit_coefficients={coeffs}")
+        if result.fit_result.metabolite_names:
+            print(f"fit_metabolites={','.join(result.fit_result.metabolite_names)}")
+        if result.fit_result.data_points_used > 0:
+            print(f"fit_points_used={result.fit_result.data_points_used}")
     return 0
 
 
