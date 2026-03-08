@@ -41,7 +41,7 @@ def use_fft_backend(name: str):
         _fft_backend_context.reset(token)
 
 
-def _naive_fft(values: Sequence[complex], inverse: bool = False) -> list[complex]:
+def _naive_fft_raw(values: Sequence[complex], inverse: bool = False) -> list[complex]:
     n = len(values)
     if n == 0:
         return []
@@ -52,49 +52,78 @@ def _naive_fft(values: Sequence[complex], inverse: bool = False) -> list[complex
         for t, vt in enumerate(values):
             angle = sign * 2.0 * math.pi * k * t / n
             total += complex(vt) * cmath.exp(1j * angle)
-        if inverse:
-            total /= n
         out.append(total)
     return out
 
 
-def _numpy_fft(values: Sequence[complex], inverse: bool = False) -> tuple[complex, ...]:
+def _numpy_fft_raw(values: Sequence[complex], inverse: bool = False) -> tuple[complex, ...]:
     import numpy as np  # type: ignore
 
     arr = np.asarray(values, dtype=np.complex128)
     if inverse:
-        return tuple(np.fft.ifft(arr))
+        # NumPy IFFT includes a 1/N factor; Fortran CFFTB path is unscaled.
+        return tuple(np.fft.ifft(arr) * len(arr))
     return tuple(np.fft.fft(arr))
 
 
-def _fft(values: Sequence[complex]) -> tuple[complex, ...]:
+def _fft_raw(values: Sequence[complex]) -> tuple[complex, ...]:
     backend = get_fft_backend()
     if backend == "pure_python":
-        return tuple(_naive_fft(values, inverse=False))
+        return tuple(_naive_fft_raw(values, inverse=False))
     if backend == "numpy":
         try:
-            return _numpy_fft(values, inverse=False)
+            return _numpy_fft_raw(values, inverse=False)
         except Exception as exc:
             raise RuntimeError("fft_backend='numpy' requires NumPy to be installed") from exc
     try:
-        return _numpy_fft(values, inverse=False)
+        return _numpy_fft_raw(values, inverse=False)
     except Exception:
-        return tuple(_naive_fft(values, inverse=False))
+        return tuple(_naive_fft_raw(values, inverse=False))
 
 
-def _ifft(values: Sequence[complex]) -> tuple[complex, ...]:
+def _ifft_raw(values: Sequence[complex]) -> tuple[complex, ...]:
     backend = get_fft_backend()
     if backend == "pure_python":
-        return tuple(_naive_fft(values, inverse=True))
+        return tuple(_naive_fft_raw(values, inverse=True))
     if backend == "numpy":
         try:
-            return _numpy_fft(values, inverse=True)
+            return _numpy_fft_raw(values, inverse=True)
         except Exception as exc:
             raise RuntimeError("fft_backend='numpy' requires NumPy to be installed") from exc
     try:
-        return _numpy_fft(values, inverse=True)
+        return _numpy_fft_raw(values, inverse=True)
     except Exception:
-        return tuple(_naive_fft(values, inverse=True))
+        return tuple(_naive_fft_raw(values, inverse=True))
+
+
+def _scale_unitary(values: Sequence[complex], n: int) -> tuple[complex, ...]:
+    if n <= 0:
+        return ()
+    factor = 1.0 / math.sqrt(float(n))
+    return tuple(complex(v) * factor for v in values)
+
+
+def _swap_halves(values: Sequence[complex]) -> tuple[complex, ...]:
+    n = len(values)
+    if n <= 1:
+        return tuple(complex(v) for v in values)
+    half = n // 2
+    if n % 2 == 0:
+        return tuple(complex(v) for v in values[half:]) + tuple(complex(v) for v in values[:half])
+    # Odd-length fallback: rotate by floor(N/2) to preserve invertibility.
+    return tuple(complex(v) for v in values[half:]) + tuple(complex(v) for v in values[:half])
+
+
+def _unswap_halves(values: Sequence[complex]) -> tuple[complex, ...]:
+    n = len(values)
+    if n <= 1:
+        return tuple(complex(v) for v in values)
+    half = n // 2
+    if n % 2 == 0:
+        return tuple(complex(v) for v in values[half:]) + tuple(complex(v) for v in values[:half])
+    # Inverse of rotate-left-by-floor(N/2) is rotate-right-by-floor(N/2).
+    split = n - half
+    return tuple(complex(v) for v in values[split:]) + tuple(complex(v) for v in values[:split])
 
 
 @dataclass(frozen=True)
@@ -117,7 +146,8 @@ def cfftf(values: Sequence[complex], plan: FFTPlan | None = None) -> tuple[compl
 
     if plan is not None and len(values) != plan.n:
         raise ValueError("values length must match FFT plan length")
-    return _fft(values)
+    n = len(values)
+    return _scale_unitary(_fft_raw(values), n)
 
 
 def cfftb(values: Sequence[complex], plan: FFTPlan | None = None) -> tuple[complex, ...]:
@@ -125,19 +155,23 @@ def cfftb(values: Sequence[complex], plan: FFTPlan | None = None) -> tuple[compl
 
     if plan is not None and len(values) != plan.n:
         raise ValueError("values length must match FFT plan length")
-    return _ifft(values)
+    n = len(values)
+    return _scale_unitary(_ifft_raw(values), n)
 
 
 def cfft_r(datat: Sequence[complex]) -> tuple[complex, ...]:
     """Compatibility alias for complex FFT used by LCModel `CFFT_r` path."""
 
-    return cfftf(datat)
+    # Fortran CFFT_r performs the unitary FFT and then swaps the two halves so
+    # FT(N/2+1) maps to index 1.
+    return _swap_halves(cfftf(datat))
 
 
 def cfftin_r(ft: Sequence[complex]) -> tuple[complex, ...]:
     """Compatibility alias for inverse complex FFT used by `CFFTIN_r`."""
 
-    return cfftb(ft)
+    # CFFTIN_r first unrearranges the swapped halves, then runs unitary IFFT.
+    return cfftb(_unswap_halves(ft))
 
 
 def csft_r(datat: Sequence[complex], ncap: int | None = None) -> tuple[complex, ...]:

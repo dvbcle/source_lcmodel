@@ -53,6 +53,16 @@ class TestFftpackCompat(unittest.TestCase):
             self.assertAlmostEqual(a.real, b.real, places=6)
             self.assertAlmostEqual(a.imag, b.imag, places=6)
 
+    def test_cfft_r_rearranges_half_spectrum(self):
+        data = (1 + 0j, 2 + 0j, 3 + 0j, 4 + 0j, 5 + 0j, 6 + 0j)
+        base = cfftf(data)
+        shifted = cfft_r(data)
+        half = len(base) // 2
+        expected = tuple(base[half:]) + tuple(base[:half])
+        for a, b in zip(expected, shifted):
+            self.assertAlmostEqual(a.real, b.real, places=6)
+            self.assertAlmostEqual(a.imag, b.imag, places=6)
+
     def test_csft_aliases_roundtrip(self):
         data = (1 + 0j, 2 + 0j, 0 + 0j, 0 + 0j)
         ft = csft_r(data, ncap=4)

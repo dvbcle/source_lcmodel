@@ -37,7 +37,8 @@ class TestOracleAndMyData(unittest.TestCase):
         )
         self.assertEqual(4, len(result.time_domain))
         self.assertIsNotNone(result.frequency_domain)
-        self.assertEqual((1 + 0j), result.frequency_domain[0])
+        # Fortran CFFT_r/CFFT normalizes by 1/sqrt(N); with N=4 this is 0.5.
+        self.assertEqual((0.5 + 0j), result.frequency_domain[0])
         self.assertIn("zero_fill_to=4", result.processing_log)
 
     def test_mydata_auto_phase(self):

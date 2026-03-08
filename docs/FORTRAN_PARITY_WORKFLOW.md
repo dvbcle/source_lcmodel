@@ -58,3 +58,19 @@ Notes:
 - For copy-guard validation, inject a unique sentinel into `out_ref_build.ps`
   and verify that sentinel is absent from generated `out.ps` before doing the
   normal untouched-reference compare run.
+
+## 6. Intermediate Oracle Debugging
+
+When final PostScript files diverge, run a split oracle debug in isolated
+directories (`fortran/` and `python/`) and compare intermediate vectors from
+Fortran `debug.coo` against Python pipeline outputs.
+
+Latest stored example:
+
+- Artifact root: `artifacts/parity_debug_20260308_155835/`
+- Summary: `artifacts/parity_debug_20260308_155835/parity_summary.txt`
+- Key finding in that run:
+  Python FFT semantics required Fortran parity behavior (`CFFT_r` unitary
+  normalization and half-spectrum rearrangement). After this fix, intermediate
+  vector RMS errors dropped substantially but full parity still depends on
+  deeper PHASTA/REPHAS nonlinear behavior.
