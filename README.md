@@ -1,74 +1,74 @@
-# LCModel Python-First Port
+# LCModel Python Port
 
-This repository now uses a Python-first layout instead of a generated
-Fortran-to-Python scaffold.
+Python-first implementation of LCModel with traceability back to the original
+Fortran sources.
 
-## Package structure
+## Current status
 
-- `lcmodel/engine.py`
-  - High-level runner (`LCModelRunner`) that orchestrates semantically ported steps.
-- `lcmodel/models.py`
-  - Typed dataclasses for run config/results (`RunConfig`, `RunResult`, `TitleLayout`).
-- `lcmodel/core/fortran_compat.py`
-  - Minimal behavior-critical compatibility helpers (`ilen`, `fortran_nint`).
-- `lcmodel/core/text.py`
-  - Text and title utilities (`split_title_lines`, PostScript escaping, compact integer formatting).
-- `lcmodel/core/fftpack_compat.py`
-  - FFTPACK-style compatibility wrappers (`cfftf`, `cfftb`, `cfft_r`, `seqtot`).
-- `lcmodel/core/axis.py`
-  - Axis endpoint rounding logic (`round_axis_endpoints`).
-- `lcmodel/core/array_ops.py`
-  - Basic in-place array helpers (`reverse_first_n`).
-- `lcmodel/io/pathing.py`
-  - Output filename split logic for voxel insertion.
-- `lcmodel/pipeline/mydata.py`
-  - Initial semantic scaffold for the legacy `MYDATA` preprocessing stage.
-- `lcmodel/validation/oracle.py`
-  - Utilities to run Fortran/Python commands and compare outputs for parity.
-- `lcmodel/validation/oracle_cli.py`
-  - CLI harness for simple oracle comparisons.
-- `lcmodel/cli.py`
-  - CLI entrypoint for running the current semantic port scope.
+- Hard cutover is complete: the supported runtime surface is the `lcmodel/`
+  Python package and CLI.
+- Legacy Fortran files are retained for audit/reference in
+  [`fortran_reference/`](fortran_reference/).
+- Program-unit parity is maintained and tested against Fortran routine names.
+- Placeholder shim coverage is zero in runtime parity audit.
 
-## Hard Cutover Status
+## Project goals
 
-Compatibility shims were removed. The `lcmodel/` package is the only supported
-runtime surface.
+1. Keep numerical and behavioral parity with the reference Fortran baseline.
+2. Continue improving architecture toward maintainable, testable Python modules.
+3. Preserve traceability so each behavior can be audited back to original
+   Fortran routines.
 
-## Run
+## Repository layout
+
+- `lcmodel/`
+  Python runtime package (engine, pipelines, IO, core math/compat, CLI).
+- `semantic_overrides.py`
+  Fortran routine override registry that binds scaffold calls to semantic Python
+  implementations.
+- `lcmodel/fortran_scaffold.py`
+  Generated scaffold preserving routine-level mapping to the original source.
+- `fortran_reference/`
+  Original `.f` and `.inc` files kept read-only for comparison and audits.
+- `tests/`
+  Unit tests for pipeline behavior, parity checks, and CLI/API paths.
+- `tools/`
+  Audit and reporting utilities (parity audit, routine map export).
+- `docs/`
+  End-user and developer documentation.
+
+## Quick start
+
+Run the CLI:
 
 ```powershell
 python -m lcmodel --title "Example title" --ntitle 2 --output-filename "C:/tmp/ps"
 ```
 
-Fit-stage run example:
+Run full test suite:
+
+```powershell
+python -m unittest discover -s tests -v
+```
+
+Run parity audit:
+
+```powershell
+python tools/audit_parity.py
+```
+
+Regenerate routine map:
+
+```powershell
+python tools/export_routine_map.py --output docs/FORTRAN_ROUTINE_MAP.md
+```
+
+## Common CLI examples
+
+Fit stage:
 
 ```powershell
 python -m lcmodel --raw-data-file data\\raw.txt --basis-file data\\basis.txt --table-output-file out\\fit.table
-```
-
-Windowed/metabolite-selected fit example:
-
-```powershell
-python -m lcmodel --raw-data-file data\\raw.txt --basis-file data\\basis.txt --ppm-axis-file data\\ppm.txt --basis-names-file data\\names.txt --ppm-start 3.2 --ppm-end 2.0 --include-metabolites NAA,Cr --combine-expressions NAA+Cr --shift-search-points 3
-```
-
-Iterative nonlinear refinement example:
-
-```powershell
-python -m lcmodel --raw-data-file data\\raw.txt --basis-file data\\basis.txt --shift-search-points 3 --fractional-shift-refine --linewidth-scan-points 6 --linewidth-scan-max-sigma-points 2.0 --nonlinear-refine --nonlinear-max-iters 4
-```
-
-Fit with soft priors:
-
-```powershell
-python -m lcmodel --raw-data-file data\\raw.txt --basis-file data\\basis.txt --basis-names-file data\\names.txt --priors-file data\\priors.txt
-```
-
-Fit with cubic B-spline baseline regularization:
-
-```powershell
-python -m lcmodel --raw-data-file data\\raw.txt --basis-file data\\basis.txt --baseline-knots 8 --baseline-smoothness 0.25
 ```
 
 Batch mode:
@@ -77,29 +77,25 @@ Batch mode:
 python -m lcmodel --raw-data-list-file data\\raw_list.txt --basis-file data\\basis.txt --batch-csv-file out\\batch.csv
 ```
 
-Time-domain (complex) fit example:
-
-```powershell
-python -m lcmodel --raw-data-file data\\raw_td.txt --basis-file data\\basis_td.txt --time-domain-input --auto-phase-first-order --dwell-time 0.0005 --line-broadening-hz 4.0
-```
-
-Control-file driven run:
+Control-file run:
 
 ```powershell
 python -m lcmodel --control-file data\\control.in
 ```
 
-## User Documentation
+## Documentation index
 
 - End-user CLI guide: `docs/END_USER_GUIDE.md`
 - Python API guide: `docs/PYTHON_API_GUIDE.md`
 - Python architecture guide: `docs/PYTHON_ARCHITECTURE.md`
 - Fortran parity workflow: `docs/FORTRAN_PARITY_WORKFLOW.md`
 - Fortran routine map: `docs/FORTRAN_ROUTINE_MAP.md`
+- Conversion statistics snapshot: `docs/CONVERSION_STATS.md`
 - Chat/session preservation tips: `docs/CHAT_HISTORY_PRESERVATION.md`
 
-## Tests
+## Developer workflow
 
-```powershell
-python -m unittest discover -s tests -v
-```
+1. Make focused, reviewable commits.
+2. Run `python -m unittest discover -s tests -p "test_*.py"`.
+3. Run `python tools/audit_parity.py`.
+4. If routine mapping changes, regenerate `docs/FORTRAN_ROUTINE_MAP.md`.
