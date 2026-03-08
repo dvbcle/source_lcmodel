@@ -226,6 +226,58 @@ class TestFortranScaffoldOverrides(unittest.TestCase):
         )
         self.assertTrue(cl_state["omit_chless"])
 
+    def test_area_and_scaling_overrides(self):
+        h2ot = [complex(10.0 * (0.9**i), 0.0) for i in range(40)]
+        st = {"h2ot": h2ot, "nunfil": 40, "nwsst": 1, "nwsend": 12, "ppminc": 0.01, "rrange": 1e30}
+        area = fs.areawa(1, state=st)
+        self.assertGreater(area, 0.0)
+
+        basisf = [complex(0.0, 0.0)] * 80
+        for i in range(35, 45):
+            basisf[i] = complex(10.0 - abs(40 - i), 0.0)
+        ab = fs.areaba(basisf, 0.01, 40, state={"ppmcen": 4.65, "wsppm": 4.65, "rfwbas": 6.0, "fwhmba": 0.05, "ppmbas1": 0.02, "n1hmet": 1, "attmet": 1.0})
+        self.assertGreaterEqual(ab, 0.0)
+
+        ws_state = {
+            "h2ot": h2ot,
+            "nunfil": 40,
+            "nwsst": 1,
+            "nwsend": 12,
+            "ppminc": 0.01,
+            "rrange": 1e30,
+            "area_met_norm": 2.0,
+            "atth2o": 1.0,
+            "wconc": 1.0,
+            "datat": [1 + 0j, 2 + 0j],
+            "cy": [1 + 0j],
+        }
+        ws_state = fs.water_scale(state=ws_state)
+        self.assertTrue(ws_state["wsdone"])
+        self.assertIn("fcalib", ws_state)
+
+        self.assertIsInstance(
+            fs.ldegmx(
+                1,
+                state={
+                    "degmax": (10.0, 10.0),
+                    "parbes": (0.0, 0.0, 1.0),
+                    "lphast": 0,
+                    "ppmcen": 4.65,
+                    "ppmsig": (4.7, 4.6),
+                    "ppm": (4.6, 4.5),
+                    "nyuse": 2,
+                    "radian": 3.1415926535 / 180.0,
+                },
+            ),
+            bool,
+        )
+        self.assertTrue(
+            fs.r_base_sol_big(
+                1,
+                state={"backre": (1.0, 2.0, 3.0), "solbes": (0.1, 0.2), "rbasmx": (0.5, 0.5, 0.5)},
+            )
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

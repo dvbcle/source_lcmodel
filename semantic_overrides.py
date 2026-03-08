@@ -20,6 +20,7 @@ from lcmodel.core.fftpack_compat import (
     seqtot as seqtot_compat,
 )
 from lcmodel.core.fortran_compat import ilen as ilen_compat
+from lcmodel.core.fortran_compat import fortran_nint
 from lcmodel.core.legacy_eigen import jacobi_symmetric, tridiagonal_from_symmetric
 from lcmodel.core.legacy_linear import g1 as g1_compat, g2 as g2_compat, h12 as h12_compat
 from lcmodel.core.legacy_math import (
@@ -951,6 +952,216 @@ def _ov_check_chless(state: dict[str, Any] | None = None) -> dict[str, Any]:
     return out
 
 
+def _ov_getpha(
+    kystart: int,
+    kyend: int,
+    dataf: Sequence[complex],
+    dataw: Any,
+    nunfil: int,
+    radian: float,
+    nypeak: Any,
+    yorig: Any,
+    yinterp: Any,
+    degzer_calc: Any,
+    state: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    _ = (radian, nypeak, yorig, yinterp)
+    out = state if state is not None else {}
+    n = int(nunfil)
+    src = list(dataf[:n])
+    lo = max(0, int(kystart) - 1)
+    hi = min(n - 1, int(kyend) - 1)
+    window = src[lo : hi + 1] if hi >= lo else src
+    phase = estimate_zero_order_phase(window, search_steps=360)
+    phased = apply_zero_order_phase(src, phase)
+    _copy_sequence_prefix(dataw, phased)
+    _assign_scalar(degzer_calc, math.degrees(float(phase)) % 360.0)
+    out["getpha_phase_radians"] = float(phase)
+    return out
+
+
+def _ov_areaw2(state: dict[str, Any] | None = None) -> float:
+    out = state if state is not None else {}
+    h2ot = list(out.get("h2ot", ()))
+    if not h2ot:
+        return -1.0
+    nunfil = int(out.get("nunfil", len(h2ot)))
+    ppminc = float(out.get("ppminc", 0.0))
+    if ppminc <= 0.0:
+        return -1.0
+    ppmcen = float(out.get("ppmcen", 4.65))
+    ppmh2o = float(out.get("ppmh2o", 4.65))
+    hwdwat = out.get("hwdwat", (0.15, 0.2))
+    if not isinstance(hwdwat, Sequence) or len(hwdwat) < 2:
+        hwdwat = (0.15, 0.2)
+    spectrum = list(csft_r_compat(h2ot, ncap=nunfil))
+    ly = int(round((ppmcen - ppmh2o) / ppminc)) + nunfil // 2 + 1
+    kystrt = int(round((ppmcen - ppmh2o - float(hwdwat[1])) / ppminc)) + nunfil // 2 + 1
+    kyend = int(round((ppmcen - ppmh2o + float(hwdwat[1])) / ppminc)) + nunfil // 2 + 1
+    ly = max(1, min(nunfil, ly))
+    kystrt = max(2, min(nunfil - 1, kystrt))
+    kyend = max(kystrt + 1, min(nunfil - 2, kyend))
+    result = integrate_peak_with_local_baseline(
+        [float(v.real) for v in spectrum],
+        peak_index=ly - 1,
+        start_index=kystrt - 1,
+        end_index=kyend - 1,
+        border_width=max(1, int(round(float(out.get("ppmbas2", 0.05)) / ppminc))),
+        spacing=ppminc * 2.0,
+    )
+    out["area_water"] = float(result.area)
+    return float(result.area)
+
+
+def _ov_areawa(istage: int, state: dict[str, Any] | None = None) -> float:
+    out = state if state is not None else {}
+    if int(out.get("iareaw", 1)) == 2 and int(istage) == 2:
+        return _ov_areaw2(out)
+    h2ot = list(out.get("h2ot", ()))
+    nunfil = int(out.get("nunfil", len(h2ot)))
+    nwsst = int(out.get("nwsst", 1))
+    nwsend = int(out.get("nwsend", min(nunfil, max(1, nunfil // 4))))
+    ppminc = float(out.get("ppminc", 1.0))
+    if not h2ot or nunfil <= 0 or nwsst < 1 or nwsend > nunfil or nwsend - nwsst + 1 < 2:
+        return -1.0
+    sx = sy = sxy = sxx = 0.0
+    for j in range(nwsst, nwsend + 1):
+        xterm = float(j)
+        yterm = abs(complex(h2ot[j - 1]))
+        if yterm <= 0.0:
+            return -1.0
+        yterm = math.log(yterm)
+        sx += xterm
+        sy += yterm
+        sxy += xterm * yterm
+        sxx += xterm * xterm
+    npts = float(nwsend - nwsst + 1)
+    term1 = npts * sxx
+    denom = term1 - sx * sx
+    if abs(denom) <= 1.0e-12 * max(1.0, abs(term1)):
+        return -1.0
+    rnum = sxx * sy - sx * sxy
+    rrange = float(out.get("rrange", 1.0e30))
+    expmax = math.log(max(rrange, 1.0))
+    if abs(rnum) >= expmax * abs(denom):
+        return -1.0
+    val = 0.5 * ppminc * math.exp(rnum / denom) * math.sqrt(float(2 * nunfil))
+    out["area_water"] = float(val)
+    return float(val)
+
+
+def _ov_areaba(basisf: Any, ppminc_arg: float, nunfil_arg: int, state: dict[str, Any] | None = None) -> float:
+    out = state if state is not None else {}
+    if not isinstance(basisf, MutableSequence):
+        return 0.0
+    ndata = 2 * int(nunfil_arg)
+    ppminc = float(ppminc_arg)
+    if ndata <= 0 or ppminc <= 0.0:
+        return 0.0
+    ppmcen = float(out.get("ppmcen", 4.65))
+    wsppm = float(out.get("wsppm", 2.01))
+    rfwbas = float(out.get("rfwbas", 10.0))
+    fwhmba = float(out.get("fwhmba", 0.05))
+    ppmbas1 = float(out.get("ppmbas1", 0.02))
+    n1hmet = int(out.get("n1hmet", 1))
+    attmet = float(out.get("attmet", 1.0))
+    if n1hmet <= 0 or attmet <= 0.0:
+        return 0.0
+
+    ly = fortran_nint((ppmcen - wsppm) / ppminc) + 1
+    nwndo = max(1, fortran_nint(ppmbas1 / ppminc))
+    nyhalf = max(1, fortran_nint((0.5 * rfwbas * fwhmba) / ppminc))
+    kystrt = ly - nyhalf
+    kyend = ly + nyhalf
+    if kystrt - nwndo <= -int(nunfil_arg) or kyend + nwndo >= int(nunfil_arg):
+        return 0.0
+
+    def cyc(idx: int) -> int:
+        return (idx - 1 + ndata) % ndata
+
+    left_vals = [float(complex(basisf[cyc(j)]).real) for j in range(kystrt - nwndo, kystrt)]
+    right_vals = [float(complex(basisf[cyc(j)]).real) for j in range(kyend + 1, kyend + nwndo + 1)]
+    if not left_vals or not right_vals:
+        return 0.0
+    avg = 0.5 * ((sum(left_vals) / len(left_vals)) + (sum(right_vals) / len(right_vals)))
+    area = 0.0
+    for j in range(kystrt, kyend + 1):
+        area += float(complex(basisf[cyc(j)]).real)
+    area = area - float(kyend - kystrt + 1) * avg
+    val = ppminc * area / (float(n1hmet) * attmet)
+    out["area_met_norm"] = float(val)
+    return float(val)
+
+
+def _ov_water_scale(state: dict[str, Any] | None = None) -> dict[str, Any]:
+    out = state if state is not None else {}
+    iaverg = int(out.get("iaverg", 0))
+    if iaverg in {1, 4}:
+        area_water = 1.0
+    else:
+        area_water = _ov_areawa(2, out)
+    atth2o = float(out.get("atth2o", 1.0))
+    wconc = float(out.get("wconc", 1.0))
+    area_met_norm = float(out.get("area_met_norm", 1.0))
+    if area_water <= 0.0 or atth2o <= 0.0 or wconc <= 0.0:
+        out["wsdone"] = False
+        return out
+    water_norm = area_water / (2.0 * atth2o * wconc)
+    fcalib = area_met_norm / water_norm
+    out["fcalib"] = fcalib
+    out["wsdone"] = True
+    datat = out.get("datat")
+    if isinstance(datat, MutableSequence):
+        for i in range(len(datat)):
+            datat[i] = complex(datat[i]) * fcalib
+    cy = out.get("cy")
+    if isinstance(cy, MutableSequence):
+        for i in range(len(cy)):
+            cy[i] = complex(cy[i]) * fcalib
+    return out
+
+
+def _ov_ldegmx(idegmx: int, state: dict[str, Any] | None = None) -> bool:
+    out = state if state is not None else {}
+    idx = int(idegmx) - 1
+    degmax = out.get("degmax", (90.0, 90.0))
+    if idx < 0 or idx >= len(degmax):
+        return False
+    parbes = out.get("parbes", ())
+    lphast = int(out.get("lphast", 0))
+    phizer = float(parbes[lphast + 1]) if len(parbes) > lphast + 1 else 0.0
+    phione = float(parbes[lphast + 2]) if len(parbes) > lphast + 2 else 0.0
+    ppmcen = float(out.get("ppmcen", 4.65))
+    ppmsig = out.get("ppmsig", (ppmcen, ppmcen))
+    ppm = out.get("ppm", (ppmcen,))
+    nyuse = int(out.get("nyuse", len(ppm)))
+    if not ppm:
+        return False
+    ppmmax = min(max(float(ppmsig[0]), float(ppmsig[1])), float(ppm[0]))
+    ppmmin = max(min(float(ppmsig[0]), float(ppmsig[1])), float(ppm[max(0, nyuse - 1)]))
+    radian = float(out.get("radian", math.pi / 180.0))
+    def phacor(ppmarg: float) -> float:
+        return abs(phizer + (ppmarg - ppmcen) * phione)
+    return max(phacor(ppmmax), phacor(ppmmin)) > float(degmax[idx]) * radian
+
+
+def _ov_r_base_sol_big(istage: int, state: dict[str, Any] | None = None) -> bool:
+    out = state if state is not None else {}
+    backre = [float(v) for v in out.get("backre", ())]
+    solbes = [float(v) for v in out.get("solbes", ())]
+    if not backre or not solbes:
+        return False
+    basmax = max(backre)
+    basmin = min(backre)
+    base_dist = basmax - basmin
+    solmax = max(abs(v) for v in solbes)
+    if solmax <= 0.0:
+        return True
+    rbasmx = out.get("rbasmx", (0.0, 0.0, 0.0))
+    idx = max(0, min(len(rbasmx) - 1, int(istage) - 1))
+    return (base_dist / solmax) > float(rbasmx[idx])
+
+
 def _ov_split_filename(
     filename: str,
     chtype1: str,
@@ -1557,6 +1768,13 @@ SEMANTIC_OVERRIDES = {
     "parse_chsimu": _ov_parse_chsimu,
     "chreal": _ov_chreal,
     "check_chless": _ov_check_chless,
+    "getpha": _ov_getpha,
+    "areaw2": _ov_areaw2,
+    "areawa": _ov_areawa,
+    "areaba": _ov_areaba,
+    "water_scale": _ov_water_scale,
+    "ldegmx": _ov_ldegmx,
+    "r_base_sol_big": _ov_r_base_sol_big,
     "split_filename": _ov_split_filename,
     "chstrip_int6": _ov_chstrip_int6,
     "split_title": _ov_split_title,
