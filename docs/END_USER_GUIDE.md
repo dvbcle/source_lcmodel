@@ -57,6 +57,8 @@ output_split_right=.ps
   - Optional ppm window boundaries for row selection before fitting.
 - `--include-metabolites`
   - Optional comma-separated metabolite names to keep in the fit.
+- `--combine-expressions`
+  - Optional comma-separated combinations, e.g. `NAA+NAAG,Glu+Gln`.
 - `--baseline-order`
   - Polynomial baseline degree for alternating fit (`-1` disables baseline).
 
@@ -80,6 +82,8 @@ output_split_right=.ps
   - Metabolite names corresponding to coefficient order.
 - `fit_points_used`
   - Number of rows used after setup-stage selection.
+- `fit_combinations`
+  - Combined outputs in `name:value:sd` format.
 
 ## 5. Common Usage Patterns
 

@@ -71,6 +71,10 @@ cfg = load_run_config_from_control_file("data/control.in")
 write_fit_table("out/result.table", fit)
 ```
 
+Combination expressions can be provided via:
+- `RunConfig(combine_expressions=("NAA+NAAG", "Glu+Gln"))`
+- control file `CHCOMB(1)=...` entries
+
 ## 4. MYDATA Scaffold (Initial Semantic Port)
 
 ```python

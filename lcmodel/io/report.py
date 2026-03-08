@@ -22,6 +22,13 @@ def build_fit_table_text(fit: FitResult) -> str:
             psd = 0.0
         lines.append(f"{name}\t{coeff:.12g}\t{sd:.12g}\t{psd:.6g}")
 
+    if fit.combined:
+        lines.append("")
+        lines.append("Combined\tCoefficient\tSD\t%SD")
+        for name, coeff, sd in fit.combined:
+            psd = abs(sd / coeff) * 100.0 if abs(coeff) > 0 else 0.0
+            lines.append(f"{name}\t{coeff:.12g}\t{sd:.12g}\t{psd:.6g}")
+
     lines.append("")
     lines.append(f"# method={fit.method}")
     lines.append(f"# iterations={fit.iterations}")
@@ -37,4 +44,3 @@ def write_fit_table(path: str | Path, fit: FitResult) -> str:
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(build_fit_table_text(fit), encoding="utf-8")
     return str(out_path)
-

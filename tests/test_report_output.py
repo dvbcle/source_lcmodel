@@ -26,10 +26,13 @@ class TestReportOutput(unittest.TestCase):
             method="test_method",
             metabolite_names=("NAA", "Cr"),
             data_points_used=128,
+            combined=(("NAA+Cr", 2.0, 0.2),),
         )
         text = build_fit_table_text(fit)
         self.assertIn("Metabolite\tCoefficient\tSD\t%SD", text)
         self.assertIn("NAA\t1.5\t0.15", text)
+        self.assertIn("Combined\tCoefficient\tSD\t%SD", text)
+        self.assertIn("NAA+Cr\t2\t0.2", text)
         self.assertIn("# method=test_method", text)
 
     def test_write_fit_table(self):
@@ -55,4 +58,3 @@ class TestReportOutput(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

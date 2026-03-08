@@ -29,6 +29,7 @@ $LCMODL
  FILPS='out.ps',
  CHUSE1(1)='NAA',
  CHUSE1(2)='Cr',
+ CHCOMB(1)='NAA+Cr',
  PPMST=3.2,
  PPMEND=2.0,
 /
@@ -38,6 +39,7 @@ $LCMODL
         self.assertEqual(2, nml["ntitle"])
         self.assertEqual("raw.txt", nml["filraw"])
         self.assertEqual(["NAA", "Cr"], nml["chuse1"])
+        self.assertEqual(["NAA+Cr"], nml["chcomb"])
 
     def test_load_run_config_from_control_file(self):
         p = self._make_local_tmpdir()
@@ -47,7 +49,7 @@ $LCMODL
                 (
                     "$LCMODL\n"
                     " TITLE='Control Title', NTITLE=1, FILRAW='a.txt', FILBAS='b.txt', FILPS='c.ps', FILTAB='tab.out', NDEGZ=2, TIMDOM=.true., AUTOPH0=.true.,\n"
-                    " CHUSE1(1)='NAA', CHUSE1(2)='Cr', PPMST=3.2, PPMEND=2.0, FILPPM='ppm.txt', FILNAM='names.txt', /\n"
+                    " CHUSE1(1)='NAA', CHUSE1(2)='Cr', CHCOMB(1)='NAA+Cr', PPMST=3.2, PPMEND=2.0, FILPPM='ppm.txt', FILNAM='names.txt', /\n"
                 ),
                 encoding="utf-8",
             )
@@ -60,6 +62,7 @@ $LCMODL
             self.assertEqual("tab.out", cfg.table_output_file)
             self.assertEqual(2, cfg.baseline_order)
             self.assertEqual(("NAA", "Cr"), cfg.include_metabolites)
+            self.assertEqual(("NAA+Cr",), cfg.combine_expressions)
             self.assertEqual(3.2, cfg.fit_ppm_start)
             self.assertEqual(2.0, cfg.fit_ppm_end)
             self.assertEqual("ppm.txt", cfg.ppm_axis_file)

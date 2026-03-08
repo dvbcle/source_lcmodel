@@ -28,6 +28,7 @@ class RunConfig:
     fit_ppm_start: float | None = None
     fit_ppm_end: float | None = None
     include_metabolites: tuple[str, ...] = ()
+    combine_expressions: tuple[str, ...] = ()
     baseline_order: int = -1
 
 
@@ -42,6 +43,7 @@ class FitResult:
     coefficient_sds: tuple[float, ...] = ()
     metabolite_names: tuple[str, ...] = ()
     data_points_used: int = 0
+    combined: tuple[tuple[str, float, float], ...] = ()
 
 
 @dataclass(frozen=True)

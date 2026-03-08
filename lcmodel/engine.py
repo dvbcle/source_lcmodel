@@ -13,6 +13,7 @@ from lcmodel.io.pathing import split_output_filename_for_voxel
 from lcmodel.io.report import write_fit_table
 from lcmodel.models import FitResult, RunConfig, RunResult
 from lcmodel.pipeline.fitting import FitConfig, run_fit_stage
+from lcmodel.pipeline.postprocess import compute_combinations
 from lcmodel.pipeline.spectral import prepare_frequency_fit_from_time_domain
 from lcmodel.pipeline.setup import prepare_fit_inputs
 from lcmodel.core.text import split_title_lines
@@ -70,6 +71,12 @@ class LCModelRunner:
                 setup.vector,
                 FitConfig(baseline_order=self.config.baseline_order),
             )
+            combined = compute_combinations(
+                self.config.combine_expressions,
+                stage.coefficients,
+                stage.coefficient_sds,
+                setup.metabolite_names,
+            )
             fit_result = FitResult(
                 coefficients=stage.coefficients,
                 residual_norm=stage.residual_norm,
@@ -78,6 +85,7 @@ class LCModelRunner:
                 coefficient_sds=stage.coefficient_sds,
                 metabolite_names=setup.metabolite_names,
                 data_points_used=len(setup.vector),
+                combined=combined,
             )
 
         table_written = None

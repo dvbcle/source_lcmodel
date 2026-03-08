@@ -167,6 +167,14 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
         one = str(nml["chuse1"]).strip()
         include_metabolites = (one,) if one else ()
 
+    combine_expressions: tuple[str, ...] = ()
+    if isinstance(nml.get("chcomb"), list):
+        exprs = [str(v).strip() for v in nml["chcomb"] if str(v).strip()]
+        combine_expressions = tuple(exprs)
+    elif isinstance(nml.get("chcomb"), str):
+        one = str(nml["chcomb"]).strip()
+        combine_expressions = (one,) if one else ()
+
     output_filename = None
     for key in ("filps", "filcoo", "filpri"):
         value = nml.get(key)
@@ -191,5 +199,6 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
         fit_ppm_start=ppm_start,
         fit_ppm_end=ppm_end,
         include_metabolites=include_metabolites,
+        combine_expressions=combine_expressions,
         baseline_order=baseline_order,
     )

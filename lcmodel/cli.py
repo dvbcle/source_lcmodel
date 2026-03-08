@@ -81,6 +81,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Comma-separated metabolite names to include from basis_names_file.",
     )
     parser.add_argument(
+        "--combine-expressions",
+        default=None,
+        help="Comma-separated combination expressions, e.g. NAA+Cr,Glu+Gln.",
+    )
+    parser.add_argument(
         "--baseline-order",
         type=int,
         default=None,
@@ -125,6 +130,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.include_metabolites is not None:
         names = tuple(p.strip() for p in args.include_metabolites.split(",") if p.strip())
         config = replace(config, include_metabolites=names)
+    if args.combine_expressions is not None:
+        exprs = tuple(p.strip() for p in args.combine_expressions.split(",") if p.strip())
+        config = replace(config, combine_expressions=exprs)
     if args.baseline_order is not None:
         config = replace(config, baseline_order=args.baseline_order)
 
@@ -155,6 +163,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(f"fit_metabolites={','.join(result.fit_result.metabolite_names)}")
         if result.fit_result.data_points_used > 0:
             print(f"fit_points_used={result.fit_result.data_points_used}")
+        if result.fit_result.combined:
+            combo = ",".join(f"{name}:{value:.12g}:{sd:.12g}" for name, value, sd in result.fit_result.combined)
+            print(f"fit_combinations={combo}")
     if result.table_output_file:
         print(f"table_output_file={result.table_output_file}")
     return 0

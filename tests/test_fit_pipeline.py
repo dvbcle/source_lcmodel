@@ -92,6 +92,7 @@ class TestFitPipeline(unittest.TestCase):
                     fit_ppm_start=3.2,
                     fit_ppm_end=2.8,
                     include_metabolites=("NAA",),
+                    combine_expressions=("NAA+NAA",),
                 )
             ).run()
             self.assertIsNotNone(result.fit_result)
@@ -100,6 +101,7 @@ class TestFitPipeline(unittest.TestCase):
             self.assertEqual(("NAA",), result.fit_result.metabolite_names)
             self.assertEqual(1, result.fit_result.data_points_used)
             self.assertEqual(1, len(result.fit_result.coefficient_sds))
+            self.assertEqual("NAA+NAA", result.fit_result.combined[0][0])
         finally:
             shutil.rmtree(p, ignore_errors=True)
 
@@ -123,6 +125,8 @@ class TestFitPipeline(unittest.TestCase):
                         str(mat_file),
                         "--baseline-order",
                         "0",
+                        "--combine-expressions",
+                        "basis_1+basis_2",
                         "--table-output-file",
                         str(tab_file),
                     ]
@@ -132,6 +136,7 @@ class TestFitPipeline(unittest.TestCase):
             self.assertIn("fit_method=", out)
             self.assertIn("fit_coefficients=", out)
             self.assertIn("fit_coeff_sds=", out)
+            self.assertIn("fit_combinations=", out)
             self.assertIn("table_output_file=", out)
             self.assertTrue(tab_file.exists())
         finally:
