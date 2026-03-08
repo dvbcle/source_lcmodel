@@ -13,6 +13,7 @@ class SptypePreset:
     fit_ppm_end: float | None = None
     combine_expressions: tuple[str, ...] = ()
     exclude_ppm_ranges: tuple[tuple[float, float], ...] = ()
+    include_metabolites: tuple[str, ...] = ()
 
 
 _LIVER_BASE_COMBOS: tuple[str, ...] = (
@@ -45,7 +46,11 @@ _MUSCLE_BASE_COMBOS: tuple[str, ...] = (
 _PRESETS: dict[str, SptypePreset] = {
     "version5": SptypePreset(fit_ppm_start=3.85, fit_ppm_end=1.0),
     "version-5": SptypePreset(fit_ppm_start=3.85, fit_ppm_end=1.0),
-    "tumor": SptypePreset(fit_ppm_start=4.0, fit_ppm_end=0.2),
+    "tumor": SptypePreset(
+        fit_ppm_start=4.0,
+        fit_ppm_end=0.2,
+        include_metabolites=("GPC", "Cr"),
+    ),
     "nulled": SptypePreset(fit_ppm_start=4.0, fit_ppm_end=0.2),
     "csf": SptypePreset(fit_ppm_start=4.0, fit_ppm_end=0.2),
     "only-cho-1": SptypePreset(fit_ppm_start=3.8, fit_ppm_end=2.7),
@@ -102,6 +107,7 @@ def apply_sptype_preset(config: RunConfig) -> RunConfig:
     fit_ppm_end = config.fit_ppm_end
     combine_expressions = config.combine_expressions
     exclude_ppm_ranges = config.exclude_ppm_ranges
+    include_metabolites = config.include_metabolites
 
     if fit_ppm_start is None and preset.fit_ppm_start is not None:
         fit_ppm_start = preset.fit_ppm_start
@@ -111,6 +117,8 @@ def apply_sptype_preset(config: RunConfig) -> RunConfig:
         combine_expressions = preset.combine_expressions
     if not exclude_ppm_ranges and preset.exclude_ppm_ranges:
         exclude_ppm_ranges = preset.exclude_ppm_ranges
+    if not include_metabolites and preset.include_metabolites:
+        include_metabolites = preset.include_metabolites
 
     return replace(
         config,
@@ -118,4 +126,55 @@ def apply_sptype_preset(config: RunConfig) -> RunConfig:
         fit_ppm_end=fit_ppm_end,
         combine_expressions=combine_expressions,
         exclude_ppm_ranges=exclude_ppm_ranges,
+        include_metabolites=include_metabolites,
     )
+
+
+def validate_sptype_config(config: RunConfig) -> None:
+    """Validate Fortran-style SPTYPE constraints for selected ppm limits."""
+
+    key = config.sptype.strip().lower()
+    if not key:
+        return
+
+    start = config.fit_ppm_start
+    end = config.fit_ppm_end
+
+    if key.startswith(("muscle-", "liver-", "breast-", "lipid-")):
+        if end is None or end >= -0.9:
+            raise ValueError(
+                f"SPTYPE '{config.sptype}' requires fit_ppm_end < -0.9 (got {end!r})."
+            )
+        if start is not None:
+            if start >= 5.0:
+                if start <= 7.9:
+                    raise ValueError(
+                        f"SPTYPE '{config.sptype}' with fit_ppm_start >= 5.0 "
+                        "requires fit_ppm_start > 7.9."
+                    )
+            elif key.startswith("liver-") and (start >= 4.01 or start <= 3.59):
+                raise ValueError(
+                    f"SPTYPE '{config.sptype}' requires 3.59 < fit_ppm_start < 4.01."
+                )
+            elif key.startswith("breast-") and (start <= 3.79 or start >= 4.01):
+                raise ValueError(
+                    f"SPTYPE '{config.sptype}' requires 3.79 < fit_ppm_start < 4.01."
+                )
+            elif key.startswith("lipid-") and (start <= 3.39 or start >= 4.01):
+                raise ValueError(
+                    f"SPTYPE '{config.sptype}' requires 3.39 < fit_ppm_start < 4.01."
+                )
+
+    if key in {"only-cho-1", "only-cho-2"}:
+        if (
+            start is None
+            or end is None
+            or start <= 3.79
+            or start >= 4.01
+            or end >= 2.81
+            or end <= 2.59
+        ):
+            raise ValueError(
+                f"SPTYPE '{config.sptype}' requires 3.79 < fit_ppm_start < 4.01 "
+                "and 2.59 < fit_ppm_end < 2.81."
+            )

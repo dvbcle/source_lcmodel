@@ -7,7 +7,7 @@ from contextlib import redirect_stdout
 from lcmodel.cli import main as cli_main
 from lcmodel.engine import LCModelRunner
 from lcmodel.models import RunConfig
-from lcmodel.pipeline.sptype_presets import apply_sptype_preset
+from lcmodel.pipeline.sptype_presets import apply_sptype_preset, validate_sptype_config
 
 
 class TestSptypePresets(unittest.TestCase):
@@ -16,6 +16,7 @@ class TestSptypePresets(unittest.TestCase):
         out = apply_sptype_preset(cfg)
         self.assertEqual(4.0, out.fit_ppm_start)
         self.assertEqual(0.2, out.fit_ppm_end)
+        self.assertEqual(("GPC", "Cr"), out.include_metabolites)
 
     def test_apply_sptype_keeps_explicit_window(self):
         cfg = RunConfig(sptype="tumor", fit_ppm_start=3.1, fit_ppm_end=1.4)
@@ -38,6 +39,16 @@ class TestSptypePresets(unittest.TestCase):
         runner = LCModelRunner(RunConfig(sptype="tumor", apply_sptype_presets=False))
         self.assertIsNone(runner.config.fit_ppm_start)
         self.assertIsNone(runner.config.fit_ppm_end)
+
+    def test_validate_liver_window_rejects_invalid_end(self):
+        cfg = RunConfig(sptype="liver-1", fit_ppm_start=3.8, fit_ppm_end=-0.5)
+        with self.assertRaises(ValueError):
+            validate_sptype_config(cfg)
+
+    def test_validate_only_cho_window_rejects_invalid_limits(self):
+        cfg = RunConfig(sptype="only-cho-1", fit_ppm_start=4.2, fit_ppm_end=2.7)
+        with self.assertRaises(ValueError):
+            validate_sptype_config(cfg)
 
     def test_cli_can_disable_sptype_presets(self):
         buf = io.StringIO()

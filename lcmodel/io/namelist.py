@@ -7,7 +7,7 @@ import re
 from typing import Any
 
 from lcmodel.models import RunConfig
-from lcmodel.pipeline.sptype_presets import apply_sptype_preset
+from lcmodel.pipeline.sptype_presets import apply_sptype_preset, validate_sptype_config
 
 
 _TRUE_VALUES = {".true.", "true", "t"}
@@ -346,5 +346,6 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
         apply_sptype_presets=apply_sptype_presets,
     )
     if config.apply_sptype_presets:
-        return apply_sptype_preset(config)
+        config = apply_sptype_preset(config)
+    validate_sptype_config(config)
     return config
