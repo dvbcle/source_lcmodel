@@ -15,6 +15,7 @@ from lcmodel.io.pathing import split_output_filename_for_voxel
 from lcmodel.io.priors import load_soft_priors
 from lcmodel.io.report import write_fit_table
 from lcmodel.models import BatchRunResult, FitResult, RunConfig, RunResult
+from lcmodel.pipeline.alignment import align_vector_by_integer_shift
 from lcmodel.pipeline.fitting import FitConfig, run_fit_stage
 from lcmodel.pipeline.metrics import compute_fit_quality_metrics
 from lcmodel.pipeline.postprocess import compute_combinations
@@ -71,8 +72,13 @@ class LCModelRunner:
                 basis_names=basis_names,
                 include_metabolites=self.config.include_metabolites,
             )
+            alignment = align_vector_by_integer_shift(
+                setup.matrix,
+                setup.vector,
+                self.config.shift_search_points,
+            )
             fit_matrix = [list(row) for row in setup.matrix]
-            fit_vector = list(setup.vector)
+            fit_vector = list(alignment.vector)
             if self.config.priors_file:
                 priors = load_soft_priors(self.config.priors_file)
                 fit_matrix, fit_vector = augment_system_with_soft_priors(
@@ -108,6 +114,7 @@ class LCModelRunner:
                 combined=combined,
                 relative_residual=relative_residual,
                 snr_estimate=snr_estimate,
+                alignment_shift_points=alignment.shift_points,
             )
 
         table_written = None

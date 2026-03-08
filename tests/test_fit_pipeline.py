@@ -138,6 +138,7 @@ class TestFitPipeline(unittest.TestCase):
             self.assertIn("fit_coeff_sds=", out)
             self.assertIn("fit_relative_residual=", out)
             self.assertIn("fit_snr_estimate=", out)
+            self.assertIn("fit_alignment_shift_points=", out)
             self.assertIn("fit_combinations=", out)
             self.assertIn("table_output_file=", out)
             self.assertTrue(tab_file.exists())
@@ -168,6 +169,27 @@ class TestFitPipeline(unittest.TestCase):
             assert result.fit_result is not None
             self.assertEqual(("NAA",), result.fit_result.metabolite_names)
             self.assertAlmostEqual(1.0, result.fit_result.coefficients[0], places=3)
+        finally:
+            shutil.rmtree(p, ignore_errors=True)
+
+    def test_shift_search_points(self):
+        p = self._make_local_tmpdir()
+        try:
+            vec = p / "vec.txt"
+            mat = p / "mat.txt"
+            vec.write_text("0\n1\n0\n0\n", encoding="utf-8")
+            mat.write_text("1\n0\n0\n0\n", encoding="utf-8")
+            result = LCModelRunner(
+                RunConfig(
+                    raw_data_file=str(vec),
+                    basis_file=str(mat),
+                    shift_search_points=2,
+                )
+            ).run()
+            self.assertIsNotNone(result.fit_result)
+            assert result.fit_result is not None
+            self.assertEqual(-1, result.fit_result.alignment_shift_points)
+            self.assertGreater(result.fit_result.coefficients[0], 0.9)
         finally:
             shutil.rmtree(p, ignore_errors=True)
 

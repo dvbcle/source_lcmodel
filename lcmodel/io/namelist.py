@@ -158,6 +158,12 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
             ppm_end = float(nml["ppmend"])
         except Exception:
             ppm_end = None
+    shift_search_points = 0
+    if "nshifw" in nml:
+        try:
+            shift_search_points = max(0, int(nml["nshifw"]))
+        except Exception:
+            shift_search_points = 0
 
     include_metabolites: tuple[str, ...] = ()
     if isinstance(nml.get("chuse1"), list):
@@ -203,5 +209,6 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
         fit_ppm_end=ppm_end,
         include_metabolites=include_metabolites,
         combine_expressions=combine_expressions,
+        shift_search_points=shift_search_points,
         baseline_order=baseline_order,
     )

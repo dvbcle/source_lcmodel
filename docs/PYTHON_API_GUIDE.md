@@ -50,6 +50,7 @@ print(batch.csv_file)
   - `residual_norm: float`
   - `relative_residual: float`
   - `snr_estimate: float`
+  - `alignment_shift_points: int`
   - `iterations: int`
   - `method: str`
 - `TitleLayout`

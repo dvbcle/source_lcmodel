@@ -65,6 +65,8 @@ output_split_right=.ps
   - Optional comma-separated metabolite names to keep in the fit.
 - `--combine-expressions`
   - Optional comma-separated combinations, e.g. `NAA+NAAG,Glu+Gln`.
+- `--shift-search-points`
+  - Optional integer search range for pre-fit alignment shift.
 - `--baseline-order`
   - Polynomial baseline degree for alternating fit (`-1` disables baseline).
 
@@ -92,6 +94,8 @@ output_split_right=.ps
   - Norm of residual divided by norm of fitted data vector.
 - `fit_snr_estimate`
   - Simple peak/residual-noise SNR estimate.
+- `fit_alignment_shift_points`
+  - Integer shift selected during pre-fit alignment.
 - `fit_combinations`
   - Combined outputs in `name:value:sd` format.
 

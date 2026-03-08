@@ -101,6 +101,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Comma-separated combination expressions, e.g. NAA+Cr,Glu+Gln.",
     )
     parser.add_argument(
+        "--shift-search-points",
+        type=int,
+        default=None,
+        help="Search +/- this many points for integer alignment shift before fit.",
+    )
+    parser.add_argument(
         "--baseline-order",
         type=int,
         default=None,
@@ -154,6 +160,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.combine_expressions is not None:
         exprs = tuple(p.strip() for p in args.combine_expressions.split(",") if p.strip())
         config = replace(config, combine_expressions=exprs)
+    if args.shift_search_points is not None:
+        config = replace(config, shift_search_points=args.shift_search_points)
     if args.baseline_order is not None:
         config = replace(config, baseline_order=args.baseline_order)
 
@@ -196,6 +204,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(f"fit_points_used={result.fit_result.data_points_used}")
         print(f"fit_relative_residual={result.fit_result.relative_residual:.12g}")
         print(f"fit_snr_estimate={result.fit_result.snr_estimate:.12g}")
+        print(f"fit_alignment_shift_points={result.fit_result.alignment_shift_points}")
         if result.fit_result.combined:
             combo = ",".join(f"{name}:{value:.12g}:{sd:.12g}" for name, value, sd in result.fit_result.combined)
             print(f"fit_combinations={combo}")

@@ -32,6 +32,7 @@ class RunConfig:
     fit_ppm_end: float | None = None
     include_metabolites: tuple[str, ...] = ()
     combine_expressions: tuple[str, ...] = ()
+    shift_search_points: int = 0
     baseline_order: int = -1
 
 
@@ -49,6 +50,7 @@ class FitResult:
     combined: tuple[tuple[str, float, float], ...] = ()
     relative_residual: float = 0.0
     snr_estimate: float = 0.0
+    alignment_shift_points: int = 0
 
 
 @dataclass(frozen=True)
