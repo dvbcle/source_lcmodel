@@ -6,6 +6,7 @@ import argparse
 from typing import Sequence
 
 from lcmodel.engine import LCModelRunner
+from lcmodel.io.namelist import load_run_config_from_control_file
 from lcmodel.models import RunConfig
 
 
@@ -13,11 +14,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Run the Python-first LCModel semantic-port workflow."
     )
-    parser.add_argument("--title", default="", help="Title text for report output.")
+    parser.add_argument("--control-file", default=None, help="LCModel control file ($LCMODL namelist).")
+    parser.add_argument("--title", default=None, help="Title text for report output.")
     parser.add_argument(
         "--ntitle",
         type=int,
-        default=2,
+        default=None,
         help="Requested number of title lines (legacy-compatible behavior).",
     )
     parser.add_argument(
@@ -42,15 +44,53 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
 
-    runner = LCModelRunner(
-        RunConfig(
+    if args.control_file:
+        config = load_run_config_from_control_file(args.control_file)
+    else:
+        config = RunConfig()
+
+    if args.title is not None:
+        config = RunConfig(
             title=args.title,
+            ntitle=config.ntitle,
+            output_filename=config.output_filename,
+            raw_data_file=config.raw_data_file,
+            basis_file=config.basis_file,
+        )
+    if args.ntitle is not None:
+        config = RunConfig(
+            title=config.title,
             ntitle=args.ntitle,
+            output_filename=config.output_filename,
+            raw_data_file=config.raw_data_file,
+            basis_file=config.basis_file,
+        )
+    if args.output_filename is not None:
+        config = RunConfig(
+            title=config.title,
+            ntitle=config.ntitle,
             output_filename=args.output_filename,
+            raw_data_file=config.raw_data_file,
+            basis_file=config.basis_file,
+        )
+    if args.raw_data_file is not None:
+        config = RunConfig(
+            title=config.title,
+            ntitle=config.ntitle,
+            output_filename=config.output_filename,
             raw_data_file=args.raw_data_file,
+            basis_file=config.basis_file,
+        )
+    if args.basis_file is not None:
+        config = RunConfig(
+            title=config.title,
+            ntitle=config.ntitle,
+            output_filename=config.output_filename,
+            raw_data_file=config.raw_data_file,
             basis_file=args.basis_file,
         )
-    )
+
+    runner = LCModelRunner(config)
     result = runner.run()
 
     print(f"title_lines={result.title_layout.line_count}")

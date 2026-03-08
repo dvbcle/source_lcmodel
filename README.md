@@ -45,6 +45,12 @@ Fit-stage run example:
 python -m lcmodel --raw-data-file data\\raw.txt --basis-file data\\basis.txt
 ```
 
+Control-file driven run:
+
+```powershell
+python -m lcmodel --control-file data\\control.in
+```
+
 ## User Documentation
 
 - End-user CLI guide: `docs/END_USER_GUIDE.md`

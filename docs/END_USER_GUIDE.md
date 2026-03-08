@@ -30,6 +30,9 @@ output_split_right=.ps
 
 - `--title`
   - The report title text.
+- `--control-file`
+  - Path to LCModel-style `$LCMODL ... /` control input.
+  - Values in this file seed runtime settings; CLI flags can still override.
 - `--ntitle`
   - Requested title-line behavior.
   - `1` forces one line.
@@ -74,6 +77,12 @@ Run fit stage:
 
 ```powershell
 python -m lcmodel --raw-data-file data\\raw.txt --basis-file data\\basis.txt
+```
+
+Run from control file:
+
+```powershell
+python -m lcmodel --control-file data\\control.in
 ```
 
 ## 6. Troubleshooting

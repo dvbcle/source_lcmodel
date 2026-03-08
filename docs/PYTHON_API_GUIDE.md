@@ -49,6 +49,7 @@ You can also call lower-level helpers:
 
 ```python
 from lcmodel.core.text import split_title_lines, escape_postscript_text
+from lcmodel.io.namelist import load_run_config_from_control_file
 from lcmodel.io.pathing import split_output_filename_for_voxel
 from lcmodel.pipeline.fitting import run_fit_stage
 
@@ -56,6 +57,7 @@ layout = split_title_lines("Long title ...", ntitle=2)
 escaped = escape_postscript_text("Value (A)%")
 left, right = split_output_filename_for_voxel("report.ps", ("ps", "PS", "Ps"))
 fit = run_fit_stage([[1, 0], [0, 1]], [2, 3])
+cfg = load_run_config_from_control_file("data/control.in")
 ```
 
 ## 4. MYDATA Scaffold (Initial Semantic Port)

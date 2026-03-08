@@ -1,0 +1,83 @@
+from __future__ import annotations
+
+import io
+from contextlib import redirect_stdout
+from pathlib import Path
+import shutil
+import unittest
+import uuid
+
+from lcmodel.cli import main as cli_main
+from lcmodel.io.namelist import load_run_config_from_control_file, parse_fortran_namelist
+
+
+class TestControlNamelist(unittest.TestCase):
+    def _make_local_tmpdir(self) -> Path:
+        root = Path("tests/.tmp")
+        root.mkdir(parents=True, exist_ok=True)
+        path = root / str(uuid.uuid4())
+        path.mkdir(parents=True, exist_ok=True)
+        return path
+
+    def test_parse_fortran_namelist(self):
+        text = """
+$LCMODL
+ TITLE='My Run',
+ NTITLE=2,
+ FILRAW='raw.txt',
+ FILBAS='basis.txt',
+ FILPS='out.ps',
+/
+"""
+        nml = parse_fortran_namelist(text, expected_name="LCMODL")
+        self.assertEqual("My Run", nml["title"])
+        self.assertEqual(2, nml["ntitle"])
+        self.assertEqual("raw.txt", nml["filraw"])
+
+    def test_load_run_config_from_control_file(self):
+        p = self._make_local_tmpdir()
+        try:
+            ctl = p / "control.in"
+            ctl.write_text(
+                "$LCMODL\n TITLE='Control Title', NTITLE=1, FILRAW='a.txt', FILBAS='b.txt', FILPS='c.ps', /\n",
+                encoding="utf-8",
+            )
+            cfg = load_run_config_from_control_file(ctl)
+            self.assertEqual("Control Title", cfg.title)
+            self.assertEqual(1, cfg.ntitle)
+            self.assertEqual("a.txt", cfg.raw_data_file)
+            self.assertEqual("b.txt", cfg.basis_file)
+            self.assertEqual("c.ps", cfg.output_filename)
+        finally:
+            shutil.rmtree(p, ignore_errors=True)
+
+    def test_cli_control_file_drives_fit(self):
+        p = self._make_local_tmpdir()
+        try:
+            raw = p / "raw.txt"
+            basis = p / "basis.txt"
+            ctl = p / "control.in"
+            raw.write_text("1\n2\n", encoding="utf-8")
+            basis.write_text("1 0\n0 1\n", encoding="utf-8")
+            ctl.write_text(
+                (
+                    "$LCMODL\n"
+                    f" TITLE='FromControl', NTITLE=2, FILRAW='{raw}', FILBAS='{basis}', FILPS='out.ps', /\n"
+                ),
+                encoding="utf-8",
+            )
+
+            buf = io.StringIO()
+            with redirect_stdout(buf):
+                code = cli_main(["--control-file", str(ctl)])
+            self.assertEqual(0, code)
+            out = buf.getvalue()
+            self.assertIn("title_line_1=FromControl", out)
+            self.assertIn("fit_coefficients=1,2", out)
+        finally:
+            shutil.rmtree(p, ignore_errors=True)
+
+
+if __name__ == "__main__":
+    unittest.main()
+
