@@ -164,6 +164,18 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
             shift_search_points = max(0, int(nml["nshifw"]))
         except Exception:
             shift_search_points = 0
+    dwell_time_s = 0.0
+    if "deltat" in nml:
+        try:
+            dwell_time_s = max(0.0, float(nml["deltat"]))
+        except Exception:
+            dwell_time_s = 0.0
+    line_broadening_hz = 0.0
+    if "lbhz" in nml:
+        try:
+            line_broadening_hz = max(0.0, float(nml["lbhz"]))
+        except Exception:
+            line_broadening_hz = 0.0
 
     include_metabolites: tuple[str, ...] = ()
     if isinstance(nml.get("chuse1"), list):
@@ -205,6 +217,8 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
         priors_file=str(nml["filprr"]) if isinstance(nml.get("filprr"), str) and nml["filprr"].strip() else None,
         time_domain_input=bool(nml.get("timdom", False)),
         auto_phase_zero_order=bool(nml.get("autoph0", False)),
+        dwell_time_s=dwell_time_s,
+        line_broadening_hz=line_broadening_hz,
         fit_ppm_start=ppm_start,
         fit_ppm_end=ppm_end,
         include_metabolites=include_metabolites,

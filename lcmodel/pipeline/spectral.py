@@ -45,12 +45,19 @@ def prepare_frequency_fit_from_time_domain(
     basis_time: Sequence[Sequence[complex]],
     *,
     auto_phase_zero_order: bool = False,
+    dwell_time_s: float = 0.0,
+    line_broadening_hz: float = 0.0,
 ) -> SpectralFitInputs:
     """Convert complex time-domain raw/basis data to real-valued fit inputs."""
 
     data_stage = run_mydata_stage(
         raw_time,
-        MyDataConfig(compute_fft=True, auto_phase_zero_order=auto_phase_zero_order),
+        MyDataConfig(
+            compute_fft=True,
+            auto_phase_zero_order=auto_phase_zero_order,
+            dwell_time_s=dwell_time_s,
+            line_broadening_hz=line_broadening_hz,
+        ),
     )
     if data_stage.frequency_domain is None:
         raise RuntimeError("MYDATA stage did not produce frequency domain data")
@@ -58,7 +65,14 @@ def prepare_frequency_fit_from_time_domain(
     basis_columns_td = _columns_from_row_major(basis_time)
     basis_columns_fd: list[tuple[complex, ...]] = []
     for col in basis_columns_td:
-        stage = run_mydata_stage(col, MyDataConfig(compute_fft=True))
+        stage = run_mydata_stage(
+            col,
+            MyDataConfig(
+                compute_fft=True,
+                dwell_time_s=dwell_time_s,
+                line_broadening_hz=line_broadening_hz,
+            ),
+        )
         if stage.frequency_domain is None:
             raise RuntimeError("basis conversion failed to produce frequency domain data")
         basis_columns_fd.append(stage.frequency_domain)
@@ -70,4 +84,3 @@ def prepare_frequency_fit_from_time_domain(
     vector = tuple(float(v.real) for v in data_stage.frequency_domain)
     matrix = tuple(tuple(float(v.real) for v in row) for row in basis_row_major_fd)
     return SpectralFitInputs(vector=vector, matrix=matrix)
-

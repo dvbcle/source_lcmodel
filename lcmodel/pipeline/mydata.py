@@ -13,6 +13,7 @@ designed to be extended incrementally with parity tests.
 from __future__ import annotations
 
 from dataclasses import dataclass
+import math
 from typing import Sequence
 
 from lcmodel.pipeline.phasing import apply_zero_order_phase, estimate_zero_order_phase
@@ -64,6 +65,8 @@ class MyDataConfig:
     compute_fft: bool = True
     auto_phase_zero_order: bool = False
     phase_search_steps: int = 720
+    dwell_time_s: float = 0.0
+    line_broadening_hz: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -99,6 +102,17 @@ def run_mydata_stage(
     if config.conjugate_input:
         data = [x.conjugate() for x in data]
         log.append("conjugate_input=true")
+
+    if config.dwell_time_s > 0.0 and config.line_broadening_hz > 0.0:
+        out: list[complex] = []
+        for idx, x in enumerate(data):
+            t = idx * float(config.dwell_time_s)
+            weight = math.exp(-math.pi * float(config.line_broadening_hz) * t)
+            out.append(x * weight)
+        data = out
+        log.append(
+            f"apodization_lb_hz={config.line_broadening_hz:.12g}@dwell={config.dwell_time_s:.12g}"
+        )
 
     target_len = len(data)
     if config.zero_fill_to is not None:

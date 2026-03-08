@@ -44,6 +44,18 @@ def build_parser() -> argparse.ArgumentParser:
         help="Enable zero-order auto-phasing for time-domain raw input conversion.",
     )
     parser.add_argument(
+        "--dwell-time",
+        type=float,
+        default=None,
+        help="Time-domain dwell time (seconds) used for optional apodization.",
+    )
+    parser.add_argument(
+        "--line-broadening-hz",
+        type=float,
+        default=None,
+        help="Exponential line broadening (Hz) applied before FFT when dwell-time is set.",
+    )
+    parser.add_argument(
         "--raw-data-file",
         default=None,
         help="Path to numeric vector file for fit stage (one value per line).",
@@ -136,6 +148,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         config = replace(config, time_domain_input=True)
     if args.auto_phase_zero_order:
         config = replace(config, auto_phase_zero_order=True)
+    if args.dwell_time is not None:
+        config = replace(config, dwell_time_s=args.dwell_time)
+    if args.line_broadening_hz is not None:
+        config = replace(config, line_broadening_hz=args.line_broadening_hz)
     if args.raw_data_file is not None:
         config = replace(config, raw_data_file=args.raw_data_file)
     if args.raw_data_list_file is not None:

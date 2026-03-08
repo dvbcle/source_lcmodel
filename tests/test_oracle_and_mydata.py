@@ -48,6 +48,19 @@ class TestOracleAndMyData(unittest.TestCase):
         self.assertLess(imag_after, imag_before)
         self.assertIsNotNone(with_phase.zero_order_phase_radians)
 
+    def test_mydata_apodization(self):
+        result = run_mydata_stage(
+            [1 + 0j, 1 + 0j, 1 + 0j],
+            MyDataConfig(
+                compute_fft=False,
+                dwell_time_s=0.001,
+                line_broadening_hz=5.0,
+            ),
+        )
+        self.assertLess(abs(result.time_domain[1]), abs(result.time_domain[0]))
+        self.assertLess(abs(result.time_domain[2]), abs(result.time_domain[1]))
+        self.assertTrue(any("apodization_lb_hz" in line for line in result.processing_log))
+
     def test_phase_estimation(self):
         import cmath
         import math

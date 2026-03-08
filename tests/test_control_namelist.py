@@ -48,7 +48,7 @@ $LCMODL
             ctl.write_text(
                 (
                     "$LCMODL\n"
-                    " TITLE='Control Title', NTITLE=1, FILRAW='a.txt', FILRAWL='raw_list.txt', FILCSV='batch.csv', FILBAS='b.txt', FILPS='c.ps', FILTAB='tab.out', FILPRR='priors.txt', NDEGZ=2, NSHIFW=3, TIMDOM=.true., AUTOPH0=.true.,\n"
+                    " TITLE='Control Title', NTITLE=1, FILRAW='a.txt', FILRAWL='raw_list.txt', FILCSV='batch.csv', FILBAS='b.txt', FILPS='c.ps', FILTAB='tab.out', FILPRR='priors.txt', NDEGZ=2, NSHIFW=3, TIMDOM=.true., AUTOPH0=.true., DELTAT=0.0005, LBHZ=4.0,\n"
                     " CHUSE1(1)='NAA', CHUSE1(2)='Cr', CHCOMB(1)='NAA+Cr', PPMST=3.2, PPMEND=2.0, FILPPM='ppm.txt', FILNAM='names.txt', /\n"
                 ),
                 encoding="utf-8",
@@ -67,6 +67,8 @@ $LCMODL
             self.assertEqual(("NAA", "Cr"), cfg.include_metabolites)
             self.assertEqual(("NAA+Cr",), cfg.combine_expressions)
             self.assertEqual(3, cfg.shift_search_points)
+            self.assertEqual(0.0005, cfg.dwell_time_s)
+            self.assertEqual(4.0, cfg.line_broadening_hz)
             self.assertEqual(3.2, cfg.fit_ppm_start)
             self.assertEqual(2.0, cfg.fit_ppm_end)
             self.assertEqual("ppm.txt", cfg.ppm_axis_file)

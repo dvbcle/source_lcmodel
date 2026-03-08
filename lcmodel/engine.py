@@ -50,6 +50,8 @@ class LCModelRunner:
                     raw_td,
                     basis_td,
                     auto_phase_zero_order=self.config.auto_phase_zero_order,
+                    dwell_time_s=self.config.dwell_time_s,
+                    line_broadening_hz=self.config.line_broadening_hz,
                 )
                 vector = list(spectral.vector)
                 matrix = [list(row) for row in spectral.matrix]

@@ -45,6 +45,10 @@ output_split_right=.ps
   - Treat raw and basis files as complex time-domain values (`re im` format).
 - `--auto-phase-zero-order`
   - Apply auto-estimated zero-order phase after FFT conversion.
+- `--dwell-time`
+  - Time between time-domain samples (seconds).
+- `--line-broadening-hz`
+  - Exponential broadening parameter for time-domain apodization.
 - `--raw-data-file`
   - Optional numeric vector file for the fit stage.
 - `--raw-data-list-file`

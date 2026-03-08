@@ -28,6 +28,8 @@ class RunConfig:
     batch_csv_file: str | None = None
     time_domain_input: bool = False
     auto_phase_zero_order: bool = False
+    dwell_time_s: float = 0.0
+    line_broadening_hz: float = 0.0
     fit_ppm_start: float | None = None
     fit_ppm_end: float | None = None
     include_metabolites: tuple[str, ...] = ()
