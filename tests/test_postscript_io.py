@@ -23,7 +23,7 @@ class TestPostscriptIO(unittest.TestCase):
             data_values=[1, 2, 1],
             fit_values=[1, 1.8, 1.1],
         )
-        self.assertIn("%!PS-Adobe-3.0", text)
+        self.assertIn("%!PS-Adobe-2.0", text)
         self.assertIn("\\(Title\\)", text)
         self.assertIn("showpage", text)
         self.assertIn("setrgbcolor", text)
@@ -47,4 +47,3 @@ class TestPostscriptIO(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
