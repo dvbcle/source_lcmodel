@@ -273,6 +273,26 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
             integration_border_points = max(1, int(nml["nwndo"]))
         except Exception:
             integration_border_points = 4
+    average_mode = 0
+    if "iaverg" in nml:
+        try:
+            average_mode = int(nml["iaverg"])
+        except Exception:
+            average_mode = 0
+    average_nback_start = 64
+    average_nback_end = 1
+    if isinstance(nml.get("nback"), list):
+        raw = nml["nback"]
+        if len(raw) >= 1:
+            try:
+                average_nback_start = max(1, int(raw[0]))
+            except Exception:
+                average_nback_start = 64
+        if len(raw) >= 2:
+            try:
+                average_nback_end = max(1, int(raw[1]))
+            except Exception:
+                average_nback_end = 1
 
     include_metabolites: tuple[str, ...] = ()
     if isinstance(nml.get("chuse1"), list):
@@ -344,6 +364,9 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
         integration_border_points=integration_border_points,
         sptype=sptype,
         apply_sptype_presets=apply_sptype_presets,
+        average_mode=average_mode,
+        average_nback_start=average_nback_start,
+        average_nback_end=average_nback_end,
     )
     if config.apply_sptype_presets:
         config = apply_sptype_preset(config)

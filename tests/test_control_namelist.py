@@ -51,7 +51,7 @@ $LCMODL
             ctl.write_text(
                 (
                     "$LCMODL\n"
-                    " TITLE='Control Title', NTITLE=1, FILRAW='a.txt', FILRAWL='raw_list.txt', FILCSV='batch.csv', FILBAS='b.txt', FILPS='c.ps', FILTAB='tab.out', FILPRR='priors.txt', SPTYPE='tumor', NDEGZ=2, NSHIFW=3, SHFTCYC=.false., FSHREF=.true., NSHIFIT=14, NLWSCN=5, LWSCMX=2.5, NLREF=.true., NLITER=6, NLTOL=1E-7, TIMDOM=.true., AUTOPH0=.true., AUTOPH1=.true., DELTAT=0.0005, LBHZ=4.0, NBACKG=8, ALPHAB=0.25, NWNDO=5, IPOWPH=7,\n"
+                    " TITLE='Control Title', NTITLE=1, FILRAW='a.txt', FILRAWL='raw_list.txt', FILCSV='batch.csv', FILBAS='b.txt', FILPS='c.ps', FILTAB='tab.out', FILPRR='priors.txt', SPTYPE='tumor', IAVERG=1, NBACK(1)=70, NBACK(2)=5, NDEGZ=2, NSHIFW=3, SHFTCYC=.false., FSHREF=.true., NSHIFIT=14, NLWSCN=5, LWSCMX=2.5, NLREF=.true., NLITER=6, NLTOL=1E-7, TIMDOM=.true., AUTOPH0=.true., AUTOPH1=.true., DELTAT=0.0005, LBHZ=4.0, NBACKG=8, ALPHAB=0.25, NWNDO=5, IPOWPH=7,\n"
                     " CHUSE1(1)='NAA', CHUSE1(2)='Cr', CHCOMB(1)='NAA+Cr', PPMST=3.2, PPMEND=2.0, PPMGAP(1,1)=4.9, PPMGAP(2,1)=4.5, FILPPM='ppm.txt', FILNAM='names.txt', /\n"
                 ),
                 encoding="utf-8",
@@ -96,6 +96,9 @@ $LCMODL
             self.assertTrue(cfg.auto_phase_first_order)
             self.assertEqual("smooth_real", cfg.phase_objective)
             self.assertEqual(7, cfg.phase_smoothness_power)
+            self.assertEqual(1, cfg.average_mode)
+            self.assertEqual(70, cfg.average_nback_start)
+            self.assertEqual(5, cfg.average_nback_end)
         finally:
             shutil.rmtree(p, ignore_errors=True)
 

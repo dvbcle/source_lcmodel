@@ -17,6 +17,7 @@ from lcmodel.io.priors import load_soft_priors
 from lcmodel.io.report import write_fit_table
 from lcmodel.models import BatchRunResult, FitResult, RunConfig, RunResult
 from lcmodel.pipeline.fitting import FitConfig, run_fit_stage
+from lcmodel.pipeline.averaging import detect_zero_voxels, weighted_average_channels
 from lcmodel.pipeline.integration import integrate_peak_with_local_baseline
 from lcmodel.pipeline.metrics import compute_fit_quality_metrics
 from lcmodel.pipeline.nonlinear import NonlinearConfig, run_nonlinear_refinement
@@ -56,7 +57,35 @@ class LCModelRunner:
         plot_fit_values: list[float] = []
         if self.config.raw_data_file and self.config.basis_file:
             if self.config.time_domain_input:
-                raw_td = load_complex_vector(self.config.raw_data_file)
+                if self.config.average_mode != 0:
+                    channels = load_complex_matrix(self.config.raw_data_file, pair_mode=True)
+                    if self.config.average_mode in {31, 32}:
+                        normalize = False
+                        weight_by_variance = False
+                        selection = "odd" if self.config.average_mode == 31 else "even"
+                    elif self.config.average_mode in {1, 2, 3, 4}:
+                        normalize = self.config.average_mode in {1, 4}
+                        weight_by_variance = self.config.average_mode in {1, 2}
+                        selection = "all"
+                    else:
+                        raise ValueError(
+                            "average_mode must be one of 0,1,2,3,4,31,32"
+                        )
+                    zero_flags = None
+                    if self.config.average_zero_voxel_check:
+                        zero_flags = detect_zero_voxels(channels)
+                    average = weighted_average_channels(
+                        channels,
+                        nback_start=self.config.average_nback_start,
+                        nback_end=self.config.average_nback_end,
+                        normalize_by_signal=normalize,
+                        weight_by_variance=weight_by_variance,
+                        selection=selection,
+                        zero_voxels=zero_flags,
+                    )
+                    raw_td = list(average.averaged)
+                else:
+                    raw_td = load_complex_vector(self.config.raw_data_file)
                 basis_td = load_complex_matrix(self.config.basis_file, pair_mode=True)
                 spectral = prepare_frequency_fit_from_time_domain(
                     raw_td,

@@ -6,6 +6,12 @@ from lcmodel.pipeline.alignment import (
     align_vector_by_fractional_shift,
     align_vector_by_integer_shift,
 )
+from lcmodel.pipeline.averaging import (
+    ChannelAverageResult,
+    detect_zero_voxels,
+    estimate_tail_variance,
+    weighted_average_channels,
+)
 from lcmodel.pipeline.fitting import FitConfig, FitStageResult, run_fit_stage
 from lcmodel.pipeline.integration import IntegrationResult, integrate_peak_with_local_baseline
 from lcmodel.pipeline.lineshape import apply_global_gaussian_lineshape
@@ -40,6 +46,10 @@ __all__ = [
     "SetupResult",
     "align_vector_by_integer_shift",
     "align_vector_by_fractional_shift",
+    "ChannelAverageResult",
+    "detect_zero_voxels",
+    "estimate_tail_variance",
+    "weighted_average_channels",
     "augment_system_with_soft_priors",
     "apply_phase",
     "apply_zero_order_phase",

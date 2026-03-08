@@ -38,6 +38,10 @@ class RunConfig:
     exclude_ppm_ranges: tuple[tuple[float, float], ...] = ()
     sptype: str = ""
     apply_sptype_presets: bool = True
+    average_mode: int = 0
+    average_nback_start: int = 64
+    average_nback_end: int = 1
+    average_zero_voxel_check: bool = False
     include_metabolites: tuple[str, ...] = ()
     combine_expressions: tuple[str, ...] = ()
     shift_search_points: int = 0

@@ -73,6 +73,29 @@ def build_parser() -> argparse.ArgumentParser:
         help="Exponential line broadening (Hz) applied before FFT when dwell-time is set.",
     )
     parser.add_argument(
+        "--average-mode",
+        type=int,
+        default=None,
+        help="Channel averaging mode (Fortran IAVERG analog: 1,2,3,4,31,32).",
+    )
+    parser.add_argument(
+        "--average-nback-start",
+        type=int,
+        default=None,
+        help="Tail-noise start offset for averaging variance estimate.",
+    )
+    parser.add_argument(
+        "--average-nback-end",
+        type=int,
+        default=None,
+        help="Tail-noise end offset for averaging variance estimate.",
+    )
+    parser.add_argument(
+        "--average-zero-voxel-check",
+        action="store_true",
+        help="Skip zero-valued channels before averaging (CHECK_ZERO_VOXELS analog).",
+    )
+    parser.add_argument(
         "--raw-data-file",
         default=None,
         help="Path to numeric vector file for fit stage (one value per line).",
@@ -260,6 +283,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         config = replace(config, dwell_time_s=args.dwell_time)
     if args.line_broadening_hz is not None:
         config = replace(config, line_broadening_hz=args.line_broadening_hz)
+    if args.average_mode is not None:
+        config = replace(config, average_mode=args.average_mode)
+    if args.average_nback_start is not None:
+        config = replace(config, average_nback_start=args.average_nback_start)
+    if args.average_nback_end is not None:
+        config = replace(config, average_nback_end=args.average_nback_end)
+    if args.average_zero_voxel_check:
+        config = replace(config, average_zero_voxel_check=True)
     if args.raw_data_file is not None:
         config = replace(config, raw_data_file=args.raw_data_file)
     if args.raw_data_list_file is not None:
