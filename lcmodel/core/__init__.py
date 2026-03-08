@@ -22,6 +22,7 @@ from lcmodel.core.legacy_math import (
     nextre,
     pythag,
 )
+from lcmodel.core.legacy_linear import g1, g2, h12
 
 __all__ = [
     "FFTPlan",
@@ -42,4 +43,7 @@ __all__ = [
     "inflec",
     "nextre",
     "pythag",
+    "g1",
+    "g2",
+    "h12",
 ]

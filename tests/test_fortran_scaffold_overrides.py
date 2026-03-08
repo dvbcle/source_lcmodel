@@ -94,6 +94,35 @@ class TestFortranScaffoldOverrides(unittest.TestCase):
         self.assertIn("setrgbcolor", text)
         self.assertIn("showpage", text)
 
+    def test_linear_algebra_overrides(self):
+        cos = [0.0]
+        sin = [0.0]
+        sig = [0.0]
+        state = fs.g1(3.0, 4.0, cos, sin, sig, state={})
+        self.assertIn("g1", state)
+        x = [3.0]
+        y = [4.0]
+        fs.g2(cos[0], sin[0], x, y, state={})
+        self.assertAlmostEqual(5.0, x[0], places=6)
+        self.assertAlmostEqual(0.0, y[0], places=6)
+
+    def test_pnnls_and_plprin_overrides(self):
+        a = [[1.0, 0.0], [0.0, 1.0]]
+        b = [1.0, 2.0]
+        x = [0.0, 0.0]
+        dvar = [0.0]
+        w = [0.0, 0.0]
+        zz = [0.0, 0.0]
+        index = [0, 0]
+        mode = [0]
+        nsetp = [0]
+        fs.pnnls(a, 2, 2, 2, b, x, dvar, w, zz, index, mode, 1.0e-30, [True, True], 0.0, nsetp, state={})
+        self.assertAlmostEqual(1.0, x[0], places=6)
+        self.assertAlmostEqual(2.0, x[1], places=6)
+        self.assertEqual(1, mode[0])
+        st = fs.plprin([0.0, 1.0], [1.0, 2.0], [0.5, 1.5], 2, False, 6, 1e10, 0, 0, 0, [0.0, 0.0], False, state={})
+        self.assertIn("plprin_text", st)
+
 
 if __name__ == "__main__":
     unittest.main()

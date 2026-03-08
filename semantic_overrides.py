@@ -20,6 +20,7 @@ from lcmodel.core.fftpack_compat import (
     seqtot as seqtot_compat,
 )
 from lcmodel.core.fortran_compat import ilen as ilen_compat
+from lcmodel.core.legacy_linear import g1 as g1_compat, g2 as g2_compat, h12 as h12_compat
 from lcmodel.core.legacy_math import (
     betain as betain_compat,
     dgamln as dgamln_compat,
@@ -42,6 +43,7 @@ from lcmodel.pipeline.averaging import (
 from lcmodel.pipeline.integration import integrate_peak_with_local_baseline
 from lcmodel.pipeline.mydata import MyDataConfig, run_mydata_stage
 from lcmodel.pipeline.postprocess import compute_combinations
+from lcmodel.pipeline.fitting import FitConfig, run_fit_stage
 
 
 def _assign_vector(target: Any, values: Sequence[complex]) -> None:
@@ -49,6 +51,11 @@ def _assign_vector(target: Any, values: Sequence[complex]) -> None:
         limit = min(len(target), len(values))
         for i in range(limit):
             target[i] = values[i]
+
+
+def _assign_scalar(target: Any, value: Any) -> None:
+    if isinstance(target, MutableSequence) and len(target) >= 1:
+        target[0] = value
 
 
 def _ov_ilen(st: str, state: dict[str, Any] | None = None) -> int:
@@ -253,6 +260,148 @@ def _ov_inflec(
     _ = dpy
     _ = state
     return inflec_compat(parnl, int(nside2), dgauss, float(thrlin), int(imethd))
+
+
+def _ov_g1(a: float, b: float, cos: Any, sin: Any, sig: Any, state: dict[str, Any] | None = None) -> dict[str, Any]:
+    out = state if state is not None else {}
+    cos_v, sin_v, sig_v = g1_compat(float(a), float(b))
+    _assign_scalar(cos, cos_v)
+    _assign_scalar(sin, sin_v)
+    _assign_scalar(sig, sig_v)
+    out["g1"] = (cos_v, sin_v, sig_v)
+    return out
+
+
+def _ov_g2(cos: float, sin: float, x: Any, y: Any, state: dict[str, Any] | None = None) -> dict[str, Any]:
+    out = state if state is not None else {}
+    xv = float(x[0]) if isinstance(x, MutableSequence) and x else float(x)
+    yv = float(y[0]) if isinstance(y, MutableSequence) and y else float(y)
+    xr, yr = g2_compat(float(cos), float(sin), xv, yv)
+    _assign_scalar(x, xr)
+    _assign_scalar(y, yr)
+    out["g2"] = (xr, yr)
+    return out
+
+
+def _ov_h12(
+    mode: int,
+    lpivot: int,
+    l1: int,
+    m: int,
+    u: Any,
+    iue: int,
+    up: Any,
+    c: Any,
+    ice: int,
+    icv: int,
+    ncv: int,
+    range_: float,
+    state: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    out = state if state is not None else {}
+    if not isinstance(u, MutableSequence) or not isinstance(c, MutableSequence):
+        return out
+    up_value = float(up[0]) if isinstance(up, MutableSequence) and up else float(up)
+    up_value = h12_compat(
+        int(mode),
+        int(lpivot),
+        int(l1),
+        int(m),
+        u,
+        int(iue),
+        up_value,
+        c,
+        int(ice),
+        int(icv),
+        int(ncv),
+        float(range_),
+    )
+    _assign_scalar(up, up_value)
+    out["up"] = up_value
+    return out
+
+
+def _ov_pnnls(
+    a: Sequence[Sequence[float]],
+    mda: int,
+    m: int,
+    n: int,
+    b: Sequence[float],
+    x: Any,
+    dvar: Any,
+    w: Any,
+    zz: Any,
+    index: Any,
+    mode: Any,
+    range_: float,
+    nonneg: Sequence[bool],
+    dvarac: float,
+    nsetp: Any,
+    state: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    _ = (mda, zz, range_)
+    out = state if state is not None else {}
+    rows = [list(map(float, row[: int(n)])) for row in a[: int(m)]]
+    vec = [float(v) for v in b[: int(m)]]
+    mask = tuple(bool(v) for v in nonneg[: int(n)])
+    fit = run_fit_stage(
+        rows,
+        vec,
+        FitConfig(
+            max_iter=8000,
+            tolerance=1e-10,
+            nonnegative_mask=mask,
+        ),
+    )
+    coeffs = list(fit.coefficients)
+    if isinstance(x, MutableSequence):
+        for j in range(min(len(x), len(coeffs))):
+            x[j] = coeffs[j]
+    resid_sq = fit.residual_norm * fit.residual_norm + float(dvarac)
+    _assign_scalar(dvar, resid_sq)
+    _assign_scalar(mode, 1)
+    positive_count = sum(1 for j, val in enumerate(coeffs) if (not mask[j]) or val > 0.0)
+    _assign_scalar(nsetp, positive_count)
+    if isinstance(index, MutableSequence):
+        for j in range(min(len(index), len(coeffs))):
+            index[j] = j + 1
+    if isinstance(w, MutableSequence):
+        for j in range(min(len(w), len(coeffs))):
+            w[j] = 0.0
+    out["pnnls_coefficients"] = tuple(coeffs)
+    out["pnnls_residual_sq"] = resid_sq
+    return out
+
+
+def _ov_plprin(
+    x: Sequence[float],
+    y1: Sequence[float],
+    y2: Sequence[float],
+    n: int,
+    only1: bool,
+    nout: int,
+    srange: float,
+    nlinf: int,
+    ng: int,
+    my1: int,
+    yerr: Sequence[float],
+    plterr: bool,
+    state: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    _ = (nout, srange, nlinf, ng, my1, yerr)
+    out = state if state is not None else {}
+    count = max(0, min(int(n), len(x), len(y1), len(y2)))
+    lines = []
+    for i in range(count):
+        if bool(only1):
+            lines.append(f"{float(y1[i]): .6e} {float(x[i]): .6e}")
+        else:
+            lines.append(
+                f"{float(y1[i]): .6e} {float(y2[i]): .6e} {float(x[i]): .6e}"
+            )
+    out["plprin_text"] = "\n".join(lines) + ("\n" if lines else "")
+    out["plprin_plterr"] = bool(plterr)
+    return out
 
 
 def _ov_split_filename(
@@ -821,6 +970,11 @@ SEMANTIC_OVERRIDES = {
     "icycle": _ov_icycle,
     "nextre": _ov_nextre,
     "inflec": _ov_inflec,
+    "g1": _ov_g1,
+    "g2": _ov_g2,
+    "h12": _ov_h12,
+    "pnnls": _ov_pnnls,
+    "plprin": _ov_plprin,
     "split_filename": _ov_split_filename,
     "chstrip_int6": _ov_chstrip_int6,
     "split_title": _ov_split_title,
