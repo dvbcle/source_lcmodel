@@ -16,6 +16,19 @@ Fortran sources.
 - External `test_lcm` regression from `schorschinho/LCModel` has a successful
   `out.ps` vs `out_ref_build.ps` byte-identical comparison.
 
+## Development history
+
+1. Initial phase: generated Fortran scaffold and routine-level compatibility
+   shims to establish broad conversion coverage.
+2. Semantic porting phase: numerical and workflow behavior moved into
+   Python-first modules under `lcmodel/core`, `lcmodel/io`, and
+   `lcmodel/pipeline`.
+3. Hard cutover phase: scaffold runtime entry points were removed from the
+   supported product surface.
+4. Traceability phase: manifest-based routine mapping, provenance decorators,
+   parity audit tooling, and runtime trace logs were added for collaborator and
+   legacy-user transparency.
+
 ## Project goals
 
 1. Keep numerical and behavioral parity with the reference Fortran baseline.

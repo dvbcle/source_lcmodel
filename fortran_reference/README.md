@@ -5,5 +5,6 @@ traceability and parity checks.
 
 - The Python runtime uses these files as read-only reference inputs for audit
   tooling and routine-name discovery.
+- These files are not part of the supported runtime product surface.
 - Do not edit these files during Python refactors unless you are intentionally
   updating the upstream Fortran baseline.
