@@ -166,6 +166,7 @@ python -m lcmodel --control-file data\\control.in --traceability-log-file artifa
 - Python architecture guide: `docs/PYTHON_ARCHITECTURE.md`
 - Developer module map: `docs/DEVELOPER_MODULE_MAP.md`
 - Traceability system guide: `docs/TRACEABILITY_SYSTEM.md`
+- Performance measurements: `docs/PERFORMANCE_MEASUREMENTS.md`
 - Fortran parity workflow: `docs/FORTRAN_PARITY_WORKFLOW.md`
 - External regression proof (`test_lcm`): `docs/EXTERNAL_REGRESSION_PROOF.md`
 - Fortran routine map: `docs/FORTRAN_ROUTINE_MAP.md`
