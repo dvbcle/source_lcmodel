@@ -176,6 +176,18 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
             line_broadening_hz = max(0.0, float(nml["lbhz"]))
         except Exception:
             line_broadening_hz = 0.0
+    baseline_knots = 0
+    if "nbackg" in nml:
+        try:
+            baseline_knots = max(0, int(nml["nbackg"]))
+        except Exception:
+            baseline_knots = 0
+    baseline_smoothness = 0.0
+    if "alphab" in nml:
+        try:
+            baseline_smoothness = max(0.0, float(nml["alphab"]))
+        except Exception:
+            baseline_smoothness = 0.0
 
     include_metabolites: tuple[str, ...] = ()
     if isinstance(nml.get("chuse1"), list):
@@ -226,4 +238,6 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
         combine_expressions=combine_expressions,
         shift_search_points=shift_search_points,
         baseline_order=baseline_order,
+        baseline_knots=baseline_knots,
+        baseline_smoothness=baseline_smoothness,
     )

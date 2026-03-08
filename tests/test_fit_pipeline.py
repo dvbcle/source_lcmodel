@@ -70,6 +70,15 @@ class TestFitPipeline(unittest.TestCase):
         self.assertEqual("alt_pnnls_poly_baseline", fit.method)
         self.assertGreater(fit.coefficients[0], 1.5)
 
+    def test_run_fit_stage_with_bspline_baseline(self):
+        fit = run_fit_stage(
+            [[1.0], [0.0], [0.0], [0.0], [0.0], [0.0], [0.0], [0.0]],
+            [2.0, 0.15, 0.12, 0.08, 0.05, 0.04, 0.03, 0.02],
+            FitConfig(baseline_knots=6, baseline_smoothness=1e-2),
+        )
+        self.assertEqual("alt_pnnls_bspline_baseline", fit.method)
+        self.assertGreater(fit.coefficients[0], 1.3)
+
     def test_run_fit_stage_with_mixed_sign_constraints(self):
         fit = run_fit_stage(
             [[1.0, 0.0], [0.0, 1.0]],

@@ -57,6 +57,12 @@ Fit with soft priors:
 python -m lcmodel --raw-data-file data\\raw.txt --basis-file data\\basis.txt --basis-names-file data\\names.txt --priors-file data\\priors.txt
 ```
 
+Fit with cubic B-spline baseline regularization:
+
+```powershell
+python -m lcmodel --raw-data-file data\\raw.txt --basis-file data\\basis.txt --baseline-knots 8 --baseline-smoothness 0.25
+```
+
 Batch mode:
 
 ```powershell

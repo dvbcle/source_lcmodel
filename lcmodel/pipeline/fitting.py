@@ -12,6 +12,8 @@ class FitConfig:
     max_iter: int = 2000
     tolerance: float = 1e-8
     baseline_order: int = -1
+    baseline_knots: int = 0
+    baseline_smoothness: float = 0.0
     alternating_iters: int = 6
     nonnegative_mask: tuple[bool, ...] | None = None
 
@@ -231,6 +233,117 @@ def _least_squares_baseline(
     return beta, baseline
 
 
+def _build_bspline_basis(length: int, knots: int) -> list[list[float]]:
+    """Build cubic B-spline basis columns on an evenly spaced grid.
+
+    This follows the piecewise-cubic construction used in Fortran `GBACKG`.
+    """
+
+    if length <= 0 or knots < 4:
+        return []
+    if length == 1:
+        return [[1.0] for _ in range(knots)]
+
+    delta = (length - 1) / float(knots - 3)
+    if delta <= 0.0:
+        return []
+    fnorm = 1.0 / (6.0 * delta**4)
+
+    def dim(x: float, y: float) -> float:
+        return x - y if x > y else 0.0
+
+    basis = [[0.0] * length for _ in range(knots)]
+    xknot = -2.0 * delta
+    for j in range(knots):
+        xknot += delta
+        xmin = xknot - 2.0 * delta
+        xmax = xknot + 2.0 * delta
+        for i in range(length):
+            x = float(i)
+            value = (
+                dim(x, xmin) ** 3
+                - 4.0 * dim(x, xmin + delta) ** 3
+                + 6.0 * dim(x, xknot) ** 3
+                - 4.0 * dim(x, xmax - delta) ** 3
+                + dim(x, xmax) ** 3
+            ) * fnorm
+            basis[j][i] = value
+    return basis
+
+
+def _build_bspline_regularizer(knots: int) -> list[list[float]]:
+    """Build the no-boundary cubic-spline smoothness operator from `GBACKG`."""
+
+    if knots < 4:
+        return []
+    reg = [[0.0] * knots for _ in range(knots)]
+    for i in range(knots):
+        reg[i][i] = 16.0
+        if i + 1 < knots:
+            reg[i][i + 1] = -9.0
+        if i + 3 < knots:
+            reg[i][i + 3] = 1.0
+
+    reg[0][0] = 2.0
+    reg[knots - 1][knots - 1] = 2.0
+    if knots >= 2:
+        reg[0][1] = -3.0
+        reg[knots - 2][knots - 1] = -3.0
+        reg[1][1] = 8.0
+        reg[knots - 2][knots - 2] = 8.0
+    if knots >= 3:
+        reg[1][2] = -6.0
+        reg[knots - 3][knots - 2] = -6.0
+        reg[2][2] = 14.0
+        reg[knots - 3][knots - 3] = 14.0
+
+    for i in range(knots):
+        for j in range(i + 1, knots):
+            reg[j][i] = reg[i][j]
+    return reg
+
+
+def _least_squares_bspline_baseline(
+    residual: Sequence[float],
+    knots: int,
+    smoothness: float,
+) -> tuple[list[float], list[float]]:
+    basis_cols = _build_bspline_basis(len(residual), knots)
+    if not basis_cols:
+        return [], [0.0] * len(residual)
+
+    k = len(basis_cols)
+    xtx = [[0.0] * k for _ in range(k)]
+    xty = [0.0] * k
+    for i in range(len(residual)):
+        yi = float(residual[i])
+        for a in range(k):
+            xa = basis_cols[a][i]
+            xty[a] += xa * yi
+            for b in range(k):
+                xtx[a][b] += xa * basis_cols[b][i]
+
+    lam = max(0.0, float(smoothness))
+    if lam > 0.0:
+        reg = _build_bspline_regularizer(k)
+        # Add lambda * (R^T R) to the normal equations.
+        for i in range(k):
+            for j in range(k):
+                penalty = 0.0
+                for t in range(k):
+                    penalty += reg[t][i] * reg[t][j]
+                xtx[i][j] += lam * penalty
+
+    beta = _solve_linear_system(xtx, xty)
+    baseline = [0.0] * len(residual)
+    for i in range(len(residual)):
+        total = 0.0
+        for j in range(k):
+            total += beta[j] * basis_cols[j][i]
+        baseline[i] = total
+    return beta, baseline
+
+
 def _alternating_nnls_with_baseline(
     matrix: Sequence[Sequence[float]],
     vector: Sequence[float],
@@ -261,7 +374,14 @@ def _alternating_nnls_with_baseline(
                 total += float(aij) * x[j]
             fitted[i] = total
         residual = [float(vector[i]) - fitted[i] for i in range(len(vector))]
-        _, baseline = _least_squares_baseline(residual, config.baseline_order)
+        if config.baseline_knots >= 4:
+            _, baseline = _least_squares_bspline_baseline(
+                residual,
+                config.baseline_knots,
+                config.baseline_smoothness,
+            )
+        else:
+            _, baseline = _least_squares_baseline(residual, config.baseline_order)
 
         if nnls.residual_norm <= config.tolerance:
             break
@@ -278,7 +398,7 @@ def _alternating_nnls_with_baseline(
         coefficients=tuple(x),
         residual_norm=resnorm,
         iterations=alt,
-        method="alt_pnnls_poly_baseline",
+        method="alt_pnnls_bspline_baseline" if config.baseline_knots >= 4 else "alt_pnnls_poly_baseline",
     )
 
 
@@ -374,7 +494,7 @@ def run_fit_stage(
             raise ValueError("nonnegative_mask length must equal matrix width")
         nonnegative = tuple(bool(v) for v in config.nonnegative_mask)
 
-    if config.baseline_order >= 0:
+    if config.baseline_order >= 0 or config.baseline_knots >= 4:
         stage = _alternating_nnls_with_baseline(matrix, vector, config, nonnegative)
     else:
         stage = _pnnls_active_set(matrix, vector, config, nonnegative)

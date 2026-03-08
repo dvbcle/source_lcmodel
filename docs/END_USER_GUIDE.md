@@ -75,6 +75,10 @@ output_split_right=.ps
   - Optional integer search range for pre-fit alignment shift.
 - `--baseline-order`
   - Polynomial baseline degree for alternating fit (`-1` disables baseline).
+- `--baseline-knots`
+  - Cubic B-spline knot count for baseline modeling (`>=4` enables spline mode).
+- `--baseline-smoothness`
+  - Smoothness penalty weight for spline baseline regularization.
 
 ## 4. Interpreting Output
 

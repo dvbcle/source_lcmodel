@@ -93,7 +93,11 @@ class LCModelRunner:
             stage = run_fit_stage(
                 fit_matrix,
                 fit_vector,
-                FitConfig(baseline_order=self.config.baseline_order),
+                FitConfig(
+                    baseline_order=self.config.baseline_order,
+                    baseline_knots=self.config.baseline_knots,
+                    baseline_smoothness=self.config.baseline_smoothness,
+                ),
             )
             combined = compute_combinations(
                 self.config.combine_expressions,

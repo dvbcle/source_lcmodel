@@ -78,6 +78,11 @@ escaped = escape_postscript_text("Value (A)%")
 left, right = split_output_filename_for_voxel("report.ps", ("ps", "PS", "Ps"))
 fit = run_fit_stage([[1, 0], [0, 1]], [2, 3])
 fit_with_baseline = run_fit_stage([[1], [0], [0]], [2, 0.1, 0.1], FitConfig(baseline_order=0))
+fit_with_spline_baseline = run_fit_stage(
+    [[1], [0], [0], [0], [0], [0]],
+    [2, 0.1, 0.08, 0.05, 0.03, 0.02],
+    FitConfig(baseline_knots=6, baseline_smoothness=1e-2),
+)
 phase = estimate_zero_order_phase([1j, 1j, 1j])
 rot = apply_zero_order_phase([1j, 1j, 1j], phase)
 phase0, phase1 = estimate_zero_first_order_phase([1j, 1j, 1j, 1j, 1j])
@@ -112,7 +117,9 @@ print(result.processing_log)
 
 ## 5. API Behavior Notes
 
-- The module currently covers semantically ported preprocessing behavior, not full LCModel numerical fitting.
+- The fit core now uses an active-set PNNLS-style solver with optional mixed sign constraints.
+- Alternating baseline fitting supports either polynomial (`baseline_order`) or cubic B-spline (`baseline_knots`, `baseline_smoothness`) modes.
+- This is still not the full original LCModel nonlinear optimization stack.
 - `split_output_filename_for_voxel` handles three extension cases:
   - `.../ps` -> left ends with `/`, right starts with `.ps`
   - `... .ps` -> left ends with `_`, right is `.ps`

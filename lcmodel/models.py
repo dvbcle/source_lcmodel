@@ -37,6 +37,8 @@ class RunConfig:
     combine_expressions: tuple[str, ...] = ()
     shift_search_points: int = 0
     baseline_order: int = -1
+    baseline_knots: int = 0
+    baseline_smoothness: float = 0.0
 
 
 @dataclass(frozen=True)
