@@ -136,6 +136,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Search +/- this many points for integer alignment shift before fit.",
     )
     parser.add_argument(
+        "--alignment-mode",
+        choices=("circular", "zero_padded"),
+        default=None,
+        help="Integer shift mode for alignment search.",
+    )
+    parser.add_argument(
         "--baseline-order",
         type=int,
         default=None,
@@ -225,6 +231,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         config = replace(config, combine_expressions=exprs)
     if args.shift_search_points is not None:
         config = replace(config, shift_search_points=args.shift_search_points)
+    if args.alignment_mode is not None:
+        config = replace(config, alignment_circular=(args.alignment_mode == "circular"))
     if args.baseline_order is not None:
         config = replace(config, baseline_order=args.baseline_order)
     if args.baseline_knots is not None:

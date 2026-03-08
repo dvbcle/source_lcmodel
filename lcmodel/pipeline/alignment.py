@@ -8,14 +8,16 @@ from typing import Sequence
 from lcmodel.pipeline.fitting import FitConfig, run_fit_stage
 
 
-def _shift_vector(values: Sequence[float], shift: int) -> list[float]:
+def _shift_vector(values: Sequence[float], shift: int, *, circular: bool) -> list[float]:
     n = len(values)
     if n == 0:
         return []
     out = [0.0] * n
     for i in range(n):
         src = i - shift
-        if 0 <= src < n:
+        if circular:
+            out[i] = float(values[src % n])
+        elif 0 <= src < n:
             out[i] = float(values[src])
     return out
 
@@ -30,6 +32,8 @@ def align_vector_by_integer_shift(
     matrix: Sequence[Sequence[float]],
     vector: Sequence[float],
     max_shift_points: int,
+    *,
+    circular: bool = True,
 ) -> AlignmentResult:
     """Find shift in [-max_shift_points, max_shift_points] minimizing residual."""
 
@@ -42,7 +46,7 @@ def align_vector_by_integer_shift(
     best_energy = -1.0
     best_vector = [float(v) for v in vector]
     for shift in range(-max_shift, max_shift + 1):
-        shifted = _shift_vector(vector, shift)
+        shifted = _shift_vector(vector, shift, circular=circular)
         stage = run_fit_stage(matrix, shifted, FitConfig(baseline_order=-1))
         energy = sum(abs(v) for v in shifted)
         if stage.residual_norm < best_resid - 1e-12:

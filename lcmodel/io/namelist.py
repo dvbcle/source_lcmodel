@@ -164,6 +164,9 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
             shift_search_points = max(0, int(nml["nshifw"]))
         except Exception:
             shift_search_points = 0
+    alignment_circular = True
+    if "shftcyc" in nml:
+        alignment_circular = bool(nml.get("shftcyc"))
     dwell_time_s = 0.0
     if "deltat" in nml:
         try:
@@ -257,6 +260,7 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
         include_metabolites=include_metabolites,
         combine_expressions=combine_expressions,
         shift_search_points=shift_search_points,
+        alignment_circular=alignment_circular,
         baseline_order=baseline_order,
         baseline_knots=baseline_knots,
         baseline_smoothness=baseline_smoothness,

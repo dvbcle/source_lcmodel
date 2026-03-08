@@ -82,6 +82,7 @@ class LCModelRunner:
                 setup.matrix,
                 setup.vector,
                 self.config.shift_search_points,
+                circular=self.config.alignment_circular,
             )
             fit_matrix = [list(row) for row in setup.matrix]
             fit_vector = list(alignment.vector)

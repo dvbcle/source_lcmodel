@@ -77,6 +77,8 @@ output_split_right=.ps
   - Optional comma-separated combinations, e.g. `NAA+NAAG,Glu+Gln`.
 - `--shift-search-points`
   - Optional integer search range for pre-fit alignment shift.
+- `--alignment-mode`
+  - Shift mode for alignment search: `circular` (Fortran SHIFTD-like) or `zero_padded`.
 - `--baseline-order`
   - Polynomial baseline degree for alternating fit (`-1` disables baseline).
 - `--baseline-knots`

@@ -123,6 +123,7 @@ print(result.processing_log)
 - The fit core now uses an active-set PNNLS-style solver with optional mixed sign constraints.
 - Alternating baseline fitting supports either polynomial (`baseline_order`) or cubic B-spline (`baseline_knots`, `baseline_smoothness`) modes.
 - Time-domain auto-phasing supports `imag_abs` and Fortran-inspired `smooth_real` objectives.
+- Integer alignment search supports circular (Fortran-like) and zero-padded shift modes.
 - This is still not the full original LCModel nonlinear optimization stack.
 - `split_output_filename_for_voxel` handles three extension cases:
   - `.../ps` -> left ends with `/`, right starts with `.ps`

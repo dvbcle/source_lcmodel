@@ -38,6 +38,7 @@ class RunConfig:
     include_metabolites: tuple[str, ...] = ()
     combine_expressions: tuple[str, ...] = ()
     shift_search_points: int = 0
+    alignment_circular: bool = True
     baseline_order: int = -1
     baseline_knots: int = 0
     baseline_smoothness: float = 0.0
