@@ -17,6 +17,7 @@ from lcmodel.core.fftpack_compat import (
     seqtot,
 )
 from lcmodel.models import BatchRunResult, FitResult, RunConfig, RunResult, TitleLayout
+from lcmodel.runtime_state import RuntimeState
 from lcmodel.pipeline.alignment import (
     AlignmentResult,
     FractionalAlignmentResult,
@@ -66,6 +67,7 @@ __all__ = [
     "NonlinearResult",
     "RunConfig",
     "RunResult",
+    "RuntimeState",
     "TitleLayout",
     "MyDataConfig",
     "MyDataResult",

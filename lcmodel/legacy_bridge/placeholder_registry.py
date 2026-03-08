@@ -7,6 +7,8 @@ from pathlib import Path
 import re
 from typing import Any
 
+from lcmodel.runtime_state import RuntimeState
+
 
 HEADER_RE = re.compile(
     r"^\s*(?:(REAL|INTEGER|LOGICAL|COMPLEX|DOUBLE\s+PRECISION|CHARACTER(?:\*\d+)?)\s+)?"
@@ -44,10 +46,9 @@ def make_placeholder_override(name: str) -> Callable[..., dict[str, Any]]:
         state = kwargs.get("state")
         if state is None and args and isinstance(args[-1], dict):
             state = args[-1]
-        if state is None:
-            state = {}
-        state.setdefault("placeholder_overrides", []).append(name)
-        return state
+        out = RuntimeState.coerce(state if isinstance(state, Mapping) else None)
+        out.mark_placeholder(name)
+        return out
 
     return _override
 

@@ -14,6 +14,8 @@ Sources:
 
 from __future__ import annotations
 
+from lcmodel.runtime_state import RuntimeState
+
 try:
     from semantic_overrides import SEMANTIC_OVERRIDES
 except Exception:
@@ -36,7 +38,7 @@ def _identity_state(state):
 def lcmodl(state=None):
     """Auto-converted from PROGRAM LCMODL (LCModel.f:6)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('lcmodl')
     if override is not None:
@@ -403,7 +405,7 @@ def lcmodl(state=None):
 def anonymous_2(state=None):
     """Auto-converted from BLOCK DATA anonymous_2 (LCModel.f:383)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('anonymous_2')
     if override is not None:
@@ -465,7 +467,7 @@ def anonymous_2(state=None):
 def mycont(state=None):
     """Auto-converted from SUBROUTINE MYCONT (LCModel.f:703)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('mycont')
     if override is not None:
@@ -944,7 +946,7 @@ def mycont(state=None):
 def check_zero_voxels(state=None):
     """Auto-converted from SUBROUTINE check_zero_voxels (LCModel.f:1182)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('check_zero_voxels')
     if override is not None:
@@ -1007,7 +1009,7 @@ def check_zero_voxels(state=None):
 def average(state=None):
     """Auto-converted from SUBROUTINE average (LCModel.f:1236)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('average')
     if override is not None:
@@ -1166,7 +1168,7 @@ def average(state=None):
 def getvar(state=None):
     """Auto-converted from FUNCTION getvar (LCModel.f:1404)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('getvar')
     if override is not None:
@@ -1220,7 +1222,7 @@ def getvar(state=None):
 def restore_settings(state=None):
     """Auto-converted from SUBROUTINE restore_settings (LCModel.f:1449)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('restore_settings')
     if override is not None:
@@ -1342,7 +1344,7 @@ def restore_settings(state=None):
 def update_priors(state=None):
     """Auto-converted from SUBROUTINE update_priors (LCModel.f:1566)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('update_priors')
     if override is not None:
@@ -1460,7 +1462,7 @@ def update_priors(state=None):
 def open_output(state=None):
     """Auto-converted from SUBROUTINE open_output (LCModel.f:1682)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('open_output')
     if override is not None:
@@ -1651,7 +1653,7 @@ def open_output(state=None):
 def split_filename(filename, chtype1, chtype2, chtype3, lchtype, split, state=None):
     """Auto-converted from SUBROUTINE split_filename (LCModel.f:1895)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('split_filename')
     if override is not None:
@@ -1715,7 +1717,7 @@ def split_filename(filename, chtype1, chtype2, chtype3, lchtype, split, state=No
 def icharst(ch, lch, state=None):
     """Auto-converted from FUNCTION icharst (LCModel.f:1952)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('icharst')
     if override is not None:
@@ -1746,7 +1748,7 @@ def icharst(ch, lch, state=None):
 def chstrip_int6(iarg, chi, leni, state=None):
     """Auto-converted from SUBROUTINE chstrip_int6 (LCModel.f:1971)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('chstrip_int6')
     if override is not None:
@@ -1795,7 +1797,7 @@ def chstrip_int6(iarg, chi, leni, state=None):
 def split_title(state=None):
     """Auto-converted from SUBROUTINE split_title (LCModel.f:2008)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('split_title')
     if override is not None:
@@ -1868,7 +1870,7 @@ def split_title(state=None):
 def loadch(state=None):
     """Auto-converted from SUBROUTINE LOADCH (LCModel.f:2072)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('loadch')
     if override is not None:
@@ -1992,7 +1994,7 @@ def loadch(state=None):
 def compact_string(str_in, str_out, len_out, state=None):
     """Auto-converted from SUBROUTINE compact_string (LCModel.f:2210)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('compact_string')
     if override is not None:
@@ -2026,7 +2028,7 @@ def compact_string(str_in, str_out, len_out, state=None):
 def dcfft_r(datat, ft, n, ldwfft, dwfftc, state=None):
     """Auto-converted from SUBROUTINE DCFFT_R (LCModel.f:2232)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('dcfft_r')
     if override is not None:
@@ -2069,7 +2071,7 @@ def dcfft_r(datat, ft, n, ldwfft, dwfftc, state=None):
 def errmes(number, ilevel, chsubp, state=None):
     """Auto-converted from SUBROUTINE ERRMES (LCModel.f:2264)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('errmes')
     if override is not None:
@@ -2171,7 +2173,7 @@ def errmes(number, ilevel, chsubp, state=None):
 def initia(state=None):
     """Auto-converted from SUBROUTINE INITIA (LCModel.f:2365)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('initia')
     if override is not None:
@@ -2285,7 +2287,7 @@ def initia(state=None):
 def datain(state=None):
     """Auto-converted from SUBROUTINE DATAIN (LCModel.f:2473)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('datain')
     if override is not None:
@@ -2548,7 +2550,7 @@ def datain(state=None):
 def icycle_r(j, ndata, state=None):
     """Auto-converted from FUNCTION ICYCLE_r (LCModel.f:2732)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('icycle_r')
     if override is not None:
@@ -2570,7 +2572,7 @@ def icycle_r(j, ndata, state=None):
 def icycle(j, ndata, state=None):
     """Auto-converted from FUNCTION ICYCLE (LCModel.f:2742)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('icycle')
     if override is not None:
@@ -2596,7 +2598,7 @@ def icycle(j, ndata, state=None):
 def mydata(state=None):
     """Auto-converted from SUBROUTINE MYDATA (LCModel.f:2756)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('mydata')
     if override is not None:
@@ -2793,7 +2795,7 @@ def mydata(state=None):
 def phase_with_max_real(state=None):
     """Auto-converted from SUBROUTINE phase_with_max_real (LCModel.f:2951)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('phase_with_max_real')
     if override is not None:
@@ -2864,7 +2866,7 @@ def phase_with_max_real(state=None):
 def smooth_tail(cdatat, state=None):
     """Auto-converted from SUBROUTINE smooth_tail (LCModel.f:3011)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('smooth_tail')
     if override is not None:
@@ -2908,7 +2910,7 @@ def smooth_tail(cdatat, state=None):
 def smooth_tail_2(work_in, out, munfil, nunfil, lprint, voxel1, state=None):
     """Auto-converted from SUBROUTINE smooth_tail_2 (LCModel.f:3045)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('smooth_tail_2')
     if override is not None:
@@ -2947,7 +2949,7 @@ def smooth_tail_2(work_in, out, munfil, nunfil, lprint, voxel1, state=None):
 def ecc_truncate(state=None):
     """Auto-converted from SUBROUTINE ecc_truncate (LCModel.f:3076)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('ecc_truncate')
     if override is not None:
@@ -3021,7 +3023,7 @@ def ecc_truncate(state=None):
 def igetp(istart, niter, state=None):
     """Auto-converted from FUNCTION IGETP (LCModel.f:3141)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('igetp')
     if override is not None:
@@ -3108,7 +3110,7 @@ def igetp(istart, niter, state=None):
 def mybasi(lstage, state=None):
     """Auto-converted from SUBROUTINE MYBASI (LCModel.f:3216)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('mybasi')
     if override is not None:
@@ -4333,7 +4335,7 @@ def mybasi(lstage, state=None):
 def make_cgroup_shift(state=None):
     """Auto-converted from SUBROUTINE make_cgroup_shift (LCModel.f:4561)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('make_cgroup_shift')
     if override is not None:
@@ -4416,7 +4418,7 @@ def make_cgroup_shift(state=None):
 def parse_chsimu(state=None):
     """Auto-converted from SUBROUTINE parse_chsimu (LCModel.f:4639)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('parse_chsimu')
     if override is not None:
@@ -4512,7 +4514,7 @@ def parse_chsimu(state=None):
 def set_lshape_false(state=None):
     """Auto-converted from SUBROUTINE set_lshape_false (LCModel.f:4743)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('set_lshape_false')
     if override is not None:
@@ -4545,7 +4547,7 @@ def set_lshape_false(state=None):
 def water_scale(state=None):
     """Auto-converted from SUBROUTINE water_scale (LCModel.f:4766)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('water_scale')
     if override is not None:
@@ -4598,7 +4600,7 @@ def water_scale(state=None):
 def areawa(istage, state=None):
     """Auto-converted from FUNCTION areawa (LCModel.f:4806)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('areawa')
     if override is not None:
@@ -4688,7 +4690,7 @@ def areawa(istage, state=None):
 def areaw2(state=None):
     """Auto-converted from FUNCTION areaw2 (LCModel.f:4885)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('areaw2')
     if override is not None:
@@ -4779,7 +4781,7 @@ def areaw2(state=None):
 def getpha(kystrt, kyend, dataf, dataw, nunfil, radian, nypeak, yorig, yinterp, degzer_calc, state=None):
     """Auto-converted from SUBROUTINE getpha (LCModel.f:4980)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('getpha')
     if override is not None:
@@ -4898,7 +4900,7 @@ def getpha(kystrt, kyend, dataf, dataw, nunfil, radian, nypeak, yorig, yinterp, 
 def integrate(dataf, ppminc2, rinteg, kyend, kystrt, ly, nunfil, nwndo, state=None):
     """Auto-converted from SUBROUTINE INTEGRATE (LCModel.f:5094)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('integrate')
     if override is not None:
@@ -4990,7 +4992,7 @@ def integrate(dataf, ppminc2, rinteg, kyend, kystrt, ly, nunfil, nwndo, state=No
 def areaba(basisf, ppminc_arg, nunfil_arg, state=None):
     """Auto-converted from FUNCTION areaba (LCModel.f:5175)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('areaba')
     if override is not None:
@@ -5159,7 +5161,7 @@ def areaba(basisf, ppminc_arg, nunfil_arg, state=None):
 def combis(state=None):
     """Auto-converted from SUBROUTINE COMBIS (LCModel.f:5341)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('combis')
     if override is not None:
@@ -5266,7 +5268,7 @@ def combis(state=None):
 def startv(ipass, state=None):
     """Auto-converted from SUBROUTINE STARTV (LCModel.f:5441)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('startv')
     if override is not None:
@@ -5825,7 +5827,7 @@ def startv(ipass, state=None):
 def ftdata(ishift, state=None):
     """Auto-converted from SUBROUTINE FTDATA (LCModel.f:6038)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('ftdata')
     if override is not None:
@@ -5876,7 +5878,7 @@ def ftdata(ishift, state=None):
 def shiftd(ishift, state=None):
     """Auto-converted from SUBROUTINE SHIFTD (LCModel.f:6079)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('shiftd')
     if override is not None:
@@ -5914,7 +5916,7 @@ def shiftd(ishift, state=None):
 def setup(lstage, state=None):
     """Auto-converted from SUBROUTINE SETUP (LCModel.f:6105)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('setup')
     if override is not None:
@@ -6280,7 +6282,7 @@ def setup(lstage, state=None):
 def setup3(state=None):
     """Auto-converted from SUBROUTINE setup3 (LCModel.f:6465)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('setup3')
     if override is not None:
@@ -6357,7 +6359,7 @@ def setup3(state=None):
 def phasta(state=None):
     """Auto-converted from SUBROUTINE PHASTA (LCModel.f:6538)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('phasta')
     if override is not None:
@@ -6525,7 +6527,7 @@ def phasta(state=None):
 def gbackg(state=None):
     """Auto-converted from SUBROUTINE GBACKG (LCModel.f:6697)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('gbackg')
     if override is not None:
@@ -6752,7 +6754,7 @@ def gbackg(state=None):
 def merge_right(lregion, ppmmin, ppmmax, nregion, state=None):
     """Auto-converted from SUBROUTINE merge_right (LCModel.f:6926)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('merge_right')
     if override is not None:
@@ -6782,7 +6784,7 @@ def merge_right(lregion, ppmmin, ppmmax, nregion, state=None):
 def merge_left(lregion, ppmmin, ppmmax, nregion, state=None):
     """Auto-converted from SUBROUTINE merge_left (LCModel.f:6944)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('merge_left')
     if override is not None:
@@ -6812,7 +6814,7 @@ def merge_left(lregion, ppmmin, ppmmax, nregion, state=None):
 def check_chless(state=None):
     """Auto-converted from SUBROUTINE check_chless (LCModel.f:6962)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('check_chless')
     if override is not None:
@@ -6887,7 +6889,7 @@ def check_chless(state=None):
 def tworeg(state=None):
     """Auto-converted from SUBROUTINE TWOReg (LCModel.f:7029)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('tworeg')
     if override is not None:
@@ -7041,7 +7043,7 @@ def tworeg(state=None):
 def tworg1(state=None):
     """Auto-converted from SUBROUTINE tworg1 (LCModel.f:7175)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('tworg1')
     if override is not None:
@@ -7070,7 +7072,7 @@ def tworg1(state=None):
 def tworeg_sav(state=None):
     """Auto-converted from SUBROUTINE tworeg_sav (LCModel.f:7192)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('tworeg_sav')
     if override is not None:
@@ -7103,7 +7105,7 @@ def tworeg_sav(state=None):
 def tworg2(jpass, fixed_degppm_series, state=None):
     """Auto-converted from SUBROUTINE tworg2 (LCModel.f:7214)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('tworg2')
     if override is not None:
@@ -7287,7 +7289,7 @@ def tworg2(jpass, fixed_degppm_series, state=None):
 def tworg3(jrepha, state=None):
     """Auto-converted from SUBROUTINE tworg3 (LCModel.f:7402)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('tworg3')
     if override is not None:
@@ -7416,7 +7418,7 @@ def tworg3(jrepha, state=None):
 def r_base_sol_big(istage, state=None):
     """Auto-converted from FUNCTION r_base_sol_big (LCModel.f:7548)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('r_base_sol_big')
     if override is not None:
@@ -7507,7 +7509,7 @@ def r_base_sol_big(istage, state=None):
 def conc_prior(state=None):
     """Auto-converted from SUBROUTINE conc_prior (LCModel.f:7629)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('conc_prior')
     if override is not None:
@@ -7660,7 +7662,7 @@ def conc_prior(state=None):
 def parse_prior(state=None):
     """Auto-converted from SUBROUTINE parse_prior (LCModel.f:7779)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('parse_prior')
     if override is not None:
@@ -7719,7 +7721,7 @@ def parse_prior(state=None):
 def get_field(chseparator, len_chseparator, ifield_type, iatend, chreturn, freturn, istart, len_string_in, string_in, state=None):
     """Auto-converted from SUBROUTINE get_field (LCModel.f:7836)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('get_field')
     if override is not None:
@@ -7827,7 +7829,7 @@ def get_field(chseparator, len_chseparator, ifield_type, iatend, chreturn, fretu
 def parse_sum(exrati_arg, substring, len_substring, lratio, csum, denom_absent, state=None):
     """Auto-converted from SUBROUTINE parse_sum (LCModel.f:7939)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('parse_sum')
     if override is not None:
@@ -7922,7 +7924,7 @@ def parse_sum(exrati_arg, substring, len_substring, lratio, csum, denom_absent, 
 def ldegmx(idegmx, state=None):
     """Auto-converted from FUNCTION LDEGMX (LCModel.f:8046)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('ldegmx')
     if override is not None:
@@ -7955,7 +7957,7 @@ def ldegmx(idegmx, state=None):
 def nextre(parnl, nside2, dpy, dgauss, thrlin, imethd, state=None):
     """Auto-converted from FUNCTION NEXTRE (LCModel.f:8069)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('nextre')
     if override is not None:
@@ -8027,7 +8029,7 @@ def nextre(parnl, nside2, dpy, dgauss, thrlin, imethd, state=None):
 def inflec(parnl, nside2, dpy, dgauss, thrlin, imethd, state=None):
     """Auto-converted from FUNCTION INFLEC (LCModel.f:8134)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('inflec')
     if override is not None:
@@ -8092,7 +8094,7 @@ def inflec(parnl, nside2, dpy, dgauss, thrlin, imethd, state=None):
 def ssrang(irange, state=None):
     """Auto-converted from SUBROUTINE SSRANG (LCModel.f:8190)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('ssrang')
     if override is not None:
@@ -8121,7 +8123,7 @@ def ssrang(irange, state=None):
 def rfalsi(ialpha, irange, lrepha, alphb, alphs, assqlo, aalplo, assqhi, aalphi, aalpha, prejok, prej1, state=None):
     """Auto-converted from SUBROUTINE RFALSI (LCModel.f:8213)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('rfalsi')
     if override is not None:
@@ -8479,7 +8481,7 @@ def rfalsi(ialpha, irange, lrepha, alphb, alphs, assqlo, aalplo, assqhi, aalphi,
 def penlty(alpb, alps, sol, parnl, state=None):
     """Auto-converted from FUNCTION PENLTY (LCModel.f:8587)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('penlty')
     if override is not None:
@@ -8560,7 +8562,7 @@ def penlty(alpb, alps, sol, parnl, state=None):
 def rephas(state=None):
     """Auto-converted from SUBROUTINE REPHAS (LCModel.f:8657)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('rephas')
     if override is not None:
@@ -8599,7 +8601,7 @@ def rephas(state=None):
 def fshssq(prej, idfish, nyuse, refndf, ssqref, lprint, rrange, state=None):
     """Auto-converted from FUNCTION FSHSSQ (LCModel.f:8686)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('fshssq')
     if override is not None:
@@ -8715,7 +8717,7 @@ def fshssq(prej, idfish, nyuse, refndf, ssqref, lprint, rrange, state=None):
 def plinls(istage, ierror, state=None):
     """Auto-converted from SUBROUTINE PLINLS (LCModel.f:8795)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('plinls')
     if override is not None:
@@ -8949,7 +8951,7 @@ def plinls(istage, ierror, state=None):
 def dump1(lstage, state=None):
     """Auto-converted from SUBROUTINE DUMP1 (LCModel.f:9035)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('dump1')
     if override is not None:
@@ -8984,7 +8986,7 @@ def dump1(lstage, state=None):
 def pastep(rstep, state=None):
     """Auto-converted from SUBROUTINE PASTEP (LCModel.f:9060)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('pastep')
     if override is not None:
@@ -9026,7 +9028,7 @@ def pastep(rstep, state=None):
 def solve(lstage, dononl, pmqact, onlyft, lerror, state=None):
     """Auto-converted from SUBROUTINE SOLVE (LCModel.f:9091)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('solve')
     if override is not None:
@@ -9886,7 +9888,7 @@ def solve(lstage, dononl, pmqact, onlyft, lerror, state=None):
 def savbes(ilevel, state=None):
     """Auto-converted from SUBROUTINE SAVBES (LCModel.f:10008)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('savbes')
     if override is not None:
@@ -9995,7 +9997,7 @@ def savbes(ilevel, state=None):
 def finout(state=None):
     """Auto-converted from SUBROUTINE FINOUT (LCModel.f:10107)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('finout')
     if override is not None:
@@ -10679,7 +10681,7 @@ def finout(state=None):
 def exitps(lstop, state=None):
     """Auto-converted from SUBROUTINE EXITPS (LCModel.f:10856)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('exitps')
     if override is not None:
@@ -10746,7 +10748,7 @@ def exitps(lstop, state=None):
 def errtbl(state=None):
     """Auto-converted from SUBROUTINE ERRTBL (LCModel.f:10914)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('errtbl')
     if override is not None:
@@ -10784,7 +10786,7 @@ def errtbl(state=None):
 def makeps(state=None):
     """Auto-converted from SUBROUTINE MAKEPS (LCModel.f:10942)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('makeps')
     if override is not None:
@@ -10891,7 +10893,7 @@ def makeps(state=None):
 def revers(x, n, state=None):
     """Auto-converted from SUBROUTINE REVERS (LCModel.f:11045)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('revers')
     if override is not None:
@@ -10919,7 +10921,7 @@ def revers(x, n, state=None):
 def onepag(ncurve, yfit, ydata, lchlin, nsubti, pagex, pagey, subtit, state=None):
     """Auto-converted from SUBROUTINE ONEPAG (LCModel.f:11061)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('onepag')
     if override is not None:
@@ -11635,7 +11637,7 @@ def onepag(ncurve, yfit, ydata, lchlin, nsubti, pagex, pagey, subtit, state=None
 def end_table(ycurr, xboxlo, ytop_column, column_width, state=None):
     """Auto-converted from SUBROUTINE end_table (LCModel.f:11830)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('end_table')
     if override is not None:
@@ -11662,7 +11664,7 @@ def end_table(ycurr, xboxlo, ytop_column, column_width, state=None):
 def check_bottom(ycurr, decrement, xboxlo, outside, ytop_column, column_width, xboxlo_max, state=None):
     """Auto-converted from SUBROUTINE check_bottom (LCModel.f:11846)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('check_bottom')
     if override is not None:
@@ -11708,7 +11710,7 @@ def check_bottom(ycurr, decrement, xboxlo, outside, ytop_column, column_width, x
 def hex(val, inum, flush, state=None):
     """Auto-converted from SUBROUTINE HEX (LCModel.f:11881)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('hex')
     if override is not None:
@@ -11751,7 +11753,7 @@ def hex(val, inum, flush, state=None):
 def remove_blank_start(str, state=None):
     """Auto-converted from SUBROUTINE remove_blank_start (LCModel.f:11915)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('remove_blank_start')
     if override is not None:
@@ -11784,7 +11786,7 @@ def remove_blank_start(str, state=None):
 def toupper_lower(lupper_out, str, state=None):
     """Auto-converted from SUBROUTINE toupper_lower (LCModel.f:11936)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('toupper_lower')
     if override is not None:
@@ -11826,7 +11828,7 @@ def toupper_lower(lupper_out, str, state=None):
 def fix_g77_namelist(lunit, state=None):
     """Auto-converted from SUBROUTINE fix_g77_namelist (LCModel.f:11974)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('fix_g77_namelist')
     if override is not None:
@@ -11895,7 +11897,7 @@ def fix_g77_namelist(lunit, state=None):
 def endrnd(xmn, xmx, xstep, xinc, xmnrnd, xmxrnd, state=None):
     """Auto-converted from SUBROUTINE ENDRND (LCModel.f:12028)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('endrnd')
     if override is not None:
@@ -11924,7 +11926,7 @@ def endrnd(xmn, xmx, xstep, xinc, xmnrnd, xmxrnd, state=None):
 def chreal(x, xstep, ljust, state=None):
     """Auto-converted from FUNCTION CHREAL (LCModel.f:12045)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('chreal')
     if override is not None:
@@ -12021,7 +12023,7 @@ def chreal(x, xstep, ljust, state=None):
 def strchk(st, ps, state=None):
     """Auto-converted from SUBROUTINE STRCHK (LCModel.f:12131)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('strchk')
     if override is not None:
@@ -12057,7 +12059,7 @@ def strchk(st, ps, state=None):
 def tick(ang, ox, oy, length, gmn, gmx, tckbeg, tckinc, grid, state=None):
     """Auto-converted from SUBROUTINE TICK (LCModel.f:12162)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('tick')
     if override is not None:
@@ -12101,7 +12103,7 @@ def tick(ang, ox, oy, length, gmn, gmx, tckbeg, tckinc, grid, state=None):
 def axis(ang, ox, oy, length, gmn, gmx, tckbeg, tckinc, pos, ljust1, state=None):
     """Auto-converted from SUBROUTINE AXIS (LCModel.f:12197)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('axis')
     if override is not None:
@@ -12158,7 +12160,7 @@ def axis(ang, ox, oy, length, gmn, gmx, tckbeg, tckinc, pos, ljust1, state=None)
 def linewd(width, state=None):
     """Auto-converted from SUBROUTINE LINEWD (LCModel.f:12242)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('linewd')
     if override is not None:
@@ -12186,7 +12188,7 @@ def linewd(width, state=None):
 def rgb(rgbv, state=None):
     """Auto-converted from SUBROUTINE RGB (LCModel.f:12258)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('rgb')
     if override is not None:
@@ -12214,7 +12216,7 @@ def rgb(rgbv, state=None):
 def dash(idshpt, dshpat, state=None):
     """Auto-converted from SUBROUTINE DASH (LCModel.f:12272)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('dash')
     if override is not None:
@@ -12247,7 +12249,7 @@ def dash(idshpt, dshpat, state=None):
 def plot(n, x, y, xmn, xmx, ymn, ymx, ox, oy, wd, ht, state=None):
     """Auto-converted from SUBROUTINE PLOT (LCModel.f:12295)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('plot')
     if override is not None:
@@ -12294,7 +12296,7 @@ def plot(n, x, y, xmn, xmx, ymn, ymx, ox, oy, wd, ht, state=None):
 def plot_gap(n, x, y, xmn, xmx, ymn, ymx, ox, oy, wd, ht, state=None):
     """Auto-converted from SUBROUTINE PLOT_gap (LCModel.f:12330)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('plot_gap')
     if override is not None:
@@ -12351,7 +12353,7 @@ def plot_gap(n, x, y, xmn, xmx, ymn, ymx, ox, oy, wd, ht, state=None):
 def arbbox(n, a, amn, amx, state=None):
     """Auto-converted from FUNCTION ARBBOX (LCModel.f:12372)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('arbbox')
     if override is not None:
@@ -12378,7 +12380,7 @@ def arbbox(n, a, amn, amx, state=None):
 def box(ox, oy, wd, ht, state=None):
     """Auto-converted from SUBROUTINE BOX (LCModel.f:12391)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('box')
     if override is not None:
@@ -12406,7 +12408,7 @@ def box(ox, oy, wd, ht, state=None):
 def line(ox, oy, wd, ht, state=None):
     """Auto-converted from SUBROUTINE LINE (LCModel.f:12408)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('line')
     if override is not None:
@@ -12435,7 +12437,7 @@ def line(ox, oy, wd, ht, state=None):
 def psetup(top_of_file, wd, ht, landsc, state=None):
     """Auto-converted from SUBROUTINE PSETUP (LCModel.f:12422)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('psetup')
     if override is not None:
@@ -12503,7 +12505,7 @@ def psetup(top_of_file, wd, ht, landsc, state=None):
 def font(pitch, police, state=None):
     """Auto-converted from SUBROUTINE FONT (LCModel.f:12560)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('font')
     if override is not None:
@@ -12547,7 +12549,7 @@ def font(pitch, police, state=None):
 def string(flush, ang, ox, oy, st, state=None):
     """Auto-converted from SUBROUTINE STRING (LCModel.f:12586)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('string')
     if override is not None:
@@ -12596,7 +12598,7 @@ def string(flush, ang, ox, oy, st, state=None):
 def show(flush, st, state=None):
     """Auto-converted from SUBROUTINE SHOW (LCModel.f:12611)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('show')
     if override is not None:
@@ -12621,7 +12623,7 @@ def show(flush, st, state=None):
 def showpg(state=None):
     """Auto-converted from SUBROUTINE SHOWPG (LCModel.f:12626)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('showpg')
     if override is not None:
@@ -12646,7 +12648,7 @@ def showpg(state=None):
 def endps(state=None):
     """Auto-converted from SUBROUTINE ENDPS (LCModel.f:12637)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('endps')
     if override is not None:
@@ -12669,7 +12671,7 @@ def endps(state=None):
 def ilen(st, state=None):
     """Auto-converted from FUNCTION ILEN (LCModel.f:12648)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('ilen')
     if override is not None:
@@ -12693,7 +12695,7 @@ def ilen(st, state=None):
 def strpou(state=None):
     """Auto-converted from SUBROUTINE STRPOU (LCModel.f:12660)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('strpou')
     if override is not None:
@@ -12733,7 +12735,7 @@ def strpou(state=None):
 def csft_r(datat, ft, ncap, state=None):
     """Auto-converted from SUBROUTINE csft_r (LCModel.f:12688)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('csft_r')
     if override is not None:
@@ -12782,7 +12784,7 @@ def csft_r(datat, ft, ncap, state=None):
 def csftin_r(ft, ftwork, ftinv, ncap, state=None):
     """Auto-converted from SUBROUTINE csftin_r (LCModel.f:12725)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('csftin_r')
     if override is not None:
@@ -12834,7 +12836,7 @@ def csftin_r(ft, ftwork, ftinv, ncap, state=None):
 def seqtot(datat, dataf, nunfil, lwfft, wfftc, state=None):
     """Auto-converted from SUBROUTINE SEQTOT (LCModel.f:12765)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('seqtot')
     if override is not None:
@@ -12927,7 +12929,7 @@ def seqtot(datat, dataf, nunfil, lwfft, wfftc, state=None):
 def cfftin(ft, ftinv, n, lwfft, wfftc, state=None):
     """Auto-converted from SUBROUTINE CFFTIN (LCModel.f:12847)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('cfftin')
     if override is not None:
@@ -12964,7 +12966,7 @@ def cfftin(ft, ftinv, n, lwfft, wfftc, state=None):
 def cfftin_r(ft, ftwork, ftinv, n, lwfft, wfftc, state=None):
     """Auto-converted from SUBROUTINE CFFTIN_r (LCModel.f:12873)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('cfftin_r')
     if override is not None:
@@ -13012,7 +13014,7 @@ def cfftin_r(ft, ftwork, ftinv, n, lwfft, wfftc, state=None):
 def cfft(datat, ft, n, lwfft, wfftc, state=None):
     """Auto-converted from SUBROUTINE CFFT (LCModel.f:12910)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('cfft')
     if override is not None:
@@ -13049,7 +13051,7 @@ def cfft(datat, ft, n, lwfft, wfftc, state=None):
 def cfft_r(datat, ft, n, lwfft, wfftc, state=None):
     """Auto-converted from SUBROUTINE CFFT_r (LCModel.f:12936)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('cfft_r')
     if override is not None:
@@ -13092,7 +13094,7 @@ def cfft_r(datat, ft, n, lwfft, wfftc, state=None):
 def df2tcf(n, c, yout, wsave, state=None):
     """Auto-converted from SUBROUTINE DF2TCF (LCModel.f:12968)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('df2tcf')
     if override is not None:
@@ -13121,7 +13123,7 @@ def df2tcf(n, c, yout, wsave, state=None):
 def dcftf1(n, c, ch, wa, ifac, state=None):
     """Auto-converted from SUBROUTINE DCFTF1 (LCModel.f:12985)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('dcftf1')
     if override is not None:
@@ -13201,7 +13203,7 @@ def dcftf1(n, c, ch, wa, ifac, state=None):
 def dpasf(nac, ido, ip, l1, idl1, cc, c1, c2, ch, ch2, wa, state=None):
     """Auto-converted from SUBROUTINE DPASF (LCModel.f:13053)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('dpasf')
     if override is not None:
@@ -13334,7 +13336,7 @@ def dpasf(nac, ido, ip, l1, idl1, cc, c1, c2, ch, ch2, wa, state=None):
 def dpasf5(ido, l1, cc, ch, wa1, wa2, wa3, wa4, state=None):
     """Auto-converted from SUBROUTINE DPASF5 (LCModel.f:13176)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('dpasf5')
     if override is not None:
@@ -13426,7 +13428,7 @@ def dpasf5(ido, l1, cc, ch, wa1, wa2, wa3, wa4, state=None):
 def dpasf3(ido, l1, cc, ch, wa1, wa2, state=None):
     """Auto-converted from SUBROUTINE DPASF3 (LCModel.f:13258)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('dpasf3')
     if override is not None:
@@ -13486,7 +13488,7 @@ def dpasf3(ido, l1, cc, ch, wa1, wa2, state=None):
 def dpasf2(ido, l1, cc, ch, wa1, state=None):
     """Auto-converted from SUBROUTINE DPASF2 (LCModel.f:13307)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('dpasf2')
     if override is not None:
@@ -13527,7 +13529,7 @@ def dpasf2(ido, l1, cc, ch, wa1, state=None):
 def dpasf4(ido, l1, cc, ch, wa1, wa2, wa3, state=None):
     """Auto-converted from SUBROUTINE DPASF4 (LCModel.f:13337)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('dpasf4')
     if override is not None:
@@ -13596,7 +13598,7 @@ def dpasf4(ido, l1, cc, ch, wa1, wa2, wa3, state=None):
 def dfftci(n, wsave, state=None):
     """Auto-converted from SUBROUTINE DFFTCI (LCModel.f:13395)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('dfftci')
     if override is not None:
@@ -13622,7 +13624,7 @@ def dfftci(n, wsave, state=None):
 def dcfti1(n, wa, ifac, state=None):
     """Auto-converted from SUBROUTINE DCFTI1 (LCModel.f:13409)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('dcfti1')
     if override is not None:
@@ -13701,7 +13703,7 @@ def dcfti1(n, wa, ifac, state=None):
 def f2tcf(n, c, yout, wsave, state=None):
     """Auto-converted from SUBROUTINE F2TCF (LCModel.f:13476)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('f2tcf')
     if override is not None:
@@ -13730,7 +13732,7 @@ def f2tcf(n, c, yout, wsave, state=None):
 def cfftf1(n, c, ch, wa, ifac, state=None):
     """Auto-converted from SUBROUTINE CFFTF1 (LCModel.f:13493)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('cfftf1')
     if override is not None:
@@ -13809,7 +13811,7 @@ def cfftf1(n, c, ch, wa, ifac, state=None):
 def passf(nac, ido, ip, l1, idl1, cc, c1, c2, ch, ch2, wa, state=None):
     """Auto-converted from SUBROUTINE PASSF (LCModel.f:13560)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('passf')
     if override is not None:
@@ -13941,7 +13943,7 @@ def passf(nac, ido, ip, l1, idl1, cc, c1, c2, ch, ch2, wa, state=None):
 def passf5(ido, l1, cc, ch, wa1, wa2, wa3, wa4, state=None):
     """Auto-converted from SUBROUTINE PASSF5 (LCModel.f:13682)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('passf5')
     if override is not None:
@@ -14032,7 +14034,7 @@ def passf5(ido, l1, cc, ch, wa1, wa2, wa3, wa4, state=None):
 def passf3(ido, l1, cc, ch, wa1, wa2, state=None):
     """Auto-converted from SUBROUTINE PASSF3 (LCModel.f:13763)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('passf3')
     if override is not None:
@@ -14091,7 +14093,7 @@ def passf3(ido, l1, cc, ch, wa1, wa2, state=None):
 def passf2(ido, l1, cc, ch, wa1, state=None):
     """Auto-converted from SUBROUTINE PASSF2 (LCModel.f:13811)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('passf2')
     if override is not None:
@@ -14131,7 +14133,7 @@ def passf2(ido, l1, cc, ch, wa1, state=None):
 def passf4(ido, l1, cc, ch, wa1, wa2, wa3, state=None):
     """Auto-converted from SUBROUTINE PASSF4 (LCModel.f:13840)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('passf4')
     if override is not None:
@@ -14199,7 +14201,7 @@ def passf4(ido, l1, cc, ch, wa1, wa2, wa3, state=None):
 def f2tcb(n, c, yout, wsave, state=None):
     """Auto-converted from SUBROUTINE F2TCB (LCModel.f:13897)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('f2tcb')
     if override is not None:
@@ -14228,7 +14230,7 @@ def f2tcb(n, c, yout, wsave, state=None):
 def cfftb1(n, c, ch, wa, ifac, state=None):
     """Auto-converted from SUBROUTINE CFFTB1 (LCModel.f:13914)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('cfftb1')
     if override is not None:
@@ -14307,7 +14309,7 @@ def cfftb1(n, c, ch, wa, ifac, state=None):
 def passb(nac, ido, ip, l1, idl1, cc, c1, c2, ch, ch2, wa, state=None):
     """Auto-converted from SUBROUTINE PASSB (LCModel.f:13981)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('passb')
     if override is not None:
@@ -14439,7 +14441,7 @@ def passb(nac, ido, ip, l1, idl1, cc, c1, c2, ch, ch2, wa, state=None):
 def passb5(ido, l1, cc, ch, wa1, wa2, wa3, wa4, state=None):
     """Auto-converted from SUBROUTINE PASSB5 (LCModel.f:14103)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('passb5')
     if override is not None:
@@ -14530,7 +14532,7 @@ def passb5(ido, l1, cc, ch, wa1, wa2, wa3, wa4, state=None):
 def passb3(ido, l1, cc, ch, wa1, wa2, state=None):
     """Auto-converted from SUBROUTINE PASSB3 (LCModel.f:14184)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('passb3')
     if override is not None:
@@ -14589,7 +14591,7 @@ def passb3(ido, l1, cc, ch, wa1, wa2, state=None):
 def passb2(ido, l1, cc, ch, wa1, state=None):
     """Auto-converted from SUBROUTINE PASSB2 (LCModel.f:14232)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('passb2')
     if override is not None:
@@ -14629,7 +14631,7 @@ def passb2(ido, l1, cc, ch, wa1, state=None):
 def passb4(ido, l1, cc, ch, wa1, wa2, wa3, state=None):
     """Auto-converted from SUBROUTINE PASSB4 (LCModel.f:14261)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('passb4')
     if override is not None:
@@ -14697,7 +14699,7 @@ def passb4(ido, l1, cc, ch, wa1, wa2, wa3, state=None):
 def fftci(n, wsave, state=None):
     """Auto-converted from SUBROUTINE FFTCI (LCModel.f:14318)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('fftci')
     if override is not None:
@@ -14723,7 +14725,7 @@ def fftci(n, wsave, state=None):
 def cffti1(n, wa, ifac, state=None):
     """Auto-converted from SUBROUTINE CFFTI1 (LCModel.f:14332)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('cffti1')
     if override is not None:
@@ -14801,7 +14803,7 @@ def cffti1(n, wa, ifac, state=None):
 def random(dix, state=None):
     """Auto-converted from FUNCTION RANDOM (LCModel.f:14403)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('random')
     if override is not None:
@@ -14863,7 +14865,7 @@ def random(dix, state=None):
 def fishni(f, df1, df2, nout, state=None):
     """Auto-converted from FUNCTION FISHNI (LCModel.f:14444)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('fishni')
     if override is not None:
@@ -14885,7 +14887,7 @@ def fishni(f, df1, df2, nout, state=None):
 def dgamln(xarg, state=None):
     """Auto-converted from FUNCTION DGAMLN (LCModel.f:14457)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('dgamln')
     if override is not None:
@@ -14914,7 +14916,7 @@ def dgamln(xarg, state=None):
 def betain(x, a, b, nout, state=None):
     """Auto-converted from FUNCTION BETAIN (LCModel.f:14486)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('betain')
     if override is not None:
@@ -15009,7 +15011,7 @@ def betain(x, a, b, nout, state=None):
 def pnnls(a, mda, m, n, b, x, dvar, w, zz, index, mode, range, nonneg, dvarac, nsetp, state=None):
     """Auto-converted from SUBROUTINE PNNLS (LCModel.f:14616)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('pnnls')
     if override is not None:
@@ -15334,7 +15336,7 @@ def pnnls(a, mda, m, n, b, x, dvar, w, zz, index, mode, range, nonneg, dvarac, n
 def diff(x, y, state=None):
     """Auto-converted from FUNCTION DIFF (LCModel.f:14879)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('diff')
     if override is not None:
@@ -15356,7 +15358,7 @@ def diff(x, y, state=None):
 def g1(a, b, cos, sin, sig, state=None):
     """Auto-converted from SUBROUTINE G1 (LCModel.f:14886)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('g1')
     if override is not None:
@@ -15409,7 +15411,7 @@ def g1(a, b, cos, sin, sig, state=None):
 def g2(cos, sin, x, y, state=None):
     """Auto-converted from SUBROUTINE G2 (LCModel.f:14928)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('g2')
     if override is not None:
@@ -15433,7 +15435,7 @@ def g2(cos, sin, x, y, state=None):
 def h12(mode, lpivot, l1, m, u, iue, up, c, ice, icv, ncv, range, state=None):
     """Auto-converted from SUBROUTINE H12 (LCModel.f:14972)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('h12')
     if override is not None:
@@ -15538,7 +15540,7 @@ def h12(mode, lpivot, l1, m, u, iue, up, c, ice, icv, ncv, range, state=None):
 def plprin(x, y1, y2, n, only1, nout, srange, nlinf, ng, my1, yerr, plterr, state=None):
     """Auto-converted from SUBROUTINE PLPRIN (LCModel.f:15039)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('plprin')
     if override is not None:
@@ -15620,7 +15622,7 @@ def plprin(x, y1, y2, n, only1, nout, srange, nlinf, ng, my1, yerr, plterr, stat
 def eigvrs(nm, n, a, w, z, fv1, fv2, ierr, state=None):
     """Auto-converted from SUBROUTINE EIGVrs (LCModel.f:15106)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('eigvrs')
     if override is not None:
@@ -15680,7 +15682,7 @@ def eigvrs(nm, n, a, w, z, fv1, fv2, ierr, state=None):
 def tql2(nm, n, d, e, z, ierr, state=None):
     """Auto-converted from SUBROUTINE tql2 (LCModel.f:15157)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('tql2')
     if override is not None:
@@ -15865,7 +15867,7 @@ def tql2(nm, n, d, e, z, ierr, state=None):
 def tred2(nm, n, a, d, e, z, state=None):
     """Auto-converted from SUBROUTINE tred2 (LCModel.f:15330)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('tred2')
     if override is not None:
@@ -16044,7 +16046,7 @@ def tred2(nm, n, a, d, e, z, state=None):
 def pythag(a, b, state=None):
     """Auto-converted from FUNCTION pythag (LCModel.f:15497)."""
     if state is None:
-        state = {}
+        state = RuntimeState()
     _ = state
     override = SEMANTIC_OVERRIDES.get('pythag')
     if override is not None:
@@ -19276,3 +19278,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
