@@ -326,11 +326,6 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
         if isinstance(value, str) and value.strip():
             output_filename = value
             break
-    postscript_reference_template = None
-    if isinstance(output_filename, str) and Path(output_filename).name.lower() == "out.ps":
-        candidate = control_path.resolve().parent / "out_ref_build.ps"
-        if candidate.exists():
-            postscript_reference_template = str(candidate)
     table_output_file = None
     if isinstance(nml.get("filtab"), str) and nml["filtab"].strip():
         table_output_file = str(nml["filtab"])
@@ -344,7 +339,6 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
         title=title,
         ntitle=ntitle,
         output_filename=output_filename,
-        postscript_reference_template=postscript_reference_template,
         table_output_file=table_output_file,
         raw_data_file=str(raw_data_file) if raw_data_file else None,
         raw_data_list_file=str(nml["filrawl"]) if isinstance(nml.get("filrawl"), str) and nml["filrawl"].strip() else None,

@@ -199,21 +199,29 @@ $END
         finally:
             shutil.rmtree(p, ignore_errors=True)
 
-    def test_control_file_detects_reference_postscript_template(self):
+    def test_control_file_does_not_copy_colocated_reference_postscript(self):
         p = self._make_local_tmpdir()
         try:
+            raw = p / "raw.txt"
+            basis = p / "basis.txt"
             ctl = p / "control.in"
             ref_ps = p / "out_ref_build.ps"
-            ref_ps.write_text("%!PS-Adobe-2.0\n", encoding="utf-8")
+            out_ps = p / "out.ps"
+            sentinel = "%%COPY_GUARD_SENTINEL_20260308"
+            raw.write_text("1\n2\n", encoding="utf-8")
+            basis.write_text("1 0\n0 1\n", encoding="utf-8")
+            ref_ps.write_text("%!PS-Adobe-2.0\n" + sentinel + "\n", encoding="utf-8")
             ctl.write_text(
                 (
                     "$LCMODL\n"
-                    " FILPS='out.ps', /\n"
+                    f" FILRAW='{raw}', FILBAS='{basis}', FILPS='{out_ps}', /\n"
                 ),
                 encoding="utf-8",
             )
-            cfg = load_run_config_from_control_file(ctl)
-            self.assertEqual(str(ref_ps.resolve()), cfg.postscript_reference_template)
+            code = cli_main(["--control-file", str(ctl)])
+            self.assertEqual(0, code)
+            rendered = out_ps.read_text(encoding="utf-8")
+            self.assertNotIn(sentinel, rendered)
         finally:
             shutil.rmtree(p, ignore_errors=True)
 

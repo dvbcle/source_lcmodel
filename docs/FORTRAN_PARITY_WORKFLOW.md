@@ -53,6 +53,8 @@ python -m lcmodel --control-file control.file
 Notes:
 - The control-file parser supports both `/` and `$END` namelist terminators.
 - `.raw` / `.basis` control inputs automatically trigger time-domain ingestion.
-- If `out_ref_build.ps` exists beside `control.file` and output is `out.ps`,
-  the runner can emit that reference template for byte-level postscript
-  comparison workflows.
+- `out.ps` is always produced by Python execution; the runtime no longer has a
+  reference-template copy path.
+- For copy-guard validation, inject a unique sentinel into `out_ref_build.ps`
+  and verify that sentinel is absent from generated `out.ps` before doing the
+  normal untouched-reference compare run.

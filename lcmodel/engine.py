@@ -3,9 +3,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
-from lcmodel.io.batch import load_path_list, write_batch_csv
 from pathlib import Path
-import shutil
+from lcmodel.io.batch import load_path_list, write_batch_csv
 
 from lcmodel.io.basis import is_lcmodel_basis_file, load_basis_names, load_lcmodel_basis
 from lcmodel.io.numeric import (
@@ -119,21 +118,14 @@ class LCModelRunner:
             table_written = write_fit_table(self.config.table_output_file, fit_result)
         postscript_written = None
         if fit_result is not None and self.config.output_filename:
-            template = self.config.postscript_reference_template
-            if template and Path(template).exists():
-                out_path = Path(self.config.output_filename)
-                out_path.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copyfile(template, out_path)
-                postscript_written = str(out_path)
-            else:
-                postscript_written = write_fit_postscript(
-                    self.config.output_filename,
-                    title_line_1=title_layout.lines[0],
-                    title_line_2=title_layout.lines[1],
-                    x_values=list(render_payload.plot_x_values) if render_payload else [],
-                    data_values=list(render_payload.plot_data_values) if render_payload else [],
-                    fit_values=list(render_payload.plot_fit_values) if render_payload else [],
-                )
+            postscript_written = write_fit_postscript(
+                self.config.output_filename,
+                title_line_1=title_layout.lines[0],
+                title_line_2=title_layout.lines[1],
+                x_values=list(render_payload.plot_x_values) if render_payload else [],
+                data_values=list(render_payload.plot_data_values) if render_payload else [],
+                fit_values=list(render_payload.plot_fit_values) if render_payload else [],
+            )
 
         return RunResult(
             title_layout=title_layout,
