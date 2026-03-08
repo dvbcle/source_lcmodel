@@ -39,6 +39,8 @@ class RunConfig:
     combine_expressions: tuple[str, ...] = ()
     shift_search_points: int = 0
     alignment_circular: bool = True
+    fractional_shift_refine: bool = False
+    fractional_shift_iterations: int = 18
     baseline_order: int = -1
     baseline_knots: int = 0
     baseline_smoothness: float = 0.0
@@ -61,6 +63,7 @@ class FitResult:
     relative_residual: float = 0.0
     snr_estimate: float = 0.0
     alignment_shift_points: int = 0
+    alignment_shift_fractional_points: float = 0.0
     integrated_data_area: float = 0.0
     integrated_fit_area: float = 0.0
 

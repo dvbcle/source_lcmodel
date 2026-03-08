@@ -167,6 +167,13 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
     alignment_circular = True
     if "shftcyc" in nml:
         alignment_circular = bool(nml.get("shftcyc"))
+    fractional_shift_refine = bool(nml.get("fshref", False))
+    fractional_shift_iterations = 18
+    if "nshifit" in nml:
+        try:
+            fractional_shift_iterations = max(4, int(nml["nshifit"]))
+        except Exception:
+            fractional_shift_iterations = 18
     dwell_time_s = 0.0
     if "deltat" in nml:
         try:
@@ -261,6 +268,8 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
         combine_expressions=combine_expressions,
         shift_search_points=shift_search_points,
         alignment_circular=alignment_circular,
+        fractional_shift_refine=fractional_shift_refine,
+        fractional_shift_iterations=fractional_shift_iterations,
         baseline_order=baseline_order,
         baseline_knots=baseline_knots,
         baseline_smoothness=baseline_smoothness,

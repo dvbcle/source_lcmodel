@@ -165,6 +165,7 @@ class TestFitPipeline(unittest.TestCase):
             self.assertIn("fit_relative_residual=", out)
             self.assertIn("fit_snr_estimate=", out)
             self.assertIn("fit_alignment_shift_points=", out)
+            self.assertIn("fit_alignment_shift_fractional_points=", out)
             self.assertIn("fit_integrated_data_area=", out)
             self.assertIn("fit_integrated_fit_area=", out)
             self.assertIn("fit_combinations=", out)
@@ -218,6 +219,28 @@ class TestFitPipeline(unittest.TestCase):
             assert result.fit_result is not None
             self.assertEqual(-1, result.fit_result.alignment_shift_points)
             self.assertGreater(result.fit_result.coefficients[0], 0.9)
+        finally:
+            shutil.rmtree(p, ignore_errors=True)
+
+    def test_fractional_shift_refinement(self):
+        p = self._make_local_tmpdir()
+        try:
+            vec = p / "vec.txt"
+            mat = p / "mat.txt"
+            vec.write_text("0.5\n0.5\n0\n0\n", encoding="utf-8")
+            mat.write_text("1\n0\n0\n0\n", encoding="utf-8")
+            result = LCModelRunner(
+                RunConfig(
+                    raw_data_file=str(vec),
+                    basis_file=str(mat),
+                    shift_search_points=1,
+                    fractional_shift_refine=True,
+                    fractional_shift_iterations=12,
+                )
+            ).run()
+            self.assertIsNotNone(result.fit_result)
+            assert result.fit_result is not None
+            self.assertGreater(abs(result.fit_result.alignment_shift_fractional_points), 0.1)
         finally:
             shutil.rmtree(p, ignore_errors=True)
 

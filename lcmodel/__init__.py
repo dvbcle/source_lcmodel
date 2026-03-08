@@ -6,7 +6,12 @@ porting from the legacy Fortran LCModel codebase.
 
 from lcmodel.engine import LCModelRunner
 from lcmodel.models import BatchRunResult, FitResult, RunConfig, RunResult, TitleLayout
-from lcmodel.pipeline.alignment import AlignmentResult, align_vector_by_integer_shift
+from lcmodel.pipeline.alignment import (
+    AlignmentResult,
+    FractionalAlignmentResult,
+    align_vector_by_fractional_shift,
+    align_vector_by_integer_shift,
+)
 from lcmodel.pipeline.fitting import FitConfig, FitStageResult, run_fit_stage
 from lcmodel.pipeline.integration import IntegrationResult, integrate_peak_with_local_baseline
 from lcmodel.pipeline.metrics import compute_fit_quality_metrics
@@ -25,6 +30,7 @@ from lcmodel.pipeline.setup import SetupResult, prepare_fit_inputs
 __all__ = [
     "LCModelRunner",
     "AlignmentResult",
+    "FractionalAlignmentResult",
     "FitConfig",
     "BatchRunResult",
     "FitResult",
@@ -38,6 +44,7 @@ __all__ = [
     "SpectralFitInputs",
     "SetupResult",
     "align_vector_by_integer_shift",
+    "align_vector_by_fractional_shift",
     "augment_system_with_soft_priors",
     "apply_phase",
     "apply_zero_order_phase",

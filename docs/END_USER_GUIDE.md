@@ -79,6 +79,10 @@ output_split_right=.ps
   - Optional integer search range for pre-fit alignment shift.
 - `--alignment-mode`
   - Shift mode for alignment search: `circular` (Fortran SHIFTD-like) or `zero_padded`.
+- `--fractional-shift-refine`
+  - Enable sub-point shift refinement after integer shift search.
+- `--fractional-shift-iterations`
+  - Search iterations used for fractional shift refinement.
 - `--baseline-order`
   - Polynomial baseline degree for alternating fit (`-1` disables baseline).
 - `--baseline-knots`
@@ -116,6 +120,8 @@ output_split_right=.ps
   - Simple peak/residual-noise SNR estimate.
 - `fit_alignment_shift_points`
   - Integer shift selected during pre-fit alignment.
+- `fit_alignment_shift_fractional_points`
+  - Refined continuous shift value when fractional refinement is enabled.
 - `fit_integrated_data_area`, `fit_integrated_fit_area`
   - Baseline-corrected peak areas from a local-window integration step.
 - `fit_combinations`

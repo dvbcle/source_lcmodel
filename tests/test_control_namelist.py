@@ -48,7 +48,7 @@ $LCMODL
             ctl.write_text(
                 (
                     "$LCMODL\n"
-                    " TITLE='Control Title', NTITLE=1, FILRAW='a.txt', FILRAWL='raw_list.txt', FILCSV='batch.csv', FILBAS='b.txt', FILPS='c.ps', FILTAB='tab.out', FILPRR='priors.txt', NDEGZ=2, NSHIFW=3, SHFTCYC=.false., TIMDOM=.true., AUTOPH0=.true., AUTOPH1=.true., DELTAT=0.0005, LBHZ=4.0, NBACKG=8, ALPHAB=0.25, NWNDO=5, IPOWPH=7,\n"
+                    " TITLE='Control Title', NTITLE=1, FILRAW='a.txt', FILRAWL='raw_list.txt', FILCSV='batch.csv', FILBAS='b.txt', FILPS='c.ps', FILTAB='tab.out', FILPRR='priors.txt', NDEGZ=2, NSHIFW=3, SHFTCYC=.false., FSHREF=.true., NSHIFIT=14, TIMDOM=.true., AUTOPH0=.true., AUTOPH1=.true., DELTAT=0.0005, LBHZ=4.0, NBACKG=8, ALPHAB=0.25, NWNDO=5, IPOWPH=7,\n"
                     " CHUSE1(1)='NAA', CHUSE1(2)='Cr', CHCOMB(1)='NAA+Cr', PPMST=3.2, PPMEND=2.0, FILPPM='ppm.txt', FILNAM='names.txt', /\n"
                 ),
                 encoding="utf-8",
@@ -68,6 +68,8 @@ $LCMODL
             self.assertEqual(("NAA+Cr",), cfg.combine_expressions)
             self.assertEqual(3, cfg.shift_search_points)
             self.assertFalse(cfg.alignment_circular)
+            self.assertTrue(cfg.fractional_shift_refine)
+            self.assertEqual(14, cfg.fractional_shift_iterations)
             self.assertEqual(0.0005, cfg.dwell_time_s)
             self.assertEqual(4.0, cfg.line_broadening_hz)
             self.assertEqual(8, cfg.baseline_knots)

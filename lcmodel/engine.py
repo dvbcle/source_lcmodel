@@ -15,7 +15,7 @@ from lcmodel.io.pathing import split_output_filename_for_voxel
 from lcmodel.io.priors import load_soft_priors
 from lcmodel.io.report import write_fit_table
 from lcmodel.models import BatchRunResult, FitResult, RunConfig, RunResult
-from lcmodel.pipeline.alignment import align_vector_by_integer_shift
+from lcmodel.pipeline.alignment import align_vector_by_fractional_shift, align_vector_by_integer_shift
 from lcmodel.pipeline.fitting import FitConfig, run_fit_stage
 from lcmodel.pipeline.integration import integrate_peak_with_local_baseline
 from lcmodel.pipeline.metrics import compute_fit_quality_metrics
@@ -84,8 +84,21 @@ class LCModelRunner:
                 self.config.shift_search_points,
                 circular=self.config.alignment_circular,
             )
+            fractional_shift = float(alignment.shift_points)
+            aligned_vector = list(alignment.vector)
+            if self.config.fractional_shift_refine and self.config.shift_search_points > 0:
+                frac_alignment = align_vector_by_fractional_shift(
+                    setup.matrix,
+                    setup.vector,
+                    self.config.shift_search_points,
+                    circular=self.config.alignment_circular,
+                    iterations=self.config.fractional_shift_iterations,
+                )
+                fractional_shift = float(frac_alignment.shift_points)
+                aligned_vector = list(frac_alignment.vector)
+
             fit_matrix = [list(row) for row in setup.matrix]
-            fit_vector = list(alignment.vector)
+            fit_vector = aligned_vector
             if self.config.priors_file:
                 priors = load_soft_priors(self.config.priors_file)
                 fit_matrix, fit_vector = augment_system_with_soft_priors(
@@ -165,6 +178,7 @@ class LCModelRunner:
                 relative_residual=relative_residual,
                 snr_estimate=snr_estimate,
                 alignment_shift_points=alignment.shift_points,
+                alignment_shift_fractional_points=fractional_shift,
                 integrated_data_area=integrated_data_area,
                 integrated_fit_area=integrated_fit_area,
             )
