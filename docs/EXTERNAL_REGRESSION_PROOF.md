@@ -10,45 +10,51 @@ public fixture from `schorschinho/LCModel` (`test_lcm`).
 
 ## Latest run metadata
 
-- Date/time: `2026-03-08 14:56:01 -04:00`
+- Date/time: `2026-03-08 15:53:43 -04:00`
 - Fixture source: `https://github.com/schorschinho/LCModel`
 - Fixture files used: `control.file`, `data.raw`, `3t.basis`, `out_ref_build.ps`
 - Evidence directory:
-  `artifacts/external_regression_generated_only_20260308_145559/`
+  `artifacts/external_regression_clean_20260308_155342_519086/`
 
 ## Commands executed
 
 ```powershell
-python -m lcmodel --control-file control.file
-fc /b out.ps out_ref_build.ps
+python tools/run_external_regression_clean.py
 ```
 
 ## Guard checks
 
-1. Copy-guard run:
-   append a unique sentinel to `out_ref_build.ps`, run the CLI, and verify:
-   - sentinel is absent from `out.ps`
-   - hashes differ (`out.ps` != modified `out_ref_build.ps`)
-2. Real compare run:
-   restore untouched fixture files, run CLI, then compare `out.ps` to
-   `out_ref_build.ps`.
+1. Fixture-set guard:
+   runner validates clean fixture inputs (default exact set:
+   `control.file,data.raw,3t.basis,out_ref_build.ps`).
+2. Stale-output guard:
+   runner rejects fixture directories that already contain generated files
+   (`out.ps`, `python_run.log`, `run_summary.txt`).
+3. Isolation/mutation guard:
+   runner records pre/post inventory and SHA-256, and flags any pre-existing
+   input file changes.
+4. Compare run:
+   run Python LCModel once in an isolated timestamped directory and compare
+   generated `out.ps` to `out_ref_build.ps`.
 
 ## Latest verification result
 
-- Copy-guard run:
-  - `copy_guard_run_exit=0`
-  - `copy_guard_same_hash=False`
-  - `copy_guard_sentinel_in_out=False`
-  - `copy_guard_out_generated_after_run_start=True`
-- Real compare run:
-  - `real_compare_run_exit=0`
-  - `real_compare_same_hash=False`
-  - `real_compare_fc_exit=1`
-  - `real_compare_out_hash=FDF1011E3B91B008EFAB9F48A6769D0AF6E6F8DE105FB5949859D2E1AC9250F7`
-  - `real_compare_ref_hash=ED84E9B18FC0968528939C1355E90A6220D96DA770AD4032094FD9D13DD5E2E5`
+- Clean isolated run:
+  - `python_returncode=0`
+  - `hygiene_ok=True`
+  - `hygiene_issues=-`
+  - `pre_files=3t.basis,control.file,data.raw,out_ref_build.ps`
+  - `post_files=3t.basis,control.file,data.raw,out.ps,out_ref_build.ps,python_run.log`
+  - `added_files=out.ps,python_run.log`
+  - `modified_preexisting_files=`
+  - `byte_match=False`
+  - `out_sha256=D182973DDF49351B452254CA2D64E38537BCEF36FA24315875FAAC74A8E9FDC3`
+  - `ref_sha256=ED84E9B18FC0968528939C1355E90A6220D96DA770AD4032094FD9D13DD5E2E5`
 
 ## Interpretation
 
-- The anti-copy guard passes: output is generated, not copied.
-- Under strict generated-only comparison, current output is not byte-identical
-  to upstream `out_ref_build.ps`; this is an active parity gap.
+- The clean-run isolation checks pass (`hygiene_ok=True`), so current results
+  are not mixed with stale outputs from earlier runs.
+- Under strict generated-only comparison, current output is still not
+  byte-identical to upstream `out_ref_build.ps`; this remains an active parity
+  gap.
