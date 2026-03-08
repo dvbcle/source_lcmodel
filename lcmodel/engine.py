@@ -299,11 +299,13 @@ class LCModelRunner:
                     cached = self._batch_basis_cache.get(basis_cache_key)
                 if cached is None:
                     lc_basis = load_lcmodel_basis(self.config.basis_file)
-                    basis_td = [list(row) for row in lc_basis.matrix_time_domain]
-                    matrix_tuple = prepare_basis_frequency_matrix_from_time_domain(
-                        basis_td,
-                        dwell_time_s=self.config.dwell_time_s,
-                        line_broadening_hz=self.config.line_broadening_hz,
+                    # Fortran MYBASI reads BASISF as frequency-domain spectra from
+                    # the .basis file. Running an additional FFT here rotates data
+                    # away from the solve domain and can drive coefficients to zero.
+                    # Keep .basis vectors in their parsed frequency-domain frame.
+                    matrix_tuple = tuple(
+                        tuple(float(complex(v).real) for v in row)
+                        for row in lc_basis.matrix_time_domain
                     )
                     cached = _CachedBasisSpectral(
                         matrix=matrix_tuple,
