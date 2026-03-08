@@ -29,6 +29,7 @@ class RunConfig:
     raw_data_list_file: str | None = None
     batch_csv_file: str | None = None
     time_domain_input: bool = False
+    fft_backend: str = "auto"
     auto_phase_zero_order: bool = False
     auto_phase_first_order: bool = False
     phase_objective: str = "imag_abs"

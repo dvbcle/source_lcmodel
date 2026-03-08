@@ -15,7 +15,9 @@ from lcmodel.core.fftpack_compat import (
     csft_r,
     csftin_r,
     fftci,
+    get_fft_backend,
     seqtot,
+    use_fft_backend,
 )
 from lcmodel.models import BatchRunResult, FitResult, RunConfig, RunResult, TitleLayout
 from lcmodel.pipeline.alignment import (
@@ -103,7 +105,9 @@ __all__ = [
     "csft_r",
     "csftin_r",
     "fftci",
+    "get_fft_backend",
     "seqtot",
+    "use_fft_backend",
     "estimate_zero_first_order_phase",
     "estimate_zero_order_phase",
     "prepare_frequency_fit_from_time_domain",

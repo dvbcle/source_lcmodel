@@ -30,6 +30,7 @@ from lcmodel.pipeline.spectral import prepare_frequency_fit_from_time_domain
 from lcmodel.pipeline.sptype_presets import apply_sptype_preset, validate_sptype_config
 from lcmodel.pipeline.setup import prepare_fit_inputs
 from lcmodel.core.text import split_title_lines
+from lcmodel.core.fftpack_compat import use_fft_backend
 from lcmodel.traceability import (
     capture_trace_events,
     fortran_provenance,
@@ -68,7 +69,8 @@ class LCModelRunner:
                     "lcmodel.engine.LCModelRunner.run",
                     ("lcmodl",),
                 )
-                result = self._run_impl()
+                with use_fft_backend(self.config.fft_backend):
+                    result = self._run_impl()
             write_trace_log(
                 trace_path,
                 events=events,
@@ -79,7 +81,8 @@ class LCModelRunner:
                 },
             )
             return result
-        return self._run_impl()
+        with use_fft_backend(self.config.fft_backend):
+            return self._run_impl()
 
     def _run_impl(self) -> RunResult:
         # Fortran MAIN/MYCONT/SPLIT_TITLE intent:

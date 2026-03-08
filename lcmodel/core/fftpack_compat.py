@@ -2,10 +2,43 @@
 
 from __future__ import annotations
 
+from contextlib import contextmanager
+import contextvars
 from dataclasses import dataclass
 import cmath
 import math
 from typing import Sequence
+
+_VALID_FFT_BACKENDS = {"auto", "numpy", "pure_python"}
+_fft_backend_context: contextvars.ContextVar[str] = contextvars.ContextVar(
+    "lcmodel_fft_backend", default="auto"
+)
+
+
+def _normalize_fft_backend(name: str) -> str:
+    value = str(name).strip().lower()
+    if value not in _VALID_FFT_BACKENDS:
+        raise ValueError(
+            f"Unsupported fft backend '{name}'. Expected one of: auto, numpy, pure_python."
+        )
+    return value
+
+
+def get_fft_backend() -> str:
+    """Return the currently active FFT backend mode."""
+
+    return _fft_backend_context.get()
+
+
+@contextmanager
+def use_fft_backend(name: str):
+    """Temporarily set FFT backend mode for the current execution context."""
+
+    token = _fft_backend_context.set(_normalize_fft_backend(name))
+    try:
+        yield
+    finally:
+        _fft_backend_context.reset(token)
 
 
 def _naive_fft(values: Sequence[complex], inverse: bool = False) -> list[complex]:
@@ -25,20 +58,41 @@ def _naive_fft(values: Sequence[complex], inverse: bool = False) -> list[complex
     return out
 
 
-def _fft(values: Sequence[complex]) -> tuple[complex, ...]:
-    try:
-        import numpy as np  # type: ignore
+def _numpy_fft(values: Sequence[complex], inverse: bool = False) -> tuple[complex, ...]:
+    import numpy as np  # type: ignore
 
-        return tuple(np.fft.fft(np.asarray(values, dtype=np.complex128)))
+    arr = np.asarray(values, dtype=np.complex128)
+    if inverse:
+        return tuple(np.fft.ifft(arr))
+    return tuple(np.fft.fft(arr))
+
+
+def _fft(values: Sequence[complex]) -> tuple[complex, ...]:
+    backend = get_fft_backend()
+    if backend == "pure_python":
+        return tuple(_naive_fft(values, inverse=False))
+    if backend == "numpy":
+        try:
+            return _numpy_fft(values, inverse=False)
+        except Exception as exc:
+            raise RuntimeError("fft_backend='numpy' requires NumPy to be installed") from exc
+    try:
+        return _numpy_fft(values, inverse=False)
     except Exception:
         return tuple(_naive_fft(values, inverse=False))
 
 
 def _ifft(values: Sequence[complex]) -> tuple[complex, ...]:
+    backend = get_fft_backend()
+    if backend == "pure_python":
+        return tuple(_naive_fft(values, inverse=True))
+    if backend == "numpy":
+        try:
+            return _numpy_fft(values, inverse=True)
+        except Exception as exc:
+            raise RuntimeError("fft_backend='numpy' requires NumPy to be installed") from exc
     try:
-        import numpy as np  # type: ignore
-
-        return tuple(np.fft.ifft(np.asarray(values, dtype=np.complex128)))
+        return _numpy_fft(values, inverse=True)
     except Exception:
         return tuple(_naive_fft(values, inverse=True))
 
@@ -110,4 +164,3 @@ def seqtot(datat: Sequence[complex]) -> tuple[complex, ...]:
     values = [complex(v) for v in datat]
     padded = values + [0j] * len(values)
     return cfftf(padded)
-

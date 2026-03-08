@@ -39,6 +39,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Optional JSON output path for function-level Fortran provenance trace.",
     )
     parser.add_argument(
+        "--fft-backend",
+        choices=("auto", "numpy", "pure_python"),
+        default=None,
+        help="FFT backend selection: auto (prefer NumPy), numpy (require NumPy), pure_python (force fallback).",
+    )
+    parser.add_argument(
         "--time-domain-input",
         action="store_true",
         help="Interpret raw/basis files as complex time-domain input before FFT-based fitting.",

@@ -16,6 +16,7 @@ class TestCliSupport(unittest.TestCase):
             ntitle=1,
             output_filename="out.ps",
             table_output_file=None,
+            fft_backend="pure_python",
             phase_objective=None,
             phase_smoothness_power=None,
             dwell_time=None,
@@ -60,6 +61,7 @@ class TestCliSupport(unittest.TestCase):
         self.assertEqual("Example", config.title)
         self.assertEqual(1, config.ntitle)
         self.assertEqual("out.ps", config.output_filename)
+        self.assertEqual("pure_python", config.fft_backend)
         self.assertEqual(((4.9, 4.5), (2.1, 1.9)), config.exclude_ppm_ranges)
         self.assertEqual(("NAA", "Cr"), config.include_metabolites)
         self.assertEqual(("NAA+Cr",), config.combine_expressions)

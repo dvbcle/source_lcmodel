@@ -9,7 +9,9 @@ from lcmodel.core.fftpack_compat import (
     csft_r,
     csftin_r,
     fftci,
+    get_fft_backend,
     seqtot,
+    use_fft_backend,
 )
 from lcmodel.core.legacy_math import (
     betain,
@@ -42,7 +44,9 @@ __all__ = [
     "csft_r",
     "csftin_r",
     "fftci",
+    "get_fft_backend",
     "seqtot",
+    "use_fft_backend",
     "betain",
     "dgamln",
     "diff",
