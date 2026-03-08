@@ -63,6 +63,19 @@ class TestFortranScaffoldOverrides(unittest.TestCase):
         variance = fs.getvar(state=state)
         self.assertGreaterEqual(variance, 0.0)
 
+    def test_statistical_function_overrides(self):
+        self.assertAlmostEqual(0.5, fs.fishni(1.0, 2.0, 2.0, 6, state={}), places=7)
+        self.assertAlmostEqual(0.6875, fs.betain(0.5, 2.0, 3.0, 6, state={}), places=7)
+        self.assertAlmostEqual(5.0, fs.pythag(3.0, 4.0, state={}), places=7)
+        self.assertEqual(10, fs.icycle(0, 10, state={}))
+        self.assertEqual(1, fs.icycle_r(0, 10, state={}))
+
+    def test_lineshape_shape_counters(self):
+        parnl = [0.1, 0.1]
+        dgauss = [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        self.assertEqual(1, fs.nextre(parnl, 2, None, dgauss, 0.0, 1, state={}))
+        self.assertEqual(2, fs.inflec(parnl, 2, None, dgauss, 0.0, 1, state={}))
+
 
 if __name__ == "__main__":
     unittest.main()

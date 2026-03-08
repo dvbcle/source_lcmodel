@@ -20,6 +20,17 @@ from lcmodel.core.fftpack_compat import (
     seqtot as seqtot_compat,
 )
 from lcmodel.core.fortran_compat import ilen as ilen_compat
+from lcmodel.core.legacy_math import (
+    betain as betain_compat,
+    dgamln as dgamln_compat,
+    diff as diff_compat,
+    fishni as fishni_compat,
+    icycle as icycle_compat,
+    icycle_r as icycle_r_compat,
+    inflec as inflec_compat,
+    nextre as nextre_compat,
+    pythag as pythag_compat,
+)
 from lcmodel.core.text import int_to_compact_text, split_title_lines
 from lcmodel.core.text import escape_postscript_text, first_non_space_index
 from lcmodel.io.pathing import split_output_filename_for_voxel
@@ -177,6 +188,71 @@ def _ov_random(dix: Any, state: dict[str, Any] | None = None) -> float:
         dix[0] = seed
     out["dix"] = seed
     return seed * 4.656612875e-10
+
+
+def _ov_dgamln(xarg: float, state: dict[str, Any] | None = None) -> float:
+    _ = state
+    return dgamln_compat(float(xarg))
+
+
+def _ov_betain(x: float, a: float, b: float, nout: int, state: dict[str, Any] | None = None) -> float:
+    _ = nout
+    _ = state
+    return betain_compat(float(x), float(a), float(b))
+
+
+def _ov_fishni(f: float, df1: float, df2: float, nout: int, state: dict[str, Any] | None = None) -> float:
+    _ = nout
+    _ = state
+    return fishni_compat(float(f), float(df1), float(df2))
+
+
+def _ov_diff(x: float, y: float, state: dict[str, Any] | None = None) -> float:
+    _ = state
+    return diff_compat(float(x), float(y))
+
+
+def _ov_pythag(a: float, b: float, state: dict[str, Any] | None = None) -> float:
+    _ = state
+    return pythag_compat(float(a), float(b))
+
+
+def _ov_icycle_r(j: int, ndata: int, state: dict[str, Any] | None = None) -> int:
+    _ = state
+    return icycle_r_compat(int(j), int(ndata))
+
+
+def _ov_icycle(j: int, ndata: int, state: dict[str, Any] | None = None) -> int:
+    _ = state
+    return icycle_compat(int(j), int(ndata))
+
+
+def _ov_nextre(
+    parnl: Sequence[float],
+    nside2: int,
+    dpy: Any,
+    dgauss: Sequence[float],
+    thrlin: float,
+    imethd: int,
+    state: dict[str, Any] | None = None,
+) -> int:
+    _ = dpy
+    _ = state
+    return nextre_compat(parnl, int(nside2), dgauss, float(thrlin), int(imethd))
+
+
+def _ov_inflec(
+    parnl: Sequence[float],
+    nside2: int,
+    dpy: Any,
+    dgauss: Sequence[float],
+    thrlin: float,
+    imethd: int,
+    state: dict[str, Any] | None = None,
+) -> int:
+    _ = dpy
+    _ = state
+    return inflec_compat(parnl, int(nside2), dgauss, float(thrlin), int(imethd))
 
 
 def _ov_split_filename(
@@ -440,6 +516,15 @@ SEMANTIC_OVERRIDES = {
     "average": _ov_average,
     "errmes": _ov_errmes,
     "random": _ov_random,
+    "dgamln": _ov_dgamln,
+    "betain": _ov_betain,
+    "fishni": _ov_fishni,
+    "diff": _ov_diff,
+    "pythag": _ov_pythag,
+    "icycle_r": _ov_icycle_r,
+    "icycle": _ov_icycle,
+    "nextre": _ov_nextre,
+    "inflec": _ov_inflec,
     "split_filename": _ov_split_filename,
     "chstrip_int6": _ov_chstrip_int6,
     "split_title": _ov_split_title,

@@ -11,6 +11,17 @@ from lcmodel.core.fftpack_compat import (
     fftci,
     seqtot,
 )
+from lcmodel.core.legacy_math import (
+    betain,
+    dgamln,
+    diff,
+    fishni,
+    icycle,
+    icycle_r,
+    inflec,
+    nextre,
+    pythag,
+)
 
 __all__ = [
     "FFTPlan",
@@ -22,4 +33,13 @@ __all__ = [
     "csftin_r",
     "fftci",
     "seqtot",
+    "betain",
+    "dgamln",
+    "diff",
+    "fishni",
+    "icycle",
+    "icycle_r",
+    "inflec",
+    "nextre",
+    "pythag",
 ]
