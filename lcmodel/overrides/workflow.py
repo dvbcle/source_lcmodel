@@ -39,6 +39,9 @@ from lcmodel.overrides.state_ops import (
     copy_sequence_prefix as _copy_sequence_prefix,
 )
 
+
+# Fortran INITIA/MYCONT entry sequence:
+# initialize run state, then apply control-file overrides.
 def _ov_initia(state: dict[str, Any] | None = None) -> dict[str, Any]:
     out = state if state is not None else {}
     out.setdefault("config", RunConfig())
@@ -57,6 +60,9 @@ def _ov_mycont(state: dict[str, Any] | None = None) -> dict[str, Any]:
         out["config"] = RunConfig()
     return out
 
+
+# Fortran DATAIN/MYDATA/MYBASI stage loading:
+# pull raw and basis arrays into the shared state map.
 def _ov_datain(state: dict[str, Any] | None = None) -> dict[str, Any]:
     out = _ov_mycont(state)
     cfg = out.get("config", RunConfig())
@@ -93,6 +99,8 @@ def _ov_setup(lstage: int, state: dict[str, Any] | None = None) -> dict[str, Any
     ppm_axis = None
     if cfg.ppm_axis_file:
         ppm_axis = load_numeric_vector(cfg.ppm_axis_file)
+    # Fortran SETUP behavior:
+    # build active fit window + basis subset before solve.
     setup = prepare_fit_inputs(
         matrix,
         vector,
@@ -123,6 +131,7 @@ def _ov_ftdata(ishift: int, state: dict[str, Any] | None = None) -> dict[str, An
     ft = list(cfft_r_compat(datat))
     shift = int(ishift)
     if shift != 0 and ft:
+        # Fortran SHIFTD cyclic indexing around the rearranged frequency axis.
         n = len(ft)
         ft = [ft[(i - shift) % n] for i in range(n)]
     out["dataf"] = tuple(ft)
@@ -156,6 +165,8 @@ def _ov_gbackg(state: dict[str, Any] | None = None) -> dict[str, Any]:
         return out
     vals = [float(v) for v in vec]
     n = len(vals)
+    # Fortran GBACKG proxy in scaffold mode:
+    # keep a lightweight local baseline estimate in state.
     baseline = [0.0] * n
     for i in range(n):
         lo = max(0, i - 2)
@@ -172,6 +183,8 @@ def _ov_plinls(istage: int, ierror: Any, state: dict[str, Any] | None = None) ->
     if setup is None:
         _assign_scalar(ierror, 1)
         return out
+    # Fortran PLINLS entry:
+    # run constrained linear stage on prepared rows/columns.
     fit = run_fit_stage(setup.matrix, setup.vector, FitConfig())
     out["fit_stage"] = fit
     _assign_scalar(ierror, 0)
@@ -191,6 +204,8 @@ def _ov_solve(
     if setup is None:
         _assign_scalar(lerror, True)
         return out
+    # Fortran SOLVE entry:
+    # run nonlinear refinement outer-loop + inner linear solve.
     nonlin = run_nonlinear_refinement(
         setup.matrix,
         setup.vector,
@@ -203,6 +218,7 @@ def _ov_solve(
     return out
 
 def _ov_tworeg(state: dict[str, Any] | None = None) -> dict[str, Any]:
+    # Fortran TWOREG convenience wrapper for final regularized stage.
     return _ov_solve(2, True, 0.0, False, [False], state)
 
 def _ov_tworg1(state: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -214,6 +230,8 @@ def _ov_tworeg_sav(state: dict[str, Any] | None = None) -> dict[str, Any]:
     out = state if state is not None else {}
     fit = out.get("fit_stage")
     if fit is not None:
+        # Fortran SAVBES behavior:
+        # keep best-fit snapshot for downstream output tables.
         out.setdefault("snapshots", {})["tworeg"] = fit
     return out
 
@@ -230,6 +248,8 @@ def _ov_tworg3(jrepha: int, state: dict[str, Any] | None = None) -> dict[str, An
 
 def _ov_fshssq(prej: float, idfish: int, nyuse: int, refndf: float, ssqref: float, lprint: int, rrange: float, state: dict[str, Any] | None = None) -> float:
     _ = (idfish, nyuse, refndf, lprint, rrange, state)
+    # Fortran FSHSSQ compatibility:
+    # map rejection-probability target to an SSQ threshold surrogate.
     return float(ssqref) * (1.0 + abs(float(prej)))
 
 def _ov_ssrang(irange: int, state: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -239,6 +259,8 @@ def _ov_ssrang(irange: int, state: dict[str, Any] | None = None) -> dict[str, An
     ssqref = float(out.get("ssqref", 1.0))
     ssqmin = _ov_fshssq(float(prmnmx[0][idx]), 0, 0, 1.0, ssqref, 0, 1e30, out)
     ssqmax = _ov_fshssq(float(prmnmx[1][idx]), 0, 0, 1.0, ssqref, 0, 1e30, out)
+    # Fortran SSRANG:
+    # keep a bracket [SSQMIN, SSQMAX] and midpoint target SSQAIM.
     out["ssqmin"] = min(ssqmin, ssqmax)
     out["ssqmax"] = max(ssqmin, ssqmax)
     out["ssqaim"] = 0.5 * (out["ssqmin"] + out["ssqmax"])
@@ -269,6 +291,8 @@ def _ov_rfalsi(
     if abs(ssq_hi - ssq_lo) <= 1e-20:
         alpha = float(aalpha[0]) if isinstance(aalpha, MutableSequence) and aalpha else 0.5 * (alpha_lo + alpha_hi)
     else:
+        # Fortran RFALSI:
+        # regula-falsi interpolation between low/high alpha bounds.
         alpha = alpha_lo + (target - ssq_lo) * (alpha_hi - alpha_lo) / (ssq_hi - ssq_lo)
     alpha = max(min(alpha, max(alpha_lo, alpha_hi)), min(alpha_lo, alpha_hi))
     _assign_scalar(aalpha, alpha)
@@ -565,6 +589,8 @@ def _ov_integrate(
     peak = min(max(0, int(ly) - 1), len(values) - 1)
     border = max(1, int(nwndo))
     spacing = abs(float(ppminc2)) if float(ppminc2) != 0.0 else 1.0
+    # Fortran INTEGRATE:
+    # compute peak area after local two-sided baseline correction.
     result = integrate_peak_with_local_baseline(
         values,
         peak_index=peak,
@@ -593,6 +619,8 @@ def _ov_mydata(state: dict[str, Any] | None = None) -> dict[str, Any]:
     raw_time = out.get("raw_time")
     if raw_time is None:
         return out
+    # Fortran MYDATA bridge:
+    # keep override entrypoint wired to Python-first preprocessing stage.
     stage = run_mydata_stage(
         raw_time,
         MyDataConfig(

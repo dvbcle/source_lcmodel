@@ -41,6 +41,9 @@ def _fit_for_sigma(
     fit_config: FitConfig,
     cfg: NonlinearConfig,
 ) -> NonlinearResult:
+    # Fortran TWORG*/SOLVE intent:
+    # evaluate one nonlinear candidate (linewidth + alignment) then solve linear
+    # amplitudes on the transformed system.
     matrix = apply_global_gaussian_lineshape(
         base_matrix,
         sigma_points,
@@ -55,6 +58,7 @@ def _fit_for_sigma(
     shift_fractional = float(alignment.shift_points)
     vector = alignment.vector
     if cfg.fractional_shift_refine and cfg.shift_search_points > 0:
+        # Refine integer shift with a local continuous search.
         frac_alignment = align_vector_by_fractional_shift(
             matrix,
             base_vector,
@@ -100,12 +104,14 @@ def run_nonlinear_refinement(
         candidates: list[float]
         if scan_points > 0 and max_sigma > 0.0:
             if it == 1:
+                # Fortran TWOREG/RFALSI spirit:
+                # broad initial search over allowed regularization/shape range.
                 if scan_points == 1:
                     candidates = [max_sigma]
                 else:
                     candidates = [max_sigma * (k / float(scan_points - 1)) for k in range(scan_points)]
             else:
-                # Local refinement around the best sigma found so far.
+                # Local refinement around the current best candidate.
                 local_half = max_sigma / float(2**it)
                 local_points = 5
                 candidates = []
@@ -131,6 +137,8 @@ def run_nonlinear_refinement(
                 current_sigma = float(candidate.linewidth_sigma_points)
                 improved = True
 
+        # Fortran stopping behavior:
+        # stop once a refinement pass fails to improve the objective.
         if not improved and it > 1:
             break
 

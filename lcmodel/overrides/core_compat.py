@@ -53,6 +53,9 @@ from lcmodel.overrides.state_ops import (
     copy_sequence_prefix as _copy_sequence_prefix,
 )
 
+# Adapter remains routine-centric for traceability. Comments below mirror
+# original Fortran routine notes where behavior is intentionally compatibility-
+# oriented rather than Python-idiomatic.
 
 def _ov_ilen(st: str, state: dict[str, Any] | None = None) -> int:
     _ = state
@@ -92,6 +95,8 @@ def _ov_compact_string(
     str_in: str, str_out: Any, len_out: Any, state: dict[str, Any] | None = None
 ) -> dict[str, Any]:
     out = state if state is not None else {}
+    # Fortran COMPACT_STRING:
+    # remove embedded blanks and return compacted text + output length.
     compact = "".join(ch for ch in builtins.str(str_in) if ch != " ")
     if isinstance(str_out, MutableSequence) and len(str_out) >= 1:
         str_out[0] = compact
@@ -104,6 +109,8 @@ def _ov_compact_string(
 
 def _ov_strchk(st: str, ps: Any, state: dict[str, Any] | None = None) -> dict[str, Any]:
     out = state if state is not None else {}
+    # Fortran STRCHK:
+    # escape PostScript control characters before writer routines consume text.
     escaped = escape_postscript_text(builtins.str(st))
     if isinstance(ps, MutableSequence) and len(ps) >= 1:
         ps[0] = escaped
@@ -124,6 +131,7 @@ def _ov_getvar(state: dict[str, Any] | None = None) -> float:
     nback = out.get("nback", (64, 1))
     if len(nback) < 2:
         return 0.0
+    # Fortran GETVAR tail-noise metric used by AVERAGE weighting logic.
     return estimate_tail_variance(datat, nback_start=int(nback[0]), nback_end=int(nback[1]))
 
 
@@ -133,6 +141,8 @@ def _ov_average(state: dict[str, Any] | None = None) -> dict[str, Any]:
     if channels is None:
         return out
     mode = int(out.get("iaverg", 1))
+    # Fortran AVERAGE modes:
+    # 1/2/3/4 for weighted/normalized variants, 31/32 for odd/even channel sets.
     if mode in {31, 32}:
         normalize = False
         weighted = False
@@ -349,6 +359,8 @@ def _ov_pnnls(
             nonnegative_mask=mask,
         ),
     )
+    # Fortran PNNLS contract:
+    # return solution in X and status via MODE/NSETP/INDEX side outputs.
     coeffs = list(fit.coefficients)
     if isinstance(x, MutableSequence):
         for j in range(min(len(x), len(coeffs))):
@@ -395,6 +407,7 @@ def _ov_plprin(
             lines.append(
                 f"{float(y1[i]): .6e} {float(y2[i]): .6e} {float(x[i]): .6e}"
             )
+    # Fortran PLPRIN is report-only formatting; numeric state is unchanged.
     out["plprin_text"] = "\n".join(lines) + ("\n" if lines else "")
     out["plprin_plterr"] = bool(plterr)
     return out
@@ -483,6 +496,7 @@ def _ov_eigvrs(
     out = state if state is not None else {}
     n_use = int(n)
     matrix = [[float(a[i][j]) for j in range(n_use)] for i in range(n_use)]
+    # Fortran EIGVRS wrapper over TRED2/TQL2: return eigenvalues + eigenvectors.
     wvals, vecs = jacobi_symmetric(matrix)
     if isinstance(w, MutableSequence):
         for i in range(min(len(w), n_use)):
@@ -501,6 +515,7 @@ def _ov_eigvrs(
 def _ov_df2tcf(n: int, c: Sequence[complex], yout: Any, wsave: Any, state: dict[str, Any] | None = None) -> dict[str, Any]:
     _ = wsave
     out = state if state is not None else {}
+    # Fortran FFTPACK bridge routines keep historical entrypoints for parity tests.
     vals = cfft_r_compat(c[: int(n)])
     _copy_sequence_prefix(yout, vals)
     out["df2tcf"] = tuple(vals)
@@ -746,6 +761,8 @@ def _ov_smooth_tail_2(
     out = state if state is not None else {}
     n = int(nunfil)
     values = [float(v) for v in work_in[:n]]
+    # Fortran SMOOTH_TAIL_2:
+    # smooth tail while alternating zig-zag behavior persists.
     out_vals = [0.0] * n
     j_break = 1
     for j in range(n - 2, 0, -1):
@@ -771,6 +788,8 @@ def _ov_smooth_tail(cdatat: Any, state: dict[str, Any] | None = None) -> dict[st
     n = len(cdatat)
     re = [float(complex(v).real) for v in cdatat]
     im = [float(complex(v).imag) for v in cdatat]
+    # Fortran SMOOTH_TAIL:
+    # smooth real and imaginary channels separately, then recombine complex data.
     re_out = [0.0] * n
     im_out = [0.0] * n
     _ov_smooth_tail_2(re, re_out, n, n, 0, False, out)
@@ -792,6 +811,8 @@ def _ov_phase_with_max_real(state: dict[str, Any] | None = None) -> dict[str, An
     datat = out.get("datat")
     if datat is None:
         return out
+    # Fortran PHASE_WITH_MAX_REAL:
+    # choose phase that maximizes real-part support before downstream fitting.
     phase = estimate_zero_order_phase(datat, search_steps=360)
     phased = apply_zero_order_phase(datat, phase)
     out["datat"] = tuple(phased)
@@ -826,6 +847,7 @@ def _ov_get_field(
 def _ov_parse_prior(state: dict[str, Any] | None = None) -> dict[str, Any]:
     out = state if state is not None else {}
     chrato = out.get("chrato", ())
+    # Fortran PARSE_PRIOR tokenization for ratio prior specifications.
     parsed = parse_prior_strings(tuple(builtins.str(v) for v in chrato))
     out["parsed_prior"] = parsed
     out["chrati"] = tuple(builtins.str(v["chrati"]) for v in parsed)
@@ -846,6 +868,8 @@ def _ov_parse_sum(
     state: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     out = state if state is not None else {}
+    # Fortran PARSE_SUM:
+    # parse signed metabolite expression and accumulate into CPRIOR row.
     names = tuple(builtins.str(v) for v in out.get("nacomb", ()))
     solbes = tuple(float(v) for v in out.get("solbes", ()))
     row, add_sum, is_absent = parse_sum_terms(
@@ -879,6 +903,8 @@ def _ov_conc_prior(state: dict[str, Any] | None = None) -> dict[str, Any]:
     out = state if state is not None else {}
     if "parsed_prior" not in out:
         _ov_parse_prior(out)
+    # Fortran CONC_PRIOR:
+    # materialize concentration-ratio priors as linear constraint rows.
     nacomb = tuple(builtins.str(v) for v in out.get("nacomb", ()))
     solbes = tuple(float(v) for v in out.get("solbes", ()))
     norato = tuple(builtins.str(v) for v in out.get("norato", ()))
@@ -1077,6 +1103,8 @@ def _ov_water_scale(state: dict[str, Any] | None = None) -> dict[str, Any]:
     if iaverg in {1, 4}:
         area_water = 1.0
     else:
+        # Fortran WATER_SCALE:
+        # use water reference area to calibrate concentration scale factor FCALIB.
         area_water = _ov_areawa(2, out)
     atth2o = float(out.get("atth2o", 1.0))
     wconc = float(out.get("wconc", 1.0))

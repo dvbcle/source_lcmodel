@@ -53,6 +53,8 @@ def align_vector_by_integer_shift(
     best_energy = -1.0
     best_vector = [float(v) for v in vector]
     for shift in range(-max_shift, max_shift + 1):
+        # Fortran SHIFTD analogue:
+        # test candidate integer shifts of the analysis window.
         shifted = _shift_vector(vector, shift, circular=circular)
         stage = run_fit_stage(matrix, shifted, FitConfig(baseline_order=-1))
         energy = sum(abs(v) for v in shifted)
@@ -108,7 +110,7 @@ def align_vector_by_fractional_shift(
         shifted = _shift_vector_fractional(vector, shift, circular=circular)
         stage = run_fit_stage(matrix, shifted, FitConfig(baseline_order=-1))
         energy = sum(abs(v) for v in shifted)
-        # Minimize residual first, then prefer larger retained signal energy.
+        # Tie-breaker mirrors LCModel preference for retaining signal support.
         return stage.residual_norm, -energy
 
     left = -max_shift

@@ -60,10 +60,11 @@ def apply_global_gaussian_lineshape(
         for j, value in enumerate(row):
             cols[j][i] = float(value)
 
+    # Fortran SETUP/SOLVE broadening intent:
+    # apply a shared lineshape to all basis columns for a trial nonlinear state.
     blurred_cols = [_blur_vector(col, sigma_points, circular=circular) for col in cols]
     out: list[list[float]] = [[0.0] * ncols for _ in range(nrows)]
     for j, col in enumerate(blurred_cols):
         for i, value in enumerate(col):
             out[i][j] = float(value)
     return tuple(tuple(row) for row in out)
-

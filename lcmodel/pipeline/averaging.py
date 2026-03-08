@@ -64,6 +64,8 @@ def estimate_tail_variance(
     y_imag = [float(datat[i].imag) for i in range(i_start, i_end + 1)]
 
     def residual_ssq(y: Sequence[float]) -> float:
+        # Fortran GETVAR:
+        # regression residual SSQ in the tail is used as a noise proxy.
         nterm = float(len(x_values))
         sx = sum(x_values)
         sxx = sum(x * x for x in x_values)
@@ -121,6 +123,8 @@ def weighted_average_channels(
 
     for idx, values in enumerate(channels):
         channel_ordinal = idx + 1
+        # Fortran AVERAGE mode behavior:
+        # support all/odd/even channel selection policies.
         if selection == "odd" and (channel_ordinal % 2 == 0):
             continue
         if selection == "even" and (channel_ordinal % 2 == 1):
@@ -133,6 +137,8 @@ def weighted_average_channels(
             continue
         normalized = [v / signal for v in values] if normalize_by_signal else list(values)
         if weight_by_variance:
+            # Fortran AVERAGE weighted mode:
+            # weight each channel by inverse estimated tail variance.
             term = estimate_tail_variance(normalized, nback_start=nback_start, nback_end=nback_end)
             nterm = int(nback_start) - int(nback_end) + 1
             denom = max(1, 2 * nterm - 4)

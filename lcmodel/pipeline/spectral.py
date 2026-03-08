@@ -16,6 +16,8 @@ class SpectralFitInputs:
 
 
 def _columns_from_row_major(matrix: Sequence[Sequence[complex]]) -> list[list[complex]]:
+    # Fortran BASIST storage is metabolite-major in many routines; this helper
+    # makes that column-major view explicit for per-metabolite MYDATA transforms.
     if not matrix or not matrix[0]:
         raise ValueError("basis matrix must be non-empty")
     ncols = len(matrix[0])
@@ -55,6 +57,8 @@ def prepare_frequency_fit_from_time_domain(
 ) -> SpectralFitInputs:
     """Convert complex time-domain raw/basis data to real-valued fit inputs."""
 
+    # Fortran MYDATA + FTDATA:
+    # data path is transformed first, including optional phasing logic.
     data_stage = run_mydata_stage(
         raw_time,
         MyDataConfig(
@@ -70,6 +74,8 @@ def prepare_frequency_fit_from_time_domain(
     if data_stage.frequency_domain is None:
         raise RuntimeError("MYDATA stage did not produce frequency domain data")
 
+    # Fortran behavior mirrors basis handling per metabolite: each basis FID is
+    # transformed with matching zero-fill/apodization settings.
     basis_columns_td = _columns_from_row_major(basis_time)
     basis_columns_fd: list[tuple[complex, ...]] = []
     for col in basis_columns_td:
@@ -89,6 +95,7 @@ def prepare_frequency_fit_from_time_domain(
     if len(basis_row_major_fd) != len(data_stage.frequency_domain):
         raise ValueError("raw and basis frequency lengths do not match")
 
+    # Fortran fit objective is formed on the real component of spectrum rows.
     vector = tuple(float(v.real) for v in data_stage.frequency_domain)
     matrix = tuple(tuple(float(v.real) for v in row) for row in basis_row_major_fd)
     return SpectralFitInputs(vector=vector, matrix=matrix)

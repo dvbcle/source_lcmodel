@@ -29,6 +29,9 @@ def _apply_combis_cho_special_case(
 ) -> tuple[str, ...]:
     """Mirror COMBIS behavior that drops pairwise Cho/GPC/PCh if triplet exists."""
 
+    # Fortran COMBIS keeps CHO-family reporting compact:
+    # when all three pair terms and the triplet are present, keep the triplet and
+    # suppress redundant pairwise sums.
     available = {str(name).strip().lower() for name in names}
     if not {"cho", "gpc", "pch"}.issubset(available):
         return tuple(str(e) for e in expressions)

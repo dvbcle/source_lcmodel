@@ -28,6 +28,8 @@ def _ov_psetup(
     out = state if state is not None else {}
     lines = _ps_lines(out)
     if bool(top_of_file) and not lines:
+        # Fortran PSETUP:
+        # start page stream and define page geometry variables.
         lines.extend(["%!PS-Adobe-3.0", "%%Creator: lcmodel semantic override"])
     lines.append("gsave")
     if bool(landsc):
@@ -56,6 +58,7 @@ def _ov_rgb(rgbv: Sequence[float], state: dict[str, Any] | None = None) -> dict[
 def _ov_dash(idshpt: int, dshpat: Sequence[float], state: dict[str, Any] | None = None) -> dict[str, Any]:
     out = state if state is not None else {}
     if int(idshpt) <= 0:
+        # Fortran DASH id<=0 means solid line.
         _ps_lines(out).append("[] 0 setdash")
         return out
     pat = [max(0.0, float(v)) for v in dshpat if float(v) > 0.0]
@@ -129,6 +132,8 @@ def _ov_plot(
     count = max(0, min(int(n), len(x), len(y)))
     if count <= 0:
         return out
+    # Fortran PLOT:
+    # map data coordinates into page box and emit a polyline stroke.
     lines = _ps_lines(out)
     px0 = _map_plot_point(float(x[0]), float(xmn), float(xmx), float(ox), float(wd))
     py0 = _map_plot_point(float(y[0]), float(ymn), float(ymx), float(oy), float(ht))
@@ -156,7 +161,7 @@ def _ov_plot_gap(
     ht: float,
     state: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    # Current port maps PLOT_gap to the same polyline behavior as PLOT.
+    # Fortran PLOT_GAP keeps same coordinate transform as PLOT in this adapter.
     return _ov_plot(n, x, y, xmn, xmx, ymn, ymx, ox, oy, wd, ht, state)
 
 
@@ -222,7 +227,8 @@ def _ov_strpou(state: dict[str, Any] | None = None) -> dict[str, Any]:
 
 def _ov_makeps(state: dict[str, Any] | None = None) -> dict[str, Any]:
     out = state if state is not None else {}
-    # Build a minimal page if caller hasn't emitted anything yet.
+    # Fortran MAKEPS compatibility:
+    # synthesize minimal page setup if caller emitted no drawing commands yet.
     if not _ps_lines(out):
         _ov_psetup(True, 612.0, 792.0, False, out)
     out["makeps_called"] = True

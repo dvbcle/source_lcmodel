@@ -66,6 +66,8 @@ def integrate_peak_with_local_baseline(
 
     left_dist = peak_index - left_min_idx
     right_dist = right_min_idx - peak_index
+    # Fortran INTEGRATE:
+    # enforce a symmetric window around the peak using side minima distances.
     half_width = max(left_dist, right_dist)
     window_start = peak_index - half_width
     window_end = peak_index + half_width

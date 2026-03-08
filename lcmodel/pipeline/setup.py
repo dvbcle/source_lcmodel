@@ -31,6 +31,8 @@ def prepare_fit_inputs(
 ) -> SetupResult:
     """Apply LCModel-like fit window and basis selection before solving."""
 
+    # Fortran SETUP defensive checks:
+    # dimensions are validated before building PLINLS/SOLVE matrices.
     if len(matrix) != len(vector):
         raise ValueError("matrix row count must equal vector length")
     if len(matrix) == 0 or len(matrix[0]) == 0:
@@ -45,12 +47,16 @@ def prepare_fit_inputs(
 
     row_indices = list(range(len(vector)))
     if ppm_axis is not None and ppm_start is not None and ppm_end is not None:
+        # Fortran spectral window behavior:
+        # analyze only [PPMEND, PPMST] (order-agnostic in Python call site).
         lo = min(float(ppm_start), float(ppm_end))
         hi = max(float(ppm_start), float(ppm_end))
         row_indices = [i for i, ppm in enumerate(ppm_axis) if lo <= float(ppm) <= hi]
         if not row_indices:
             raise ValueError("ppm window selection produced zero rows")
     if ppm_axis is not None and exclude_ppm_ranges:
+        # Fortran gap handling (NGAP/LCY_SKIP):
+        # remove explicitly excluded ppm intervals from active rows.
         gaps: list[tuple[float, float]] = []
         for a, b in exclude_ppm_ranges:
             lo = min(float(a), float(b))
@@ -74,6 +80,8 @@ def prepare_fit_inputs(
         selected_names = [f"basis_{j+1}" for j in range(ncols)]
 
     if include_metabolites:
+        # Fortran CHUSE-style restriction:
+        # keep only requested metabolites for this solve pass.
         include_set = {name.strip().lower() for name in include_metabolites if name.strip()}
         chosen = [j for j, name in enumerate(selected_names) if name.lower() in include_set]
         if not chosen:

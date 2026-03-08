@@ -81,10 +81,14 @@ def run_mydata_stage(
     if len(time_domain) == 0:
         raise ValueError("time_domain must not be empty")
 
+    # Fortran MYDATA:
+    # "Read the NUNFIL complex time-domain data into DATAT" then preprocess.
     data = _coerce_complex_vector(time_domain)
     log: list[str] = [f"input_points={len(data)}"]
 
     if config.truncate_to is not None:
+        # Fortran ECC_TRUNCATE family:
+        # optional truncation of usable FID range before transform.
         truncate_to = int(config.truncate_to)
         if truncate_to <= 0:
             raise ValueError("truncate_to must be > 0 when provided")
@@ -93,10 +97,14 @@ def run_mydata_stage(
             log.append(f"truncate_to={truncate_to}")
 
     if config.conjugate_input:
+        # Fortran MYDATA BRUKER path:
+        # conjugate time-domain input when acquisition convention requires it.
         data = [x.conjugate() for x in data]
         log.append("conjugate_input=true")
 
     if config.dwell_time_s > 0.0 and config.line_broadening_hz > 0.0:
+        # Fortran MYDATA smoothing window:
+        # apply exp(-pi * LB * t) style apodization before FFT.
         out: list[complex] = []
         for idx, x in enumerate(data):
             t = idx * float(config.dwell_time_s)
@@ -114,6 +122,8 @@ def run_mydata_stage(
             raise ValueError("zero_fill_to must be >= current data length")
         target_len = zf
     elif config.zero_fill_to_pow2:
+        # Fortran FTDATA:
+        # zero-filling to FFT length used for frequency-domain fitting.
         target_len = _next_pow2(len(data))
 
     if target_len > len(data):
@@ -124,8 +134,12 @@ def run_mydata_stage(
     phase0: float | None = None
     phase1: float | None = None
     if config.compute_fft:
+        # Fortran CFFT_r path:
+        # convert DATAT to rearranged frequency-domain spectrum for analysis.
         spectrum = tuple(_fft(data))
         if config.auto_phase_first_order:
+            # Fortran PHASTA:
+            # search start values for zero/first-order phase corrections.
             phase0, phase1 = estimate_zero_first_order_phase(
                 spectrum,
                 zero_steps=config.phase_search_steps,
@@ -138,6 +152,8 @@ def run_mydata_stage(
             log.append(f"phase0={phase0:.12g}")
             log.append(f"phase1={phase1:.12g}")
         elif config.auto_phase_zero_order:
+            # Fortran REPHAS/PHASE_WITH_MAX_REAL intent:
+            # zero-order phase that maximizes real-part objective.
             if config.phase_objective == "smooth_real":
                 phase0, _ = estimate_zero_first_order_phase(
                     spectrum,

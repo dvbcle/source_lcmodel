@@ -74,6 +74,8 @@ class LCModelRunner:
         return self._run_impl()
 
     def _run_impl(self) -> RunResult:
+        # Fortran MAIN/MYCONT/SPLIT_TITLE intent:
+        # "Load changes to Control Variables" and format TITLE for report output.
         title_layout = split_title_lines(self.config.title, self.config.ntitle)
         filename_parts: tuple[str, str] | None = None
         if self.config.output_filename:
@@ -90,6 +92,8 @@ class LCModelRunner:
             if self.config.basis_names_file:
                 basis_names = load_basis_names(self.config.basis_names_file)
             if self.config.time_domain_input:
+                # Fortran AVERAGE/CHECK_ZERO_VOXELS:
+                # average CSI/phased-array style channels before single-voxel analysis.
                 if self.config.average_mode != 0:
                     channels = load_complex_matrix(self.config.raw_data_file, pair_mode=True)
                     if self.config.average_mode in {31, 32}:
@@ -118,6 +122,8 @@ class LCModelRunner:
                     )
                     raw_td = list(average.averaged)
                 else:
+                    # Fortran MYDATA:
+                    # read NUNFIL complex time-domain data into DATAT.
                     raw_td = load_complex_vector(self.config.raw_data_file)
                 if is_lcmodel_basis_file(self.config.basis_file):
                     lc_basis = load_lcmodel_basis(self.config.basis_file)
@@ -126,6 +132,8 @@ class LCModelRunner:
                         basis_names = list(lc_basis.metabolite_names)
                 else:
                     basis_td = load_complex_matrix(self.config.basis_file, pair_mode=True)
+                # Fortran FTDATA/PHASTA/REPHAS:
+                # transform to frequency domain and apply initial phase behavior.
                 spectral = prepare_frequency_fit_from_time_domain(
                     raw_td,
                     basis_td,
@@ -145,6 +153,8 @@ class LCModelRunner:
             if self.config.ppm_axis_file:
                 ppm_axis = load_numeric_vector(self.config.ppm_axis_file)
 
+            # Fortran SETUP/SETUP3:
+            # choose analysis window and active basis terms before solve.
             setup = prepare_fit_inputs(
                 matrix,
                 vector,
@@ -155,6 +165,8 @@ class LCModelRunner:
                 basis_names=basis_names,
                 include_metabolites=self.config.include_metabolites,
             )
+            # Fortran TWOREG/TWORG*/RFALSI outer-loop intent:
+            # refine shift/linewidth search state before final linear solve.
             nonlinear = run_nonlinear_refinement(
                 setup.matrix,
                 setup.vector,
@@ -177,6 +189,8 @@ class LCModelRunner:
             fit_matrix = [list(row) for row in nonlinear.fit_matrix]
             fit_vector = list(nonlinear.fit_vector)
             if self.config.priors_file:
+                # Fortran priors rows in SOLVE:
+                # append soft constraints as extra equations in the linear system.
                 priors = load_soft_priors(self.config.priors_file)
                 fit_matrix, fit_vector = augment_system_with_soft_priors(
                     fit_matrix,
@@ -184,6 +198,8 @@ class LCModelRunner:
                     setup.metabolite_names,
                     priors,
                 )
+            # Fortran PLINLS/SOLVE/PNNLS:
+            # solve for nonnegative metabolite amplitudes (+ optional baseline terms).
             stage = run_fit_stage(
                 fit_matrix,
                 fit_vector,
@@ -193,12 +209,16 @@ class LCModelRunner:
                     baseline_smoothness=self.config.baseline_smoothness,
                 ),
             )
+            # Fortran COMBIS:
+            # produce metabolite group totals (e.g., CHO/GPC/PCH families).
             combined = compute_combinations(
                 self.config.combine_expressions,
                 stage.coefficients,
                 stage.coefficient_sds,
                 setup.metabolite_names,
             )
+            # Fortran FINOUT table metrics:
+            # derive residual and SNR-style quality summaries for reporting.
             relative_residual, snr_estimate = compute_fit_quality_metrics(
                 setup.matrix,
                 setup.vector,
@@ -216,6 +236,8 @@ class LCModelRunner:
             integrated_data_area = 0.0
             integrated_fit_area = 0.0
             if setup.vector:
+                # Fortran INTEGRATE:
+                # subtract local baseline around a peak-centered symmetric window.
                 peak_index = max(range(len(setup.vector)), key=lambda idx: abs(float(setup.vector[idx])))
                 half_width = max(1, int(self.config.integration_half_width_points))
                 window_start = max(0, peak_index - half_width)

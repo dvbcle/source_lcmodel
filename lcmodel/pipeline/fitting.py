@@ -75,6 +75,9 @@ def _pnnls_active_set(
 ) -> FitStageResult:
     """Lawson-Hanson style active-set solve with optional sign constraints."""
 
+    # Fortran PNNLS:
+    # solve least squares under NONNEG constraints by moving variables between
+    # active/passive sets until Kuhn-Tucker conditions are satisfied.
     m = len(matrix)
     n = len(matrix[0])
     x = [0.0] * n
@@ -86,6 +89,8 @@ def _pnnls_active_set(
     while True:
         if len(passive) >= m:
             break
+        # Fortran "w" test:
+        # compute gradient/correlation of residual against each inactive column.
         residual = [float(vector[i]) for i in range(m)]
         for i, row in enumerate(matrix):
             total = 0.0
@@ -108,6 +113,7 @@ def _pnnls_active_set(
         if best_j < 0:
             break
 
+        # Move the best candidate from active to passive set.
         in_passive[best_j] = True
         passive.append(best_j)
 
@@ -125,6 +131,9 @@ def _pnnls_active_set(
             feasible = True
             alpha = 1.0
 
+            # Fortran alpha step:
+            # backtrack to the nearest nonnegative boundary if passive solution
+            # violates sign constraints.
             for j in passive:
                 if not nonnegative[j]:
                     continue
@@ -328,7 +337,9 @@ def _least_squares_bspline_baseline(
     lam = max(0.0, float(smoothness))
     if lam > 0.0:
         reg = _build_bspline_regularizer(k)
-        # Add lambda * (R^T R) to the normal equations.
+        # Fortran GBACKG/SETUP:
+        # add smoothness regularizer rows using R^T R so baseline coefficients
+        # are penalized similarly to REGB-weighted equations.
         for i in range(k):
             for j in range(k):
                 penalty = 0.0
@@ -355,6 +366,8 @@ def _alternating_nnls_with_baseline(
     baseline = [0.0] * len(vector)
     x = [0.0] * len(matrix[0])
 
+    # Fortran PLINLS/SOLVE high-level pattern:
+    # alternate between linear concentration solve and baseline update.
     for alt in range(1, max(1, config.alternating_iters) + 1):
         y_minus_baseline = [float(vector[i]) - baseline[i] for i in range(len(vector))]
         nnls = _pnnls_active_set(
@@ -377,12 +390,14 @@ def _alternating_nnls_with_baseline(
             fitted[i] = total
         residual = [float(vector[i]) - fitted[i] for i in range(len(vector))]
         if config.baseline_knots >= 4:
+            # Fortran cubic B-spline baseline path.
             _, baseline = _least_squares_bspline_baseline(
                 residual,
                 config.baseline_knots,
                 config.baseline_smoothness,
             )
         else:
+            # Simpler polynomial fallback used for lightweight workflows/tests.
             _, baseline = _least_squares_baseline(residual, config.baseline_order)
 
         if nnls.residual_norm <= config.tolerance:
@@ -445,7 +460,9 @@ def _estimate_coefficient_sds(
     if m <= n:
         return tuple(0.0 for _ in range(n))
 
-    # Build Gram matrix A^T A
+    # Fortran-style uncertainty estimate:
+    # derive SDs from residual variance and diagonal of (A^T A)^-1.
+    # Build Gram matrix A^T A.
     gram = [[0.0] * n for _ in range(n)]
     for i in range(m):
         row = matrix[i]
@@ -498,8 +515,10 @@ def run_fit_stage(
         nonnegative = tuple(bool(v) for v in config.nonnegative_mask)
 
     if config.baseline_order >= 0 or config.baseline_knots >= 4:
+        # Fortran PLINLS+GBACKG-like coupled solve.
         stage = _alternating_nnls_with_baseline(matrix, vector, config, nonnegative)
     else:
+        # Fortran PNNLS core solve without explicit baseline terms.
         stage = _pnnls_active_set(matrix, vector, config, nonnegative)
 
     sds = _estimate_coefficient_sds(matrix, vector, stage.coefficients)
