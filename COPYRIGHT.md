@@ -7,6 +7,7 @@ The original LCModel Fortran source code retained in this repository under
 
 - Stephen W. Provencher
 - Copyright (c) 1992-2021
+- https://s-provencher.com/lcmodel.shtml
 
 The original LCModel copyright/license text is preserved in the reference
 Fortran source files (for example `fortran_reference/LCModel.f`).
