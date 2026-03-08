@@ -34,6 +34,16 @@ def build_parser() -> argparse.ArgumentParser:
         help="Optional output path for fit summary table.",
     )
     parser.add_argument(
+        "--time-domain-input",
+        action="store_true",
+        help="Interpret raw/basis files as complex time-domain input before FFT-based fitting.",
+    )
+    parser.add_argument(
+        "--auto-phase-zero-order",
+        action="store_true",
+        help="Enable zero-order auto-phasing for time-domain raw input conversion.",
+    )
+    parser.add_argument(
         "--raw-data-file",
         default=None,
         help="Path to numeric vector file for fit stage (one value per line).",
@@ -96,6 +106,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         config = replace(config, output_filename=args.output_filename)
     if args.table_output_file is not None:
         config = replace(config, table_output_file=args.table_output_file)
+    if args.time_domain_input:
+        config = replace(config, time_domain_input=True)
+    if args.auto_phase_zero_order:
+        config = replace(config, auto_phase_zero_order=True)
     if args.raw_data_file is not None:
         config = replace(config, raw_data_file=args.raw_data_file)
     if args.basis_file is not None:

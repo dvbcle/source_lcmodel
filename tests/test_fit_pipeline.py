@@ -9,7 +9,13 @@ import uuid
 
 from lcmodel.cli import main as cli_main
 from lcmodel.engine import LCModelRunner
-from lcmodel.io.numeric import load_numeric_matrix, load_numeric_vector, save_numeric_vector
+from lcmodel.io.numeric import (
+    load_complex_matrix,
+    load_complex_vector,
+    load_numeric_matrix,
+    load_numeric_vector,
+    save_numeric_vector,
+)
 from lcmodel.models import RunConfig
 from lcmodel.pipeline.fitting import FitConfig, run_fit_stage
 
@@ -31,6 +37,20 @@ class TestFitPipeline(unittest.TestCase):
             mat_file.write_text("1,0\n0,1\n1,1\n", encoding="utf-8")
             self.assertEqual([1.0, 2.5, 3.25], load_numeric_vector(vec_file))
             self.assertEqual([[1.0, 0.0], [0.0, 1.0], [1.0, 1.0]], load_numeric_matrix(mat_file))
+        finally:
+            shutil.rmtree(p, ignore_errors=True)
+
+    def test_complex_loaders(self):
+        p = self._make_local_tmpdir()
+        try:
+            vec_file = p / "cvec.txt"
+            mat_file = p / "cmat.txt"
+            vec_file.write_text("1 0\n0 1\n", encoding="utf-8")
+            mat_file.write_text("1 0 0 0\n0 1 0 0\n", encoding="utf-8")
+            vec = load_complex_vector(vec_file)
+            mat = load_complex_matrix(mat_file, pair_mode=True)
+            self.assertEqual([1 + 0j, 0 + 1j], vec)
+            self.assertEqual(2, len(mat[0]))
         finally:
             shutil.rmtree(p, ignore_errors=True)
 
@@ -114,6 +134,33 @@ class TestFitPipeline(unittest.TestCase):
             self.assertIn("fit_coeff_sds=", out)
             self.assertIn("table_output_file=", out)
             self.assertTrue(tab_file.exists())
+        finally:
+            shutil.rmtree(p, ignore_errors=True)
+
+    def test_time_domain_fit_path(self):
+        p = self._make_local_tmpdir()
+        try:
+            raw = p / "raw_td.txt"
+            basis = p / "basis_td.txt"
+            names = p / "names.txt"
+            raw.write_text("1 0\n0 0\n0 0\n0 0\n", encoding="utf-8")
+            # One basis column in pair mode: re1 im1
+            basis.write_text("1 0\n0 0\n0 0\n0 0\n", encoding="utf-8")
+            names.write_text("NAA\n", encoding="utf-8")
+
+            result = LCModelRunner(
+                RunConfig(
+                    raw_data_file=str(raw),
+                    basis_file=str(basis),
+                    basis_names_file=str(names),
+                    time_domain_input=True,
+                    auto_phase_zero_order=True,
+                )
+            ).run()
+            self.assertIsNotNone(result.fit_result)
+            assert result.fit_result is not None
+            self.assertEqual(("NAA",), result.fit_result.metabolite_names)
+            self.assertAlmostEqual(1.0, result.fit_result.coefficients[0], places=3)
         finally:
             shutil.rmtree(p, ignore_errors=True)
 

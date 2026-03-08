@@ -3,11 +3,17 @@
 from __future__ import annotations
 
 from lcmodel.io.basis import load_basis_names
-from lcmodel.io.numeric import load_numeric_matrix, load_numeric_vector
+from lcmodel.io.numeric import (
+    load_complex_matrix,
+    load_complex_vector,
+    load_numeric_matrix,
+    load_numeric_vector,
+)
 from lcmodel.io.pathing import split_output_filename_for_voxel
 from lcmodel.io.report import write_fit_table
 from lcmodel.models import FitResult, RunConfig, RunResult
 from lcmodel.pipeline.fitting import FitConfig, run_fit_stage
+from lcmodel.pipeline.spectral import prepare_frequency_fit_from_time_domain
 from lcmodel.pipeline.setup import prepare_fit_inputs
 from lcmodel.core.text import split_title_lines
 
@@ -30,8 +36,19 @@ class LCModelRunner:
 
         fit_result: FitResult | None = None
         if self.config.raw_data_file and self.config.basis_file:
-            vector = load_numeric_vector(self.config.raw_data_file)
-            matrix = load_numeric_matrix(self.config.basis_file)
+            if self.config.time_domain_input:
+                raw_td = load_complex_vector(self.config.raw_data_file)
+                basis_td = load_complex_matrix(self.config.basis_file, pair_mode=True)
+                spectral = prepare_frequency_fit_from_time_domain(
+                    raw_td,
+                    basis_td,
+                    auto_phase_zero_order=self.config.auto_phase_zero_order,
+                )
+                vector = list(spectral.vector)
+                matrix = [list(row) for row in spectral.matrix]
+            else:
+                vector = load_numeric_vector(self.config.raw_data_file)
+                matrix = load_numeric_matrix(self.config.basis_file)
             ppm_axis = None
             if self.config.ppm_axis_file:
                 ppm_axis = load_numeric_vector(self.config.ppm_axis_file)

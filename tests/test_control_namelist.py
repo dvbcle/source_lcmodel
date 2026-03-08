@@ -46,7 +46,7 @@ $LCMODL
             ctl.write_text(
                 (
                     "$LCMODL\n"
-                    " TITLE='Control Title', NTITLE=1, FILRAW='a.txt', FILBAS='b.txt', FILPS='c.ps', FILTAB='tab.out', NDEGZ=2,\n"
+                    " TITLE='Control Title', NTITLE=1, FILRAW='a.txt', FILBAS='b.txt', FILPS='c.ps', FILTAB='tab.out', NDEGZ=2, TIMDOM=.true., AUTOPH0=.true.,\n"
                     " CHUSE1(1)='NAA', CHUSE1(2)='Cr', PPMST=3.2, PPMEND=2.0, FILPPM='ppm.txt', FILNAM='names.txt', /\n"
                 ),
                 encoding="utf-8",
@@ -64,6 +64,8 @@ $LCMODL
             self.assertEqual(2.0, cfg.fit_ppm_end)
             self.assertEqual("ppm.txt", cfg.ppm_axis_file)
             self.assertEqual("names.txt", cfg.basis_names_file)
+            self.assertTrue(cfg.time_domain_input)
+            self.assertTrue(cfg.auto_phase_zero_order)
         finally:
             shutil.rmtree(p, ignore_errors=True)
 

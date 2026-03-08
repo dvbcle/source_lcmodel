@@ -23,6 +23,8 @@ class RunConfig:
     ppm_axis_file: str | None = None
     basis_names_file: str | None = None
     table_output_file: str | None = None
+    time_domain_input: bool = False
+    auto_phase_zero_order: bool = False
     fit_ppm_start: float | None = None
     fit_ppm_end: float | None = None
     include_metabolites: tuple[str, ...] = ()

@@ -41,6 +41,10 @@ output_split_right=.ps
   - Optional output path used to calculate insertion points for voxel IDs.
 - `--table-output-file`
   - Optional path for writing a tab-delimited fit summary file.
+- `--time-domain-input`
+  - Treat raw and basis files as complex time-domain values (`re im` format).
+- `--auto-phase-zero-order`
+  - Apply auto-estimated zero-order phase after FFT conversion.
 - `--raw-data-file`
   - Optional numeric vector file for the fit stage.
 - `--basis-file`
