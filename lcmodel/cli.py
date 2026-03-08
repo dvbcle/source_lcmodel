@@ -5,8 +5,8 @@ from __future__ import annotations
 import argparse
 from typing import Sequence
 
+from lcmodel.application import run_lcmodel, run_lcmodel_batch
 from lcmodel.cli_support import apply_cli_args, print_batch_result, print_run_result
-from lcmodel.engine import LCModelRunner
 from lcmodel.io.namelist import load_run_config_from_control_file
 from lcmodel.models import RunConfig
 
@@ -267,13 +267,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         config = RunConfig()
     config = apply_cli_args(config, args)
 
-    runner = LCModelRunner(config)
     if config.raw_data_list_file:
-        batch = runner.run_batch()
+        batch = run_lcmodel_batch(config)
         print_batch_result(batch)
         return 0
 
-    result = runner.run()
+    result = run_lcmodel(config)
     print_run_result(result)
     return 0
 

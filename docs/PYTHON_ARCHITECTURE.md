@@ -7,6 +7,9 @@ traceability artifacts kept alongside the codebase for Fortran provenance.
 
 - `lcmodel/models.py`
   - Typed run/result dataclasses.
+- `lcmodel/application.py`
+  - Stable application API (`run_lcmodel`, `run_lcmodel_batch`) used by CLI
+    and recommended for external Python callers.
 - `lcmodel/engine.py`
   - Main orchestration (`LCModelRunner`) for single and batch flows.
 - `lcmodel/pipeline/`
@@ -43,7 +46,8 @@ Traceability combines five mechanisms:
 ## Maintenance Rules
 
 1. Keep runtime behavior in `lcmodel/engine.py`, `lcmodel/pipeline/*`,
-   `lcmodel/io/*`, and `lcmodel/core/*`.
+   `lcmodel/io/*`, and `lcmodel/core/*`; keep external invocation routed
+   through `lcmodel/application.py`.
 2. Maintain `lcmodel/traceability/fortran_routine_manifest.json` when Fortran
    source inventory or mapping targets change.
 3. Decorate Python runtime entry points with `fortran_provenance(...)` tags so

@@ -5,6 +5,7 @@ porting from the legacy Fortran LCModel codebase.
 """
 
 from lcmodel.engine import LCModelRunner
+from lcmodel.application import run_lcmodel, run_lcmodel_batch
 from lcmodel.core.fftpack_compat import (
     FFTPlan,
     cfftb,
@@ -60,6 +61,8 @@ from lcmodel.traceability import (
 
 __all__ = [
     "LCModelRunner",
+    "run_lcmodel",
+    "run_lcmodel_batch",
     "FFTPlan",
     "AlignmentResult",
     "FractionalAlignmentResult",
