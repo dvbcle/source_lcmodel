@@ -96,6 +96,7 @@ python -m lcmodel --control-file data\\control.in
 - Python architecture guide: `docs/PYTHON_ARCHITECTURE.md`
 - Fortran parity workflow: `docs/FORTRAN_PARITY_WORKFLOW.md`
 - Fortran routine map: `docs/FORTRAN_ROUTINE_MAP.md`
+- Chat/session preservation tips: `docs/CHAT_HISTORY_PRESERVATION.md`
 
 ## Tests
 
