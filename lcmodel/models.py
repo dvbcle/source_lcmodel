@@ -36,6 +36,7 @@ class FitResult:
     residual_norm: float
     iterations: int
     method: str
+    coefficient_sds: tuple[float, ...] = ()
     metabolite_names: tuple[str, ...] = ()
     data_points_used: int = 0
 

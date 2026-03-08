@@ -68,6 +68,8 @@ output_split_right=.ps
   - You did not pass both `--raw-data-file` and `--basis-file`.
 - `fit_coefficients`
   - Nonnegative fit coefficients from the current semantic fit stage.
+- `fit_coeff_sds`
+  - Approximate standard deviations for fit coefficients.
 - `fit_metabolites`
   - Metabolite names corresponding to coefficient order.
 - `fit_points_used`

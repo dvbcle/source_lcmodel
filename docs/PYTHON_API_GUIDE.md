@@ -36,6 +36,7 @@ print(result.fit_result)
   - `fit_result: FitResult | None`
 - `FitResult`
   - `coefficients: tuple[float, ...]`
+  - `coefficient_sds: tuple[float, ...]`
   - `residual_norm: float`
   - `iterations: int`
   - `method: str`

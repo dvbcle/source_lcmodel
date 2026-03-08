@@ -21,6 +21,7 @@ class FitStageResult:
     residual_norm: float
     iterations: int
     method: str
+    coefficient_sds: tuple[float, ...] = ()
 
 
 def _residual_norm(matrix: Sequence[Sequence[float]], vector: Sequence[float], x: Sequence[float]) -> float:
@@ -209,6 +210,76 @@ def _alternating_nnls_with_baseline(
     )
 
 
+def _invert_matrix(a: list[list[float]]) -> list[list[float]] | None:
+    n = len(a)
+    aug = [row[:] + [1.0 if i == j else 0.0 for j in range(n)] for i, row in enumerate(a)]
+    for col in range(n):
+        pivot = col
+        max_abs = abs(aug[col][col])
+        for r in range(col + 1, n):
+            if abs(aug[r][col]) > max_abs:
+                max_abs = abs(aug[r][col])
+                pivot = r
+        if max_abs <= 1e-15:
+            return None
+        if pivot != col:
+            aug[col], aug[pivot] = aug[pivot], aug[col]
+
+        piv = aug[col][col]
+        for c in range(2 * n):
+            aug[col][c] /= piv
+        for r in range(n):
+            if r == col:
+                continue
+            factor = aug[r][col]
+            if factor == 0.0:
+                continue
+            for c in range(2 * n):
+                aug[r][c] -= factor * aug[col][c]
+
+    inv = [row[n:] for row in aug]
+    return inv
+
+
+def _estimate_coefficient_sds(
+    matrix: Sequence[Sequence[float]],
+    vector: Sequence[float],
+    coeffs: Sequence[float],
+) -> tuple[float, ...]:
+    m = len(matrix)
+    n = len(matrix[0])
+    if m <= n:
+        return tuple(0.0 for _ in range(n))
+
+    # Build Gram matrix A^T A
+    gram = [[0.0] * n for _ in range(n)]
+    for i in range(m):
+        row = matrix[i]
+        for a in range(n):
+            va = float(row[a])
+            for b in range(n):
+                gram[a][b] += va * float(row[b])
+    inv = _invert_matrix(gram)
+    if inv is None:
+        return tuple(0.0 for _ in range(n))
+
+    # Residual variance estimate.
+    rss = 0.0
+    for i in range(m):
+        pred = 0.0
+        for j in range(n):
+            pred += float(matrix[i][j]) * float(coeffs[j])
+        diff = pred - float(vector[i])
+        rss += diff * diff
+    sigma2 = rss / max(1, (m - n))
+
+    sds = []
+    for j in range(n):
+        var = max(0.0, sigma2 * inv[j][j])
+        sds.append(math.sqrt(var))
+    return tuple(sds)
+
+
 def run_fit_stage(
     matrix: Sequence[Sequence[float]],
     vector: Sequence[float],
@@ -226,5 +297,15 @@ def run_fit_stage(
             raise ValueError("matrix rows must all have same length")
 
     if config.baseline_order >= 0:
-        return _alternating_nnls_with_baseline(matrix, vector, config)
-    return _coordinate_descent_nnls(matrix, vector, config)
+        stage = _alternating_nnls_with_baseline(matrix, vector, config)
+    else:
+        stage = _coordinate_descent_nnls(matrix, vector, config)
+
+    sds = _estimate_coefficient_sds(matrix, vector, stage.coefficients)
+    return FitStageResult(
+        coefficients=stage.coefficients,
+        residual_norm=stage.residual_norm,
+        iterations=stage.iterations,
+        method=stage.method,
+        coefficient_sds=sds,
+    )

@@ -39,6 +39,7 @@ class TestFitPipeline(unittest.TestCase):
         self.assertAlmostEqual(2.0, fit.coefficients[0], places=3)
         self.assertAlmostEqual(3.0, fit.coefficients[1], places=3)
         self.assertLess(fit.residual_norm, 1e-3)
+        self.assertEqual(2, len(fit.coefficient_sds))
 
     def test_run_fit_stage_with_baseline(self):
         fit = run_fit_stage(
@@ -78,6 +79,7 @@ class TestFitPipeline(unittest.TestCase):
             self.assertAlmostEqual(2.0, result.fit_result.coefficients[0], places=3)
             self.assertEqual(("NAA",), result.fit_result.metabolite_names)
             self.assertEqual(1, result.fit_result.data_points_used)
+            self.assertEqual(1, len(result.fit_result.coefficient_sds))
         finally:
             shutil.rmtree(p, ignore_errors=True)
 
@@ -106,6 +108,7 @@ class TestFitPipeline(unittest.TestCase):
             out = buf.getvalue()
             self.assertIn("fit_method=", out)
             self.assertIn("fit_coefficients=", out)
+            self.assertIn("fit_coeff_sds=", out)
         finally:
             shutil.rmtree(p, ignore_errors=True)
 

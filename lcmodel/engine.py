@@ -57,6 +57,7 @@ class LCModelRunner:
                 residual_norm=stage.residual_norm,
                 iterations=stage.iterations,
                 method=stage.method,
+                coefficient_sds=stage.coefficient_sds,
                 metabolite_names=setup.metabolite_names,
                 data_points_used=len(setup.vector),
             )

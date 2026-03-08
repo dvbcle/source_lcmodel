@@ -127,6 +127,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"fit_residual_norm={result.fit_result.residual_norm:.12g}")
         coeffs = ",".join(f"{v:.12g}" for v in result.fit_result.coefficients)
         print(f"fit_coefficients={coeffs}")
+        if result.fit_result.coefficient_sds:
+            sds = ",".join(f"{v:.12g}" for v in result.fit_result.coefficient_sds)
+            print(f"fit_coeff_sds={sds}")
         if result.fit_result.metabolite_names:
             print(f"fit_metabolites={','.join(result.fit_result.metabolite_names)}")
         if result.fit_result.data_points_used > 0:
