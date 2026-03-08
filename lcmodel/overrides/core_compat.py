@@ -48,26 +48,10 @@ from lcmodel.pipeline.averaging import (
 from lcmodel.pipeline.integration import integrate_peak_with_local_baseline
 from lcmodel.pipeline.fitting import FitConfig, run_fit_stage
 from lcmodel.pipeline.phasing import apply_zero_order_phase, estimate_zero_order_phase
-
-
-
-def _assign_vector(target: Any, values: Sequence[complex]) -> None:
-    if isinstance(target, MutableSequence):
-        limit = min(len(target), len(values))
-        for i in range(limit):
-            target[i] = values[i]
-
-
-def _assign_scalar(target: Any, value: Any) -> None:
-    if isinstance(target, MutableSequence) and len(target) >= 1:
-        target[0] = value
-
-
-def _copy_sequence_prefix(target: Any, source: Sequence[Any]) -> None:
-    if isinstance(target, MutableSequence):
-        limit = min(len(target), len(source))
-        for i in range(limit):
-            target[i] = source[i]
+from lcmodel.overrides.state_ops import (
+    assign_scalar as _assign_scalar,
+    copy_sequence_prefix as _copy_sequence_prefix,
+)
 
 
 def _ov_ilen(st: str, state: dict[str, Any] | None = None) -> int:

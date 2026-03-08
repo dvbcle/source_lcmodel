@@ -33,22 +33,11 @@ from lcmodel.pipeline.postprocess import compute_combinations
 from lcmodel.pipeline.fitting import FitConfig, run_fit_stage
 from lcmodel.pipeline.nonlinear import NonlinearConfig, run_nonlinear_refinement
 from lcmodel.pipeline.setup import prepare_fit_inputs
-
-def _assign_vector(target: Any, values: Sequence[complex]) -> None:
-    if isinstance(target, MutableSequence):
-        limit = min(len(target), len(values))
-        for i in range(limit):
-            target[i] = values[i]
-
-def _assign_scalar(target: Any, value: Any) -> None:
-    if isinstance(target, MutableSequence) and len(target) >= 1:
-        target[0] = value
-
-def _copy_sequence_prefix(target: Any, source: Sequence[Any]) -> None:
-    if isinstance(target, MutableSequence):
-        limit = min(len(target), len(source))
-        for i in range(limit):
-            target[i] = source[i]
+from lcmodel.overrides.state_ops import (
+    assign_scalar as _assign_scalar,
+    assign_vector as _assign_vector,
+    copy_sequence_prefix as _copy_sequence_prefix,
+)
 
 def _ov_initia(state: dict[str, Any] | None = None) -> dict[str, Any]:
     out = state if state is not None else {}
