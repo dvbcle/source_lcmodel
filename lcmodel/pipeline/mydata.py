@@ -15,6 +15,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Sequence
 
+from lcmodel.pipeline.phasing import apply_zero_order_phase, estimate_zero_order_phase
+
 
 def _coerce_complex_vector(values: Sequence[complex]) -> list[complex]:
     return [complex(v) for v in values]
@@ -60,6 +62,8 @@ class MyDataConfig:
     zero_fill_to_pow2: bool = False
     conjugate_input: bool = False
     compute_fft: bool = True
+    auto_phase_zero_order: bool = False
+    phase_search_steps: int = 720
 
 
 @dataclass(frozen=True)
@@ -69,6 +73,7 @@ class MyDataResult:
     time_domain: tuple[complex, ...]
     frequency_domain: tuple[complex, ...] | None
     processing_log: tuple[str, ...]
+    zero_order_phase_radians: float | None = None
 
 
 def run_mydata_stage(
@@ -109,8 +114,15 @@ def run_mydata_stage(
         log.append(f"zero_fill_to={target_len}")
 
     spectrum: tuple[complex, ...] | None = None
+    phase_radians: float | None = None
     if config.compute_fft:
         spectrum = tuple(_fft(data))
+        if config.auto_phase_zero_order:
+            phase_radians = estimate_zero_order_phase(
+                spectrum, search_steps=config.phase_search_steps
+            )
+            spectrum = apply_zero_order_phase(spectrum, phase_radians)
+            log.append(f"phase0={phase_radians:.12g}")
         log.append("fft=enabled")
     else:
         log.append("fft=disabled")
@@ -119,5 +131,5 @@ def run_mydata_stage(
         time_domain=tuple(data),
         frequency_domain=spectrum,
         processing_log=tuple(log),
+        zero_order_phase_radians=phase_radians,
     )
-

@@ -52,12 +52,15 @@ from lcmodel.core.text import split_title_lines, escape_postscript_text
 from lcmodel.io.namelist import load_run_config_from_control_file
 from lcmodel.io.pathing import split_output_filename_for_voxel
 from lcmodel.pipeline.fitting import FitConfig, run_fit_stage
+from lcmodel.pipeline.phasing import estimate_zero_order_phase, apply_zero_order_phase
 
 layout = split_title_lines("Long title ...", ntitle=2)
 escaped = escape_postscript_text("Value (A)%")
 left, right = split_output_filename_for_voxel("report.ps", ("ps", "PS", "Ps"))
 fit = run_fit_stage([[1, 0], [0, 1]], [2, 3])
 fit_with_baseline = run_fit_stage([[1], [0], [0]], [2, 0.1, 0.1], FitConfig(baseline_order=0))
+phase = estimate_zero_order_phase([1j, 1j, 1j])
+rot = apply_zero_order_phase([1j, 1j, 1j], phase)
 cfg = load_run_config_from_control_file("data/control.in")
 ```
 

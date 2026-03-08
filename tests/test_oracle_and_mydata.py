@@ -8,6 +8,7 @@ import uuid
 from contextlib import redirect_stdout
 
 from lcmodel.pipeline.mydata import MyDataConfig, run_mydata_stage
+from lcmodel.pipeline.phasing import apply_zero_order_phase, estimate_zero_order_phase
 from lcmodel.validation.oracle_cli import main as oracle_cli_main
 from lcmodel.validation.oracle import (
     compare_numeric_vectors,
@@ -33,6 +34,32 @@ class TestOracleAndMyData(unittest.TestCase):
         self.assertIsNotNone(result.frequency_domain)
         self.assertEqual((1 + 0j), result.frequency_domain[0])
         self.assertIn("zero_fill_to=4", result.processing_log)
+
+    def test_mydata_auto_phase(self):
+        no_phase = run_mydata_stage([1j, 0j, 0j, 0j], MyDataConfig(compute_fft=True))
+        with_phase = run_mydata_stage(
+            [1j, 0j, 0j, 0j],
+            MyDataConfig(compute_fft=True, auto_phase_zero_order=True, phase_search_steps=360),
+        )
+        assert no_phase.frequency_domain is not None
+        assert with_phase.frequency_domain is not None
+        imag_before = sum(abs(v.imag) for v in no_phase.frequency_domain)
+        imag_after = sum(abs(v.imag) for v in with_phase.frequency_domain)
+        self.assertLess(imag_after, imag_before)
+        self.assertIsNotNone(with_phase.zero_order_phase_radians)
+
+    def test_phase_estimation(self):
+        import cmath
+        import math
+
+        phi = 0.7
+        base = [1 + 0j, 2 + 0j, 0.5 + 0j]
+        spectrum = [v * cmath.exp(1j * phi) for v in base]
+        est = estimate_zero_order_phase(spectrum, search_steps=720)
+        corrected = apply_zero_order_phase(spectrum, est)
+        imag_sum = sum(abs(v.imag) for v in corrected)
+        self.assertLess(imag_sum, 0.05)
+        self.assertLess(abs(est - phi), math.pi / 20)
 
     def test_mydata_conjugate_and_truncate(self):
         result = run_mydata_stage(
