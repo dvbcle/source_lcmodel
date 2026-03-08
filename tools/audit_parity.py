@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Audit structural and semantic parity coverage against LCModel.f."""
+"""Audit structural and semantic parity coverage against reference Fortran."""
 
 from __future__ import annotations
 
@@ -83,7 +83,7 @@ def load_semantic_override_runtime(path: pathlib.Path) -> tuple[set[str], set[st
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Audit Python parity coverage for LCModel Fortran units.")
-    parser.add_argument("--fortran", default="LCModel.f")
+    parser.add_argument("--fortran", default="fortran_reference/LCModel.f")
     parser.add_argument("--scaffold", default="lcmodel/fortran_scaffold.py")
     parser.add_argument("--overrides", default="semantic_overrides.py")
     args = parser.parse_args()

@@ -86,7 +86,7 @@ def build_markdown(routines: list[Routine]) -> str:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Export Fortran routine mapping markdown.")
-    parser.add_argument("--fortran", default="LCModel.f")
+    parser.add_argument("--fortran", default="fortran_reference/LCModel.f")
     parser.add_argument("--output", default="docs/FORTRAN_ROUTINE_MAP.md")
     args = parser.parse_args()
 

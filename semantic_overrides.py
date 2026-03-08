@@ -2040,6 +2040,6 @@ SEMANTIC_OVERRIDES = {
 _PLACEHOLDER_OVERRIDES: set[str] = set()
 install_missing_overrides(
     overrides=SEMANTIC_OVERRIDES,
-    source_file=pathlib.Path(__file__).with_name("LCModel.f"),
+    source_file=pathlib.Path(__file__).parent / "fortran_reference" / "LCModel.f",
     placeholder_set=_PLACEHOLDER_OVERRIDES,
 )

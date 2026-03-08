@@ -6,7 +6,7 @@ This snapshot compares original Fortran source size with the resulting Python co
 
 ## Source sets
 
-- Fortran files counted (7): `LCModel.f`, `lcmodel.inc`, `lipid-1.inc`, `liver-1.inc`, `muscle-1.inc`, `nml_lcmodel.inc`, `nml_lcmodl.inc`
+- Fortran files counted (7, in `fortran_reference/`): `LCModel.f`, `lcmodel.inc`, `lipid-1.inc`, `liver-1.inc`, `muscle-1.inc`, `nml_lcmodel.inc`, `nml_lcmodl.inc`
 - Python files counted:
   - All Python: 75 files
   - Runtime (excluding `tests/` and `tools/`): 46 files

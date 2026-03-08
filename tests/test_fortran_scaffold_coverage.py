@@ -24,7 +24,9 @@ def _sanitize(name: str) -> str:
 
 class TestFortranScaffoldCoverage(unittest.TestCase):
     def test_named_program_units_have_python_scaffold_functions(self):
-        fortran_source = Path("LCModel.f").read_text(encoding="utf-8", errors="replace")
+        fortran_source = Path("fortran_reference/LCModel.f").read_text(
+            encoding="utf-8", errors="replace"
+        )
         required: set[str] = set()
         for line in fortran_source.splitlines():
             m = _HEADER_RE.match(line)
