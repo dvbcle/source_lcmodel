@@ -11,6 +11,8 @@ Fortran sources.
   [`fortran_reference/`](fortran_reference/).
 - Program-unit parity is maintained and tested against Fortran routine names.
 - Placeholder shim coverage is zero in runtime parity audit.
+- External `test_lcm` regression from `schorschinho/LCModel` has a successful
+  `out.ps` vs `out_ref_build.ps` byte-identical comparison.
 
 ## Project goals
 
@@ -85,13 +87,29 @@ python -m lcmodel --control-file data\\control.in
 
 ## Documentation index
 
+- Copyright and attribution: `COPYRIGHT.md`
 - End-user CLI guide: `docs/END_USER_GUIDE.md`
 - Python API guide: `docs/PYTHON_API_GUIDE.md`
 - Python architecture guide: `docs/PYTHON_ARCHITECTURE.md`
 - Fortran parity workflow: `docs/FORTRAN_PARITY_WORKFLOW.md`
 - Fortran routine map: `docs/FORTRAN_ROUTINE_MAP.md`
 - Conversion statistics snapshot: `docs/CONVERSION_STATS.md`
-- Chat/session preservation tips: `docs/CHAT_HISTORY_PRESERVATION.md`
+
+## First Successful External Regression Test
+
+The first complete external fixture run used `test_lcm` from
+`https://github.com/schorschinho/LCModel`.
+
+Workflow used:
+
+```powershell
+python -m lcmodel --control-file control.file
+```
+
+Verification:
+
+- `out.ps` was generated successfully.
+- `out.ps` and `out_ref_build.ps` matched by SHA256 hash (exact byte match).
 
 ## Developer workflow
 
