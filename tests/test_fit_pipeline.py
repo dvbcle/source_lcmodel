@@ -67,8 +67,25 @@ class TestFitPipeline(unittest.TestCase):
             [2.0, 0.1, 0.1, 0.1, 0.1],
             FitConfig(baseline_order=0),
         )
-        self.assertEqual("alt_nnls_poly_baseline", fit.method)
+        self.assertEqual("alt_pnnls_poly_baseline", fit.method)
         self.assertGreater(fit.coefficients[0], 1.5)
+
+    def test_run_fit_stage_with_mixed_sign_constraints(self):
+        fit = run_fit_stage(
+            [[1.0, 0.0], [0.0, 1.0]],
+            [-2.0, 3.0],
+            FitConfig(nonnegative_mask=(False, True)),
+        )
+        self.assertAlmostEqual(-2.0, fit.coefficients[0], places=6)
+        self.assertAlmostEqual(3.0, fit.coefficients[1], places=6)
+
+    def test_run_fit_stage_nonnegative_mask_width_mismatch(self):
+        with self.assertRaises(ValueError):
+            run_fit_stage(
+                [[1.0, 0.0], [0.0, 1.0]],
+                [1.0, 2.0],
+                FitConfig(nonnegative_mask=(True,)),
+            )
 
     def test_runner_with_fit_inputs(self):
         p = self._make_local_tmpdir()

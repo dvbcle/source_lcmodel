@@ -1,4 +1,4 @@
-"""Initial nonnegative fitting stage for semantic LCModel porting."""
+"""Linear fitting routines including a PNNLS-style active-set solver."""
 
 from __future__ import annotations
 
@@ -13,6 +13,7 @@ class FitConfig:
     tolerance: float = 1e-8
     baseline_order: int = -1
     alternating_iters: int = 6
+    nonnegative_mask: tuple[bool, ...] | None = None
 
 
 @dataclass(frozen=True)
@@ -35,60 +36,125 @@ def _residual_norm(matrix: Sequence[Sequence[float]], vector: Sequence[float], x
     return math.sqrt(accum)
 
 
-def _coordinate_descent_nnls(
+def _solve_passive_least_squares(
+    matrix: Sequence[Sequence[float]],
+    vector: Sequence[float],
+    passive: Sequence[int],
+    width: int,
+) -> list[float]:
+    k = len(passive)
+    z = [0.0] * width
+    if k == 0:
+        return z
+
+    gram = [[0.0] * k for _ in range(k)]
+    rhs = [0.0] * k
+    for i, row in enumerate(matrix):
+        bi = float(vector[i])
+        for a_idx, a_col in enumerate(passive):
+            va = float(row[a_col])
+            rhs[a_idx] += va * bi
+            for b_idx, b_col in enumerate(passive):
+                gram[a_idx][b_idx] += va * float(row[b_col])
+
+    coeffs = _solve_linear_system(gram, rhs)
+    for idx, col in enumerate(passive):
+        z[col] = coeffs[idx]
+    return z
+
+
+def _pnnls_active_set(
     matrix: Sequence[Sequence[float]],
     vector: Sequence[float],
     config: FitConfig,
+    nonnegative: Sequence[bool],
 ) -> FitStageResult:
+    """Lawson-Hanson style active-set solve with optional sign constraints."""
+
     m = len(matrix)
     n = len(matrix[0])
     x = [0.0] * n
+    passive: list[int] = []
+    in_passive = [False] * n
+    itmax = max(2 * n, config.max_iter)
+    iterations = 0
 
-    # Residual r = b - A x, initialized with x=0.
-    r = [float(v) for v in vector]
+    while True:
+        if len(passive) >= m:
+            break
+        residual = [float(vector[i]) for i in range(m)]
+        for i, row in enumerate(matrix):
+            total = 0.0
+            for j, aij in enumerate(row):
+                total += float(aij) * x[j]
+            residual[i] -= total
 
-    for it in range(1, config.max_iter + 1):
-        max_delta = 0.0
+        best_score = config.tolerance
+        best_j = -1
         for j in range(n):
-            old_x = x[j]
-            col_sq_norm = 0.0
-            for i in range(m):
-                aij = float(matrix[i][j])
-                col_sq_norm += aij * aij
-                if old_x != 0.0:
-                    # Undo current coefficient contribution before coordinate update.
-                    r[i] += aij * old_x
-
-            if col_sq_norm == 0.0:
-                x[j] = 0.0
+            if in_passive[j]:
                 continue
-
-            numer = 0.0
+            wj = 0.0
             for i in range(m):
-                numer += float(matrix[i][j]) * r[i]
-            new_x = max(0.0, numer / col_sq_norm)
-            x[j] = new_x
-            max_delta = max(max_delta, abs(new_x - old_x))
+                wj += float(matrix[i][j]) * residual[i]
+            score = wj if nonnegative[j] else abs(wj)
+            if score > best_score:
+                best_score = score
+                best_j = j
+        if best_j < 0:
+            break
 
-            if new_x != 0.0:
-                for i in range(m):
-                    r[i] -= float(matrix[i][j]) * new_x
+        in_passive[best_j] = True
+        passive.append(best_j)
 
-        if max_delta <= config.tolerance:
-            residual = math.sqrt(sum(v * v for v in r))
-            return FitStageResult(
-                coefficients=tuple(x),
-                residual_norm=residual,
-                iterations=it,
-                method="coordinate_descent_nnls",
-            )
+        while True:
+            iterations += 1
+            if iterations > itmax:
+                return FitStageResult(
+                    coefficients=tuple(x),
+                    residual_norm=_residual_norm(matrix, vector, x),
+                    iterations=itmax,
+                    method="pnnls_active_set",
+                )
 
-    residual = math.sqrt(sum(v * v for v in r))
+            z = _solve_passive_least_squares(matrix, vector, passive, n)
+            feasible = True
+            alpha = 1.0
+
+            for j in passive:
+                if not nonnegative[j]:
+                    continue
+                if z[j] > config.tolerance:
+                    continue
+                feasible = False
+                denom = x[j] - z[j]
+                step = 0.0 if denom <= 0.0 else x[j] / denom
+                if step < alpha:
+                    alpha = step
+
+            if feasible:
+                x = z
+                break
+
+            for j in passive:
+                x[j] = x[j] + alpha * (z[j] - x[j])
+
+            next_passive: list[int] = []
+            for j in passive:
+                if nonnegative[j] and x[j] <= config.tolerance:
+                    x[j] = 0.0
+                    in_passive[j] = False
+                else:
+                    next_passive.append(j)
+            passive = next_passive
+            if not passive:
+                break
+
     return FitStageResult(
         coefficients=tuple(x),
-        residual_norm=residual,
-        iterations=config.max_iter,
-        method="coordinate_descent_nnls",
+        residual_norm=_residual_norm(matrix, vector, x),
+        iterations=iterations,
+        method="pnnls_active_set",
     )
 
 
@@ -169,16 +235,22 @@ def _alternating_nnls_with_baseline(
     matrix: Sequence[Sequence[float]],
     vector: Sequence[float],
     config: FitConfig,
+    nonnegative: Sequence[bool],
 ) -> FitStageResult:
     baseline = [0.0] * len(vector)
     x = [0.0] * len(matrix[0])
 
     for alt in range(1, max(1, config.alternating_iters) + 1):
         y_minus_baseline = [float(vector[i]) - baseline[i] for i in range(len(vector))]
-        nnls = _coordinate_descent_nnls(
+        nnls = _pnnls_active_set(
             matrix,
             y_minus_baseline,
-            FitConfig(max_iter=config.max_iter, tolerance=config.tolerance),
+            FitConfig(
+                max_iter=config.max_iter,
+                tolerance=config.tolerance,
+                nonnegative_mask=tuple(nonnegative),
+            ),
+            nonnegative,
         )
         x = list(nnls.coefficients)
 
@@ -206,7 +278,7 @@ def _alternating_nnls_with_baseline(
         coefficients=tuple(x),
         residual_norm=resnorm,
         iterations=alt,
-        method="alt_nnls_poly_baseline",
+        method="alt_pnnls_poly_baseline",
     )
 
 
@@ -295,11 +367,17 @@ def run_fit_stage(
     for row in matrix:
         if len(row) != width:
             raise ValueError("matrix rows must all have same length")
+    if config.nonnegative_mask is None:
+        nonnegative = tuple(True for _ in range(width))
+    else:
+        if len(config.nonnegative_mask) != width:
+            raise ValueError("nonnegative_mask length must equal matrix width")
+        nonnegative = tuple(bool(v) for v in config.nonnegative_mask)
 
     if config.baseline_order >= 0:
-        stage = _alternating_nnls_with_baseline(matrix, vector, config)
+        stage = _alternating_nnls_with_baseline(matrix, vector, config, nonnegative)
     else:
-        stage = _coordinate_descent_nnls(matrix, vector, config)
+        stage = _pnnls_active_set(matrix, vector, config, nonnegative)
 
     sds = _estimate_coefficient_sds(matrix, vector, stage.coefficients)
     return FitStageResult(
