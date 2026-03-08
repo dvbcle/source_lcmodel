@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import replace
+from dataclasses import dataclass, replace
 from lcmodel.io.batch import load_path_list, write_batch_csv
 from pathlib import Path
 import shutil
@@ -36,6 +36,14 @@ from lcmodel.traceability import (
     record_trace_event,
     write_trace_log,
 )
+
+
+@dataclass(frozen=True)
+class _FitRenderPayload:
+    fit_result: FitResult
+    plot_x_values: tuple[float, ...]
+    plot_data_values: tuple[float, ...]
+    plot_fit_values: tuple[float, ...]
 
 
 class LCModelRunner:
@@ -83,211 +91,10 @@ class LCModelRunner:
                 self.config.output_filename, ("ps", "PS", "Ps")
             )
 
-        fit_result: FitResult | None = None
-        plot_x_values: list[float] = []
-        plot_data_values: list[float] = []
-        plot_fit_values: list[float] = []
+        render_payload: _FitRenderPayload | None = None
         if self.config.raw_data_file and self.config.basis_file:
-            basis_names = None
-            if self.config.basis_names_file:
-                basis_names = load_basis_names(self.config.basis_names_file)
-            if self.config.time_domain_input:
-                # Fortran AVERAGE/CHECK_ZERO_VOXELS:
-                # average CSI/phased-array style channels before single-voxel analysis.
-                if self.config.average_mode != 0:
-                    channels = load_complex_matrix(self.config.raw_data_file, pair_mode=True)
-                    if self.config.average_mode in {31, 32}:
-                        normalize = False
-                        weight_by_variance = False
-                        selection = "odd" if self.config.average_mode == 31 else "even"
-                    elif self.config.average_mode in {1, 2, 3, 4}:
-                        normalize = self.config.average_mode in {1, 4}
-                        weight_by_variance = self.config.average_mode in {1, 2}
-                        selection = "all"
-                    else:
-                        raise ValueError(
-                            "average_mode must be one of 0,1,2,3,4,31,32"
-                        )
-                    zero_flags = None
-                    if self.config.average_zero_voxel_check:
-                        zero_flags = detect_zero_voxels(channels)
-                    average = weighted_average_channels(
-                        channels,
-                        nback_start=self.config.average_nback_start,
-                        nback_end=self.config.average_nback_end,
-                        normalize_by_signal=normalize,
-                        weight_by_variance=weight_by_variance,
-                        selection=selection,
-                        zero_voxels=zero_flags,
-                    )
-                    raw_td = list(average.averaged)
-                else:
-                    # Fortran MYDATA:
-                    # read NUNFIL complex time-domain data into DATAT.
-                    raw_td = load_complex_vector(self.config.raw_data_file)
-                if is_lcmodel_basis_file(self.config.basis_file):
-                    lc_basis = load_lcmodel_basis(self.config.basis_file)
-                    basis_td = [list(row) for row in lc_basis.matrix_time_domain]
-                    if basis_names is None and lc_basis.metabolite_names:
-                        basis_names = list(lc_basis.metabolite_names)
-                else:
-                    basis_td = load_complex_matrix(self.config.basis_file, pair_mode=True)
-                # Fortran FTDATA/PHASTA/REPHAS:
-                # transform to frequency domain and apply initial phase behavior.
-                spectral = prepare_frequency_fit_from_time_domain(
-                    raw_td,
-                    basis_td,
-                    auto_phase_zero_order=self.config.auto_phase_zero_order,
-                    auto_phase_first_order=self.config.auto_phase_first_order,
-                    phase_objective=self.config.phase_objective,
-                    phase_smoothness_power=self.config.phase_smoothness_power,
-                    dwell_time_s=self.config.dwell_time_s,
-                    line_broadening_hz=self.config.line_broadening_hz,
-                )
-                vector = list(spectral.vector)
-                matrix = [list(row) for row in spectral.matrix]
-            else:
-                vector = load_numeric_vector(self.config.raw_data_file)
-                matrix = load_numeric_matrix(self.config.basis_file)
-            ppm_axis = None
-            if self.config.ppm_axis_file:
-                ppm_axis = load_numeric_vector(self.config.ppm_axis_file)
-
-            # Fortran SETUP/SETUP3:
-            # choose analysis window and active basis terms before solve.
-            setup = prepare_fit_inputs(
-                matrix,
-                vector,
-                ppm_axis=ppm_axis,
-                ppm_start=self.config.fit_ppm_start,
-                ppm_end=self.config.fit_ppm_end,
-                exclude_ppm_ranges=self.config.exclude_ppm_ranges,
-                basis_names=basis_names,
-                include_metabolites=self.config.include_metabolites,
-            )
-            # Fortran TWOREG/TWORG*/RFALSI outer-loop intent:
-            # refine shift/linewidth search state before final linear solve.
-            nonlinear = run_nonlinear_refinement(
-                setup.matrix,
-                setup.vector,
-                FitConfig(
-                    baseline_order=self.config.baseline_order,
-                    baseline_knots=self.config.baseline_knots,
-                    baseline_smoothness=self.config.baseline_smoothness,
-                ),
-                NonlinearConfig(
-                    shift_search_points=self.config.shift_search_points,
-                    alignment_circular=self.config.alignment_circular,
-                    fractional_shift_refine=self.config.fractional_shift_refine,
-                    fractional_shift_iterations=self.config.fractional_shift_iterations,
-                    linewidth_scan_points=self.config.linewidth_scan_points,
-                    linewidth_scan_max_sigma_points=self.config.linewidth_scan_max_sigma_points,
-                    max_iters=self.config.nonlinear_max_iters if self.config.nonlinear_refine else 1,
-                    tolerance=self.config.nonlinear_tolerance,
-                ),
-            )
-            fit_matrix = [list(row) for row in nonlinear.fit_matrix]
-            fit_vector = list(nonlinear.fit_vector)
-            if self.config.priors_file:
-                # Fortran priors rows in SOLVE:
-                # append soft constraints as extra equations in the linear system.
-                priors = load_soft_priors(self.config.priors_file)
-                fit_matrix, fit_vector = augment_system_with_soft_priors(
-                    fit_matrix,
-                    fit_vector,
-                    setup.metabolite_names,
-                    priors,
-                )
-            # Fortran PLINLS/SOLVE/PNNLS:
-            # solve for nonnegative metabolite amplitudes (+ optional baseline terms).
-            stage = run_fit_stage(
-                fit_matrix,
-                fit_vector,
-                FitConfig(
-                    baseline_order=self.config.baseline_order,
-                    baseline_knots=self.config.baseline_knots,
-                    baseline_smoothness=self.config.baseline_smoothness,
-                ),
-            )
-            # Fortran COMBIS:
-            # produce metabolite group totals (e.g., CHO/GPC/PCH families).
-            combined = compute_combinations(
-                self.config.combine_expressions,
-                stage.coefficients,
-                stage.coefficient_sds,
-                setup.metabolite_names,
-            )
-            # Fortran FINOUT table metrics:
-            # derive residual and SNR-style quality summaries for reporting.
-            relative_residual, snr_estimate = compute_fit_quality_metrics(
-                setup.matrix,
-                setup.vector,
-                stage.coefficients,
-            )
-            plot_data_values = [float(v) for v in setup.vector]
-            if ppm_axis is not None:
-                plot_x_values = [float(ppm_axis[i]) for i in setup.row_indices]
-            else:
-                plot_x_values = [float(i) for i in range(len(setup.vector))]
-            plot_fit_values = [
-                sum(float(setup.matrix[i][j]) * float(stage.coefficients[j]) for j in range(len(stage.coefficients)))
-                for i in range(len(setup.vector))
-            ]
-            integrated_data_area = 0.0
-            integrated_fit_area = 0.0
-            if setup.vector:
-                # Fortran INTEGRATE:
-                # subtract local baseline around a peak-centered symmetric window.
-                peak_index = max(range(len(setup.vector)), key=lambda idx: abs(float(setup.vector[idx])))
-                half_width = max(1, int(self.config.integration_half_width_points))
-                window_start = max(0, peak_index - half_width)
-                window_end = min(len(setup.vector) - 1, peak_index + half_width)
-                border = max(1, int(self.config.integration_border_points))
-                spacing = 1.0
-                if ppm_axis is not None and len(setup.row_indices) > 1:
-                    first = setup.row_indices[0]
-                    second = setup.row_indices[1]
-                    spacing = abs(float(ppm_axis[second]) - float(ppm_axis[first]))
-                try:
-                    int_data = integrate_peak_with_local_baseline(
-                        setup.vector,
-                        peak_index=peak_index,
-                        start_index=window_start,
-                        end_index=window_end,
-                        border_width=border,
-                        spacing=spacing,
-                    )
-                    int_fit = integrate_peak_with_local_baseline(
-                        plot_fit_values,
-                        peak_index=peak_index,
-                        start_index=window_start,
-                        end_index=window_end,
-                        border_width=border,
-                        spacing=spacing,
-                    )
-                    integrated_data_area = float(int_data.area)
-                    integrated_fit_area = float(int_fit.area)
-                except ValueError:
-                    integrated_data_area = 0.0
-                    integrated_fit_area = 0.0
-            fit_result = FitResult(
-                coefficients=stage.coefficients,
-                residual_norm=stage.residual_norm,
-                iterations=stage.iterations,
-                method=stage.method,
-                coefficient_sds=stage.coefficient_sds,
-                metabolite_names=setup.metabolite_names,
-                data_points_used=len(setup.vector),
-                combined=combined,
-                relative_residual=relative_residual,
-                snr_estimate=snr_estimate,
-                alignment_shift_points=nonlinear.alignment_shift_points,
-                alignment_shift_fractional_points=nonlinear.alignment_shift_fractional_points,
-                linewidth_sigma_points=nonlinear.linewidth_sigma_points,
-                nonlinear_iterations=nonlinear.iterations,
-                integrated_data_area=integrated_data_area,
-                integrated_fit_area=integrated_fit_area,
-            )
+            render_payload = self._run_fit_workflow()
+        fit_result = render_payload.fit_result if render_payload is not None else None
 
         table_written = None
         if fit_result is not None and self.config.table_output_file:
@@ -305,9 +112,9 @@ class LCModelRunner:
                     self.config.output_filename,
                     title_line_1=title_layout.lines[0],
                     title_line_2=title_layout.lines[1],
-                    x_values=plot_x_values,
-                    data_values=plot_data_values,
-                    fit_values=plot_fit_values,
+                    x_values=list(render_payload.plot_x_values) if render_payload else [],
+                    data_values=list(render_payload.plot_data_values) if render_payload else [],
+                    fit_values=list(render_payload.plot_fit_values) if render_payload else [],
                 )
 
         return RunResult(
@@ -317,6 +124,236 @@ class LCModelRunner:
             table_output_file=table_written,
             postscript_output_file=postscript_written,
         )
+
+    def _run_fit_workflow(self) -> _FitRenderPayload:
+        matrix, vector, ppm_axis, basis_names = self._load_fit_system()
+
+        # Fortran SETUP/SETUP3:
+        # choose analysis window and active basis terms before solve.
+        setup = prepare_fit_inputs(
+            matrix,
+            vector,
+            ppm_axis=ppm_axis,
+            ppm_start=self.config.fit_ppm_start,
+            ppm_end=self.config.fit_ppm_end,
+            exclude_ppm_ranges=self.config.exclude_ppm_ranges,
+            basis_names=basis_names,
+            include_metabolites=self.config.include_metabolites,
+        )
+        # Fortran TWOREG/TWORG*/RFALSI outer-loop intent:
+        # refine shift/linewidth search state before final linear solve.
+        nonlinear = run_nonlinear_refinement(
+            setup.matrix,
+            setup.vector,
+            FitConfig(
+                baseline_order=self.config.baseline_order,
+                baseline_knots=self.config.baseline_knots,
+                baseline_smoothness=self.config.baseline_smoothness,
+            ),
+            NonlinearConfig(
+                shift_search_points=self.config.shift_search_points,
+                alignment_circular=self.config.alignment_circular,
+                fractional_shift_refine=self.config.fractional_shift_refine,
+                fractional_shift_iterations=self.config.fractional_shift_iterations,
+                linewidth_scan_points=self.config.linewidth_scan_points,
+                linewidth_scan_max_sigma_points=self.config.linewidth_scan_max_sigma_points,
+                max_iters=self.config.nonlinear_max_iters if self.config.nonlinear_refine else 1,
+                tolerance=self.config.nonlinear_tolerance,
+            ),
+        )
+        fit_matrix = [list(row) for row in nonlinear.fit_matrix]
+        fit_vector = [float(v) for v in nonlinear.fit_vector]
+        if self.config.priors_file:
+            # Fortran priors rows in SOLVE:
+            # append soft constraints as extra equations in the linear system.
+            priors = load_soft_priors(self.config.priors_file)
+            fit_matrix, fit_vector = augment_system_with_soft_priors(
+                fit_matrix,
+                fit_vector,
+                setup.metabolite_names,
+                priors,
+            )
+        # Fortran PLINLS/SOLVE/PNNLS:
+        # solve for nonnegative metabolite amplitudes (+ optional baseline terms).
+        stage = run_fit_stage(
+            fit_matrix,
+            fit_vector,
+            FitConfig(
+                baseline_order=self.config.baseline_order,
+                baseline_knots=self.config.baseline_knots,
+                baseline_smoothness=self.config.baseline_smoothness,
+            ),
+        )
+        # Fortran COMBIS:
+        # produce metabolite group totals (e.g., CHO/GPC/PCH families).
+        combined = compute_combinations(
+            self.config.combine_expressions,
+            stage.coefficients,
+            stage.coefficient_sds,
+            setup.metabolite_names,
+        )
+        # Fortran FINOUT table metrics:
+        # derive residual and SNR-style quality summaries for reporting.
+        relative_residual, snr_estimate = compute_fit_quality_metrics(
+            setup.matrix,
+            setup.vector,
+            stage.coefficients,
+        )
+        plot_data_values = tuple(float(v) for v in setup.vector)
+        if ppm_axis is not None:
+            plot_x_values = tuple(float(ppm_axis[i]) for i in setup.row_indices)
+        else:
+            plot_x_values = tuple(float(i) for i in range(len(setup.vector)))
+        plot_fit_values = tuple(
+            sum(float(setup.matrix[i][j]) * float(stage.coefficients[j]) for j in range(len(stage.coefficients)))
+            for i in range(len(setup.vector))
+        )
+        integrated_data_area, integrated_fit_area = self._compute_integration_areas(
+            setup_vector=setup.vector,
+            plot_fit_values=plot_fit_values,
+            ppm_axis=ppm_axis,
+            row_indices=setup.row_indices,
+        )
+        fit_result = FitResult(
+            coefficients=stage.coefficients,
+            residual_norm=stage.residual_norm,
+            iterations=stage.iterations,
+            method=stage.method,
+            coefficient_sds=stage.coefficient_sds,
+            metabolite_names=setup.metabolite_names,
+            data_points_used=len(setup.vector),
+            combined=combined,
+            relative_residual=relative_residual,
+            snr_estimate=snr_estimate,
+            alignment_shift_points=nonlinear.alignment_shift_points,
+            alignment_shift_fractional_points=nonlinear.alignment_shift_fractional_points,
+            linewidth_sigma_points=nonlinear.linewidth_sigma_points,
+            nonlinear_iterations=nonlinear.iterations,
+            integrated_data_area=integrated_data_area,
+            integrated_fit_area=integrated_fit_area,
+        )
+        return _FitRenderPayload(
+            fit_result=fit_result,
+            plot_x_values=plot_x_values,
+            plot_data_values=plot_data_values,
+            plot_fit_values=plot_fit_values,
+        )
+
+    def _load_fit_system(
+        self,
+    ) -> tuple[list[list[float]], list[float], list[float] | None, list[str] | None]:
+        basis_names: list[str] | None = None
+        if self.config.basis_names_file:
+            basis_names = load_basis_names(self.config.basis_names_file)
+        if self.config.time_domain_input:
+            # Fortran AVERAGE/CHECK_ZERO_VOXELS:
+            # average CSI/phased-array style channels before single-voxel analysis.
+            if self.config.average_mode != 0:
+                channels = load_complex_matrix(self.config.raw_data_file, pair_mode=True)
+                if self.config.average_mode in {31, 32}:
+                    normalize = False
+                    weight_by_variance = False
+                    selection = "odd" if self.config.average_mode == 31 else "even"
+                elif self.config.average_mode in {1, 2, 3, 4}:
+                    normalize = self.config.average_mode in {1, 4}
+                    weight_by_variance = self.config.average_mode in {1, 2}
+                    selection = "all"
+                else:
+                    raise ValueError("average_mode must be one of 0,1,2,3,4,31,32")
+                zero_flags = None
+                if self.config.average_zero_voxel_check:
+                    zero_flags = detect_zero_voxels(channels)
+                average = weighted_average_channels(
+                    channels,
+                    nback_start=self.config.average_nback_start,
+                    nback_end=self.config.average_nback_end,
+                    normalize_by_signal=normalize,
+                    weight_by_variance=weight_by_variance,
+                    selection=selection,
+                    zero_voxels=zero_flags,
+                )
+                raw_td = list(average.averaged)
+            else:
+                # Fortran MYDATA:
+                # read NUNFIL complex time-domain data into DATAT.
+                raw_td = load_complex_vector(self.config.raw_data_file)
+            if is_lcmodel_basis_file(self.config.basis_file):
+                lc_basis = load_lcmodel_basis(self.config.basis_file)
+                basis_td = [list(row) for row in lc_basis.matrix_time_domain]
+                if basis_names is None and lc_basis.metabolite_names:
+                    basis_names = list(lc_basis.metabolite_names)
+            else:
+                basis_td = load_complex_matrix(self.config.basis_file, pair_mode=True)
+            # Fortran FTDATA/PHASTA/REPHAS:
+            # transform to frequency domain and apply initial phase behavior.
+            spectral = prepare_frequency_fit_from_time_domain(
+                raw_td,
+                basis_td,
+                auto_phase_zero_order=self.config.auto_phase_zero_order,
+                auto_phase_first_order=self.config.auto_phase_first_order,
+                phase_objective=self.config.phase_objective,
+                phase_smoothness_power=self.config.phase_smoothness_power,
+                dwell_time_s=self.config.dwell_time_s,
+                line_broadening_hz=self.config.line_broadening_hz,
+            )
+            vector = [float(v) for v in spectral.vector]
+            matrix = [list(row) for row in spectral.matrix]
+        else:
+            vector = load_numeric_vector(self.config.raw_data_file)
+            matrix = load_numeric_matrix(self.config.basis_file)
+        ppm_axis = None
+        if self.config.ppm_axis_file:
+            ppm_axis = load_numeric_vector(self.config.ppm_axis_file)
+        return matrix, vector, ppm_axis, basis_names
+
+    def _compute_integration_areas(
+        self,
+        *,
+        setup_vector: tuple[float, ...],
+        plot_fit_values: tuple[float, ...],
+        ppm_axis: list[float] | None,
+        row_indices: tuple[int, ...],
+    ) -> tuple[float, float]:
+        integrated_data_area = 0.0
+        integrated_fit_area = 0.0
+        if not setup_vector:
+            return integrated_data_area, integrated_fit_area
+
+        # Fortran INTEGRATE:
+        # subtract local baseline around a peak-centered symmetric window.
+        peak_index = max(range(len(setup_vector)), key=lambda idx: abs(float(setup_vector[idx])))
+        half_width = max(1, int(self.config.integration_half_width_points))
+        window_start = max(0, peak_index - half_width)
+        window_end = min(len(setup_vector) - 1, peak_index + half_width)
+        border = max(1, int(self.config.integration_border_points))
+        spacing = 1.0
+        if ppm_axis is not None and len(row_indices) > 1:
+            first = row_indices[0]
+            second = row_indices[1]
+            spacing = abs(float(ppm_axis[second]) - float(ppm_axis[first]))
+        try:
+            int_data = integrate_peak_with_local_baseline(
+                setup_vector,
+                peak_index=peak_index,
+                start_index=window_start,
+                end_index=window_end,
+                border_width=border,
+                spacing=spacing,
+            )
+            int_fit = integrate_peak_with_local_baseline(
+                plot_fit_values,
+                peak_index=peak_index,
+                start_index=window_start,
+                end_index=window_end,
+                border_width=border,
+                spacing=spacing,
+            )
+            integrated_data_area = float(int_data.area)
+            integrated_fit_area = float(int_fit.area)
+        except ValueError:
+            integrated_data_area = 0.0
+            integrated_fit_area = 0.0
+        return integrated_data_area, integrated_fit_area
 
     def run_batch(self) -> BatchRunResult:
         """Run fit for each raw file listed in `raw_data_list_file`."""

@@ -164,6 +164,7 @@ python -m lcmodel --control-file data\\control.in --traceability-log-file artifa
 - End-user CLI guide: `docs/END_USER_GUIDE.md`
 - Python API guide: `docs/PYTHON_API_GUIDE.md`
 - Python architecture guide: `docs/PYTHON_ARCHITECTURE.md`
+- Developer module map: `docs/DEVELOPER_MODULE_MAP.md`
 - Traceability system guide: `docs/TRACEABILITY_SYSTEM.md`
 - Fortran parity workflow: `docs/FORTRAN_PARITY_WORKFLOW.md`
 - External regression proof (`test_lcm`): `docs/EXTERNAL_REGRESSION_PROOF.md`
@@ -188,7 +189,7 @@ Verification:
 
 ## Developer workflow
 
-1. Sync to latest `main` and read `docs/PYTHON_ARCHITECTURE.md` plus `docs/TRACEABILITY_SYSTEM.md`.
+1. Sync to latest `main` and read `docs/PYTHON_ARCHITECTURE.md`, `docs/DEVELOPER_MODULE_MAP.md`, and `docs/TRACEABILITY_SYSTEM.md`.
 2. Make a focused change in Python-first runtime modules (`lcmodel/core`, `lcmodel/io`, `lcmodel/pipeline`, `lcmodel/engine`).
 3. Run `python -m unittest discover -s tests -p "test_*.py"`.
 4. Run `python tools/audit_parity.py`.
