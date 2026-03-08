@@ -7,10 +7,12 @@ Fortran sources.
 
 - Hard cutover is complete: the supported runtime surface is the `lcmodel/`
   Python package and CLI.
+- Legacy scaffold entry points (`fortran_scaffold`, `semantic_overrides`) are
+  no longer part of the supported runtime product surface.
 - Legacy Fortran files are retained for audit/reference in
   [`fortran_reference/`](fortran_reference/).
-- Program-unit parity is maintained and tested against Fortran routine names.
-- Placeholder shim coverage is zero in runtime parity audit.
+- Routine-level traceability is maintained through a machine-readable manifest,
+  provenance decorators, and parity audits.
 - External `test_lcm` regression from `schorschinho/LCModel` has a successful
   `out.ps` vs `out_ref_build.ps` byte-identical comparison.
 
@@ -25,13 +27,11 @@ Fortran sources.
 
 - `lcmodel/`
   Python runtime package (engine, pipelines, IO, core math/compat, CLI).
-- `semantic_overrides.py`
-  Thin adapter that composes domain override registries for scaffold calls.
+- `lcmodel/traceability/`
+  Traceability subsystem (manifest loader/audit, provenance decorators, runtime
+  call-trace support, and the manifest JSON artifact).
 - `lcmodel/overrides/`
-  Domain override modules (`workflow`, `core_compat`, `postscript`) plus shared
-  state mutation helpers.
-- `lcmodel/fortran_scaffold.py`
-  Generated scaffold preserving routine-level mapping to the original source.
+  Legacy routine-reference implementations preserved for traceability mapping.
 - `fortran_reference/`
   Original `.f` and `.inc` files kept read-only for comparison and audits.
 - `tests/`
@@ -67,6 +67,12 @@ Regenerate routine map:
 python tools/export_routine_map.py --output docs/FORTRAN_ROUTINE_MAP.md
 ```
 
+Refresh traceability manifest structure after Fortran source updates:
+
+```powershell
+python tools/build_traceability_manifest.py
+```
+
 ## Common CLI examples
 
 Fit stage:
@@ -87,12 +93,19 @@ Control-file run:
 python -m lcmodel --control-file data\\control.in
 ```
 
+Control-file run with trace log:
+
+```powershell
+python -m lcmodel --control-file data\\control.in --traceability-log-file artifacts\\trace.json
+```
+
 ## Documentation index
 
 - Copyright and attribution: `COPYRIGHT.md`
 - End-user CLI guide: `docs/END_USER_GUIDE.md`
 - Python API guide: `docs/PYTHON_API_GUIDE.md`
 - Python architecture guide: `docs/PYTHON_ARCHITECTURE.md`
+- Traceability system guide: `docs/TRACEABILITY_SYSTEM.md`
 - Fortran parity workflow: `docs/FORTRAN_PARITY_WORKFLOW.md`
 - External regression proof (`test_lcm`): `docs/EXTERNAL_REGRESSION_PROOF.md`
 - Fortran routine map: `docs/FORTRAN_ROUTINE_MAP.md`
@@ -119,4 +132,5 @@ Verification:
 1. Make focused, reviewable commits.
 2. Run `python -m unittest discover -s tests -p "test_*.py"`.
 3. Run `python tools/audit_parity.py`.
-4. If routine mapping changes, regenerate `docs/FORTRAN_ROUTINE_MAP.md`.
+4. If routine mapping changes, run `python tools/build_traceability_manifest.py`
+   then regenerate `docs/FORTRAN_ROUTINE_MAP.md`.

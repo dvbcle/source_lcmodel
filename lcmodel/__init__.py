@@ -17,7 +17,6 @@ from lcmodel.core.fftpack_compat import (
     seqtot,
 )
 from lcmodel.models import BatchRunResult, FitResult, RunConfig, RunResult, TitleLayout
-from lcmodel.runtime_state import RuntimeState
 from lcmodel.pipeline.alignment import (
     AlignmentResult,
     FractionalAlignmentResult,
@@ -51,6 +50,13 @@ from lcmodel.pipeline.sptype_presets import (
     validate_sptype_config,
 )
 from lcmodel.pipeline.setup import SetupResult, prepare_fit_inputs
+from lcmodel.traceability import (
+    ManifestAudit,
+    audit_manifest,
+    default_manifest_path,
+    load_manifest,
+    provenance_registry,
+)
 
 __all__ = [
     "LCModelRunner",
@@ -63,11 +69,11 @@ __all__ = [
     "FitResult",
     "FitStageResult",
     "IntegrationResult",
+    "ManifestAudit",
     "NonlinearConfig",
     "NonlinearResult",
     "RunConfig",
     "RunResult",
-    "RuntimeState",
     "TitleLayout",
     "MyDataConfig",
     "MyDataResult",
@@ -99,6 +105,10 @@ __all__ = [
     "estimate_zero_order_phase",
     "prepare_frequency_fit_from_time_domain",
     "prepare_fit_inputs",
+    "default_manifest_path",
+    "load_manifest",
+    "audit_manifest",
+    "provenance_registry",
     "run_fit_stage",
     "run_mydata_stage",
     "apply_sptype_preset",

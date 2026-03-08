@@ -1,7 +1,7 @@
 # Python Architecture
 
-This project now uses a layered Python architecture with a legacy-compatibility
-boundary, rather than a direct line-by-line Fortran transcription.
+This project uses a layered Python architecture for runtime behavior, with
+traceability artifacts kept alongside the codebase for Fortran provenance.
 
 ## Layers
 
@@ -15,37 +15,41 @@ boundary, rather than a direct line-by-line Fortran transcription.
   - File parsing/writing and namelist/control ingestion.
 - `lcmodel/core/`
   - Shared numerical and compatibility primitives.
-- `semantic_overrides.py`
-  - Thin adapter that composes domain override registries and installs
-    placeholder guards.
-- `lcmodel/overrides/workflow.py`
-  - LCModel orchestration-stage routine bindings (`LCMODL`, setup, IO workflow).
-- `lcmodel/overrides/core_compat.py`
-  - Legacy numerical/parsing compatibility routines used by scaffold calls.
-- `lcmodel/overrides/postscript.py`
-  - Postscript output primitives and report-layout routines.
-- `lcmodel/overrides/state_ops.py`
-  - Shared mutable-sequence helpers for Fortran by-reference argument semantics.
-- `lcmodel/fortran_scaffold.py`
-  - Auto-generated callable map of Fortran units for traceability.
+- `lcmodel/traceability/`
+  - `fortran_routine_manifest.json`: routine-level Fortran->Python mapping
+    artifact.
+  - `manifest.py`: manifest loading/audit utilities.
+  - `provenance.py`: function decorators and runtime trace-event capture.
+- `lcmodel/overrides/`
+  - Legacy routine reference implementations kept for traceability mapping and
+    migration history, not as the runtime product surface.
 
 ## Traceability Strategy
 
-- Fortran routine names remain callable through the scaffold.
-- `semantic_overrides.SEMANTIC_OVERRIDES` maps each Fortran routine name to a
-  concrete Python implementation target.
-- Mapping documentation is generated into:
-  - `docs/FORTRAN_ROUTINE_MAP.md`
-- Mapping export script:
-  - `tools/export_routine_map.py`
+Traceability combines five mechanisms:
+
+1. Generated manifest artifact:
+   - `lcmodel/traceability/fortran_routine_manifest.json`
+2. Decorator-based provenance tags:
+   - `lcmodel.traceability.fortran_provenance`
+3. Audit gate:
+   - `tools/audit_parity.py`
+4. Routine map documentation export:
+   - `tools/export_routine_map.py` -> `docs/FORTRAN_ROUTINE_MAP.md`
+5. Optional runtime call-trace logs:
+   - CLI option `--traceability-log-file`
+   - Output includes called Python targets plus associated Fortran routine tags
 
 ## Maintenance Rules
 
-1. Keep the domain implementation in `lcmodel/*` modules.
-2. Keep `semantic_overrides.py` as an adapter layer only.
-3. Add new routine implementations inside the appropriate `lcmodel/overrides/*`
-   domain module, then expose the key through that module's registry.
+1. Keep runtime behavior in `lcmodel/engine.py`, `lcmodel/pipeline/*`,
+   `lcmodel/io/*`, and `lcmodel/core/*`.
+2. Maintain `lcmodel/traceability/fortran_routine_manifest.json` when Fortran
+   source inventory or mapping targets change.
+3. Decorate Python runtime entry points with `fortran_provenance(...)` tags so
+   provenance and call-trace coverage stay useful.
 4. After refactors, run:
    - `python tools/audit_parity.py`
+   - `python tools/build_traceability_manifest.py` (when Fortran source changes)
    - `python tools/export_routine_map.py`
 5. Ensure tests and parity audit stay green before commit.
