@@ -170,6 +170,23 @@ def build_parser() -> argparse.ArgumentParser:
         help="Maximum Gaussian sigma (in points) for linewidth scan.",
     )
     parser.add_argument(
+        "--nonlinear-refine",
+        action="store_true",
+        help="Enable iterative nonlinear refinement loop for shift and linewidth.",
+    )
+    parser.add_argument(
+        "--nonlinear-max-iters",
+        type=int,
+        default=None,
+        help="Maximum nonlinear outer-loop iterations.",
+    )
+    parser.add_argument(
+        "--nonlinear-tolerance",
+        type=float,
+        default=None,
+        help="Residual improvement tolerance for nonlinear refinement loop.",
+    )
+    parser.add_argument(
         "--baseline-order",
         type=int,
         default=None,
@@ -280,6 +297,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         config = replace(config, linewidth_scan_points=args.linewidth_scan_points)
     if args.linewidth_scan_max_sigma_points is not None:
         config = replace(config, linewidth_scan_max_sigma_points=args.linewidth_scan_max_sigma_points)
+    if args.nonlinear_refine:
+        config = replace(config, nonlinear_refine=True)
+    if args.nonlinear_max_iters is not None:
+        config = replace(config, nonlinear_max_iters=args.nonlinear_max_iters)
+    if args.nonlinear_tolerance is not None:
+        config = replace(config, nonlinear_tolerance=args.nonlinear_tolerance)
     if args.baseline_order is not None:
         config = replace(config, baseline_order=args.baseline_order)
     if args.baseline_knots is not None:
@@ -333,6 +356,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"fit_alignment_shift_points={result.fit_result.alignment_shift_points}")
         print(f"fit_alignment_shift_fractional_points={result.fit_result.alignment_shift_fractional_points:.12g}")
         print(f"fit_linewidth_sigma_points={result.fit_result.linewidth_sigma_points:.12g}")
+        print(f"fit_nonlinear_iterations={result.fit_result.nonlinear_iterations}")
         print(f"fit_integrated_data_area={result.fit_result.integrated_data_area:.12g}")
         print(f"fit_integrated_fit_area={result.fit_result.integrated_fit_area:.12g}")
         if result.fit_result.combined:

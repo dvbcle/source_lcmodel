@@ -127,6 +127,7 @@ print(result.processing_log)
 - Integer alignment search supports circular (Fortran-like) and zero-padded shift modes.
 - Optional fractional shift refinement performs continuous sub-point alignment.
 - Optional global linewidth scanning applies Gaussian basis broadening and picks the best residual.
+- Optional nonlinear outer-loop refinement repeats shift/linewidth optimization until convergence.
 - This is still not the full original LCModel nonlinear optimization stack.
 - `split_output_filename_for_voxel` handles three extension cases:
   - `.../ps` -> left ends with `/`, right starts with `.ps`

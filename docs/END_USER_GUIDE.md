@@ -89,6 +89,12 @@ output_split_right=.ps
   - Number of global linewidth scan points (`0` disables).
 - `--linewidth-scan-max-sigma-points`
   - Maximum Gaussian sigma (in points) explored by linewidth scan.
+- `--nonlinear-refine`
+  - Enable iterative nonlinear outer-loop refinement.
+- `--nonlinear-max-iters`
+  - Maximum iterations for nonlinear refinement.
+- `--nonlinear-tolerance`
+  - Minimum residual improvement required to continue nonlinear refinement.
 - `--baseline-order`
   - Polynomial baseline degree for alternating fit (`-1` disables baseline).
 - `--baseline-knots`
@@ -130,6 +136,8 @@ output_split_right=.ps
   - Refined continuous shift value when fractional refinement is enabled.
 - `fit_linewidth_sigma_points`
   - Selected global linewidth broadening sigma from scan stage.
+- `fit_nonlinear_iterations`
+  - Number of nonlinear outer-loop iterations executed.
 - `fit_integrated_data_area`, `fit_integrated_fit_area`
   - Baseline-corrected peak areas from a local-window integration step.
 - `fit_combinations`

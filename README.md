@@ -51,6 +51,12 @@ Windowed/metabolite-selected fit example:
 python -m lcmodel --raw-data-file data\\raw.txt --basis-file data\\basis.txt --ppm-axis-file data\\ppm.txt --basis-names-file data\\names.txt --ppm-start 3.2 --ppm-end 2.0 --include-metabolites NAA,Cr --combine-expressions NAA+Cr --shift-search-points 3
 ```
 
+Iterative nonlinear refinement example:
+
+```powershell
+python -m lcmodel --raw-data-file data\\raw.txt --basis-file data\\basis.txt --shift-search-points 3 --fractional-shift-refine --linewidth-scan-points 6 --linewidth-scan-max-sigma-points 2.0 --nonlinear-refine --nonlinear-max-iters 4
+```
+
 Fit with soft priors:
 
 ```powershell

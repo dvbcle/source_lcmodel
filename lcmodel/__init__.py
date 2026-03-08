@@ -17,6 +17,7 @@ from lcmodel.pipeline.integration import IntegrationResult, integrate_peak_with_
 from lcmodel.pipeline.lineshape import apply_global_gaussian_lineshape
 from lcmodel.pipeline.metrics import compute_fit_quality_metrics
 from lcmodel.pipeline.mydata import MyDataConfig, MyDataResult, run_mydata_stage
+from lcmodel.pipeline.nonlinear import NonlinearConfig, NonlinearResult, run_nonlinear_refinement
 from lcmodel.pipeline.phasing import (
     apply_phase,
     apply_zero_order_phase,
@@ -37,6 +38,8 @@ __all__ = [
     "FitResult",
     "FitStageResult",
     "IntegrationResult",
+    "NonlinearConfig",
+    "NonlinearResult",
     "RunConfig",
     "RunResult",
     "TitleLayout",
@@ -53,6 +56,7 @@ __all__ = [
     "compute_combinations",
     "integrate_peak_with_local_baseline",
     "apply_global_gaussian_lineshape",
+    "run_nonlinear_refinement",
     "estimate_zero_first_order_phase",
     "estimate_zero_order_phase",
     "prepare_frequency_fit_from_time_domain",

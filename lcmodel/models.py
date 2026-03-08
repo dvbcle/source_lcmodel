@@ -44,6 +44,9 @@ class RunConfig:
     fractional_shift_iterations: int = 18
     linewidth_scan_points: int = 0
     linewidth_scan_max_sigma_points: float = 0.0
+    nonlinear_refine: bool = False
+    nonlinear_max_iters: int = 4
+    nonlinear_tolerance: float = 1e-6
     baseline_order: int = -1
     baseline_knots: int = 0
     baseline_smoothness: float = 0.0
@@ -68,6 +71,7 @@ class FitResult:
     alignment_shift_points: int = 0
     alignment_shift_fractional_points: float = 0.0
     linewidth_sigma_points: float = 0.0
+    nonlinear_iterations: int = 0
     integrated_data_area: float = 0.0
     integrated_fit_area: float = 0.0
 

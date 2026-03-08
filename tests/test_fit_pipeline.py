@@ -167,6 +167,7 @@ class TestFitPipeline(unittest.TestCase):
             self.assertIn("fit_alignment_shift_points=", out)
             self.assertIn("fit_alignment_shift_fractional_points=", out)
             self.assertIn("fit_linewidth_sigma_points=", out)
+            self.assertIn("fit_nonlinear_iterations=", out)
             self.assertIn("fit_integrated_data_area=", out)
             self.assertIn("fit_integrated_fit_area=", out)
             self.assertIn("fit_combinations=", out)
@@ -263,6 +264,31 @@ class TestFitPipeline(unittest.TestCase):
             self.assertIsNotNone(result.fit_result)
             assert result.fit_result is not None
             self.assertGreater(result.fit_result.linewidth_sigma_points, 0.0)
+        finally:
+            shutil.rmtree(p, ignore_errors=True)
+
+    def test_nonlinear_refine_loop(self):
+        p = self._make_local_tmpdir()
+        try:
+            vec = p / "vec.txt"
+            mat = p / "mat.txt"
+            vec.write_text("0.5\n1.0\n0.5\n0\n0\n", encoding="utf-8")
+            mat.write_text("0\n1\n0\n0\n0\n", encoding="utf-8")
+            result = LCModelRunner(
+                RunConfig(
+                    raw_data_file=str(vec),
+                    basis_file=str(mat),
+                    shift_search_points=1,
+                    fractional_shift_refine=True,
+                    linewidth_scan_points=4,
+                    linewidth_scan_max_sigma_points=2.0,
+                    nonlinear_refine=True,
+                    nonlinear_max_iters=3,
+                )
+            ).run()
+            self.assertIsNotNone(result.fit_result)
+            assert result.fit_result is not None
+            self.assertGreaterEqual(result.fit_result.nonlinear_iterations, 1)
         finally:
             shutil.rmtree(p, ignore_errors=True)
 
