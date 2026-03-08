@@ -7,7 +7,6 @@ from typing import Any, Sequence
 import builtins
 import math
 import pathlib
-import re
 from dataclasses import replace
 
 from lcmodel.core.array_ops import reverse_first_n
@@ -67,6 +66,7 @@ from lcmodel.pipeline.fitting import FitConfig, run_fit_stage
 from lcmodel.pipeline.nonlinear import NonlinearConfig, run_nonlinear_refinement
 from lcmodel.pipeline.setup import prepare_fit_inputs
 from lcmodel.pipeline.phasing import apply_zero_order_phase, estimate_zero_order_phase
+from lcmodel.legacy_bridge import install_missing_overrides
 
 
 def _assign_vector(target: Any, values: Sequence[complex]) -> None:
@@ -2352,53 +2352,9 @@ SEMANTIC_OVERRIDES = {
 }
 
 
-def _sanitize_name(name: str) -> str:
-    out = re.sub(r"[^0-9a-zA-Z_]", "_", name.strip()).lower()
-    if not out:
-        out = "unnamed"
-    if out[0].isdigit():
-        out = f"n_{out}"
-    return out
-
-
-def _discover_fortran_unit_names() -> set[str]:
-    source = pathlib.Path(__file__).with_name("LCModel.f")
-    if not source.exists():
-        return set()
-    header_re = re.compile(
-        r"^\s*(?:(REAL|INTEGER|LOGICAL|COMPLEX|DOUBLE\s+PRECISION|CHARACTER(?:\*\d+)?)\s+)?"
-        r"(PROGRAM|SUBROUTINE|FUNCTION|BLOCK\s+DATA)(?:\s+([A-Za-z_][\w$]*))?",
-        flags=re.IGNORECASE,
-    )
-    names: set[str] = set()
-    for line in source.read_text(encoding="utf-8", errors="replace").splitlines():
-        match = header_re.match(line)
-        if not match:
-            continue
-        raw_name = (match.group(3) or "").strip()
-        if not raw_name:
-            continue
-        names.add(_sanitize_name(raw_name))
-    return names
-
-
 _PLACEHOLDER_OVERRIDES: set[str] = set()
-
-
-def _make_placeholder_override(name: str):
-    def _override(*args: Any, **kwargs: Any):
-        state = kwargs.get("state")
-        if state is None and args and isinstance(args[-1], dict):
-            state = args[-1]
-        if state is None:
-            state = {}
-        state.setdefault("placeholder_overrides", []).append(name)
-        return state
-
-    return _override
-
-
-for _routine_name in _discover_fortran_unit_names():
-    if _routine_name not in SEMANTIC_OVERRIDES:
-        SEMANTIC_OVERRIDES[_routine_name] = _make_placeholder_override(_routine_name)
-        _PLACEHOLDER_OVERRIDES.add(_routine_name)
+install_missing_overrides(
+    overrides=SEMANTIC_OVERRIDES,
+    source_file=pathlib.Path(__file__).with_name("LCModel.f"),
+    placeholder_set=_PLACEHOLDER_OVERRIDES,
+)
