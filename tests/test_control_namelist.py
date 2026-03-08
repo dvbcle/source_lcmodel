@@ -44,6 +44,23 @@ $LCMODL
         self.assertEqual(["NAA+Cr"], nml["chcomb"])
         self.assertEqual([[4.9, 4.5]], nml["ppmgap"])
 
+    def test_parse_fortran_namelist_with_end_and_newline_assignments(self):
+        text = """
+$LCMODL
+ TITLE='Sample'
+ NTITLE=1
+ FILRAW='data.raw'
+ FILBAS='3t.basis'
+ FILPS='out.ps'
+$END
+"""
+        nml = parse_fortran_namelist(text, expected_name="LCMODL")
+        self.assertEqual("Sample", nml["title"])
+        self.assertEqual(1, nml["ntitle"])
+        self.assertEqual("data.raw", nml["filraw"])
+        self.assertEqual("3t.basis", nml["filbas"])
+        self.assertEqual("out.ps", nml["filps"])
+
     def test_load_run_config_from_control_file(self):
         p = self._make_local_tmpdir()
         try:

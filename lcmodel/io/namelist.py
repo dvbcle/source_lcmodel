@@ -62,7 +62,7 @@ def _parse_scalar(raw: str) -> Any:
 
 
 def parse_fortran_namelist(text: str, expected_name: str | None = None) -> dict[str, Any]:
-    """Parse a single namelist block like `$LCMODL ... /`."""
+    """Parse a single namelist block like `$LCMODL ... /` or `$LCMODL ... $END`."""
 
     cleaned_lines = [_strip_inline_comment(line) for line in text.splitlines()]
     cleaned = "\n".join(cleaned_lines)
@@ -71,18 +71,21 @@ def parse_fortran_namelist(text: str, expected_name: str | None = None) -> dict[
         raise ValueError("No namelist start marker '$' found")
 
     slash = cleaned.find("/", start)
-    if slash < 0:
-        raise ValueError("No namelist terminator '/' found")
+    end_match = re.search(r"(?im)^\s*\$end\b", cleaned[start:])
+    end_pos = start + end_match.start() if end_match else -1
+    terminator = min(pos for pos in (slash, end_pos) if pos >= 0) if (slash >= 0 or end_pos >= 0) else -1
+    if terminator < 0:
+        raise ValueError("No namelist terminator '/' or '$END' found")
 
     header_end = cleaned.find("\n", start)
-    if header_end < 0 or header_end > slash:
-        header_end = slash
+    if header_end < 0 or header_end > terminator:
+        header_end = terminator
     header = cleaned[start + 1 : header_end].strip()
     name = header.split()[0] if header else ""
     if expected_name and name.lower() != expected_name.lower():
         raise ValueError(f"Expected namelist ${expected_name}, found ${name}")
 
-    payload = cleaned[header_end:slash]
+    payload = cleaned[header_end:terminator]
     tokens: list[str] = []
     cur: list[str] = []
     in_quote = False
@@ -103,7 +106,7 @@ def parse_fortran_namelist(text: str, expected_name: str | None = None) -> dict[
                 paren_depth += 1
             elif ch == ")" and paren_depth > 0:
                 paren_depth -= 1
-        if ch == "," and not in_quote and paren_depth == 0:
+        if ch in {",", "\n", "\r"} and not in_quote and paren_depth == 0:
             token = "".join(cur).strip()
             if token:
                 tokens.append(token)
