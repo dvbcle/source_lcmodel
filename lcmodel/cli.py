@@ -364,6 +364,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(f"fit_combinations={combo}")
     if result.table_output_file:
         print(f"table_output_file={result.table_output_file}")
+    if result.postscript_output_file:
+        print(f"postscript_output_file={result.postscript_output_file}")
     return 0
 
 

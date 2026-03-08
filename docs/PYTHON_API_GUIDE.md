@@ -65,6 +65,7 @@ You can also call lower-level helpers:
 from lcmodel.core.text import split_title_lines, escape_postscript_text
 from lcmodel.io.namelist import load_run_config_from_control_file
 from lcmodel.io.pathing import split_output_filename_for_voxel
+from lcmodel.io.postscript import write_fit_postscript
 from lcmodel.io.priors import load_soft_priors
 from lcmodel.io.report import write_fit_table
 from lcmodel.pipeline.fitting import FitConfig, run_fit_stage
@@ -97,6 +98,7 @@ priors = load_soft_priors("data/priors.txt")
 aug_a, aug_b = augment_system_with_soft_priors([[1, 0], [0, 1]], [2, 3], ["NAA", "Cr"], priors)
 cfg = load_run_config_from_control_file("data/control.in")
 write_fit_table("out/result.table", fit)
+write_fit_postscript("out/result.ps", title_line_1="Fit", x_values=[0, 1], data_values=[1, 2], fit_values=[1.1, 1.9])
 ```
 
 Combination expressions can be provided via:

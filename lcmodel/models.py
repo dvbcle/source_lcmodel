@@ -84,6 +84,7 @@ class RunResult:
     output_filename_parts: tuple[str, str] | None
     fit_result: FitResult | None = None
     table_output_file: str | None = None
+    postscript_output_file: str | None = None
 
 
 @dataclass(frozen=True)

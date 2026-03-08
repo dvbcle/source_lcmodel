@@ -11,6 +11,7 @@ from lcmodel.io.numeric import (
     save_numeric_vector,
 )
 from lcmodel.io.pathing import split_output_filename_for_voxel
+from lcmodel.io.postscript import build_fit_postscript, write_fit_postscript
 from lcmodel.io.priors import load_soft_priors
 from lcmodel.io.report import build_fit_table_text, write_fit_table
 
@@ -27,6 +28,8 @@ __all__ = [
     "parse_fortran_namelist",
     "save_numeric_vector",
     "split_output_filename_for_voxel",
+    "build_fit_postscript",
     "write_batch_csv",
+    "write_fit_postscript",
     "write_fit_table",
 ]

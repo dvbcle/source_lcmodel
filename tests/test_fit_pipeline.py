@@ -137,6 +137,7 @@ class TestFitPipeline(unittest.TestCase):
             vec_file = p / "vec.txt"
             mat_file = p / "mat.txt"
             tab_file = p / "fit.table"
+            ps_file = p / "fit.ps"
             vec_file.write_text("1\n2\n", encoding="utf-8")
             mat_file.write_text("1 0\n0 1\n", encoding="utf-8")
             buf = io.StringIO()
@@ -155,6 +156,8 @@ class TestFitPipeline(unittest.TestCase):
                         "basis_1+basis_2",
                         "--table-output-file",
                         str(tab_file),
+                        "--output-filename",
+                        str(ps_file),
                     ]
                 )
             self.assertEqual(0, code)
@@ -172,7 +175,9 @@ class TestFitPipeline(unittest.TestCase):
             self.assertIn("fit_integrated_fit_area=", out)
             self.assertIn("fit_combinations=", out)
             self.assertIn("table_output_file=", out)
+            self.assertIn("postscript_output_file=", out)
             self.assertTrue(tab_file.exists())
+            self.assertTrue(ps_file.exists())
         finally:
             shutil.rmtree(p, ignore_errors=True)
 

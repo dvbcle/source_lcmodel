@@ -12,6 +12,7 @@ from lcmodel.io.numeric import (
     load_numeric_vector,
 )
 from lcmodel.io.pathing import split_output_filename_for_voxel
+from lcmodel.io.postscript import write_fit_postscript
 from lcmodel.io.priors import load_soft_priors
 from lcmodel.io.report import write_fit_table
 from lcmodel.models import BatchRunResult, FitResult, RunConfig, RunResult
@@ -43,6 +44,9 @@ class LCModelRunner:
             )
 
         fit_result: FitResult | None = None
+        plot_x_values: list[float] = []
+        plot_data_values: list[float] = []
+        plot_fit_values: list[float] = []
         if self.config.raw_data_file and self.config.basis_file:
             if self.config.time_domain_input:
                 raw_td = load_complex_vector(self.config.raw_data_file)
@@ -128,6 +132,15 @@ class LCModelRunner:
                 setup.vector,
                 stage.coefficients,
             )
+            plot_data_values = [float(v) for v in setup.vector]
+            if ppm_axis is not None:
+                plot_x_values = [float(ppm_axis[i]) for i in setup.row_indices]
+            else:
+                plot_x_values = [float(i) for i in range(len(setup.vector))]
+            plot_fit_values = [
+                sum(float(setup.matrix[i][j]) * float(stage.coefficients[j]) for j in range(len(stage.coefficients)))
+                for i in range(len(setup.vector))
+            ]
             integrated_data_area = 0.0
             integrated_fit_area = 0.0
             if setup.vector:
@@ -141,10 +154,6 @@ class LCModelRunner:
                     first = setup.row_indices[0]
                     second = setup.row_indices[1]
                     spacing = abs(float(ppm_axis[second]) - float(ppm_axis[first]))
-                fit_curve = [
-                    sum(float(setup.matrix[i][j]) * float(stage.coefficients[j]) for j in range(len(stage.coefficients)))
-                    for i in range(len(setup.vector))
-                ]
                 try:
                     int_data = integrate_peak_with_local_baseline(
                         setup.vector,
@@ -155,7 +164,7 @@ class LCModelRunner:
                         spacing=spacing,
                     )
                     int_fit = integrate_peak_with_local_baseline(
-                        fit_curve,
+                        plot_fit_values,
                         peak_index=peak_index,
                         start_index=window_start,
                         end_index=window_end,
@@ -189,12 +198,23 @@ class LCModelRunner:
         table_written = None
         if fit_result is not None and self.config.table_output_file:
             table_written = write_fit_table(self.config.table_output_file, fit_result)
+        postscript_written = None
+        if fit_result is not None and self.config.output_filename:
+            postscript_written = write_fit_postscript(
+                self.config.output_filename,
+                title_line_1=title_layout.lines[0],
+                title_line_2=title_layout.lines[1],
+                x_values=plot_x_values,
+                data_values=plot_data_values,
+                fit_values=plot_fit_values,
+            )
 
         return RunResult(
             title_layout=title_layout,
             output_filename_parts=filename_parts,
             fit_result=fit_result,
             table_output_file=table_written,
+            postscript_output_file=postscript_written,
         )
 
     def run_batch(self) -> BatchRunResult:

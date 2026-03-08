@@ -102,12 +102,13 @@ $LCMODL
             raw = p / "raw.txt"
             basis = p / "basis.txt"
             ctl = p / "control.in"
+            ps = p / "out.ps"
             raw.write_text("1\n2\n", encoding="utf-8")
             basis.write_text("1 0\n0 1\n", encoding="utf-8")
             ctl.write_text(
                 (
                     "$LCMODL\n"
-                    f" TITLE='FromControl', NTITLE=2, FILRAW='{raw}', FILBAS='{basis}', FILPS='out.ps', /\n"
+                    f" TITLE='FromControl', NTITLE=2, FILRAW='{raw}', FILBAS='{basis}', FILPS='{ps}', /\n"
                 ),
                 encoding="utf-8",
             )

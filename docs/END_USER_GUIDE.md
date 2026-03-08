@@ -142,6 +142,8 @@ output_split_right=.ps
   - Baseline-corrected peak areas from a local-window integration step.
 - `fit_combinations`
   - Combined outputs in `name:value:sd` format.
+- `postscript_output_file`
+  - Written PostScript plot/report file when fitting and `--output-filename` are provided.
 
 ## 5. Common Usage Patterns
 
