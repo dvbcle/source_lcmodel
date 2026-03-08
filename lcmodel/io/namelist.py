@@ -194,6 +194,7 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
         basis_file=str(basis_file) if basis_file else None,
         ppm_axis_file=str(nml["filppm"]) if isinstance(nml.get("filppm"), str) and nml["filppm"].strip() else None,
         basis_names_file=str(nml["filnam"]) if isinstance(nml.get("filnam"), str) and nml["filnam"].strip() else None,
+        priors_file=str(nml["filprr"]) if isinstance(nml.get("filprr"), str) and nml["filprr"].strip() else None,
         time_domain_input=bool(nml.get("timdom", False)),
         auto_phase_zero_order=bool(nml.get("autoph0", False)),
         fit_ppm_start=ppm_start,

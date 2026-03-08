@@ -10,6 +10,7 @@ from lcmodel.io.numeric import (
     save_numeric_vector,
 )
 from lcmodel.io.pathing import split_output_filename_for_voxel
+from lcmodel.io.priors import load_soft_priors
 from lcmodel.io.report import build_fit_table_text, write_fit_table
 
 __all__ = [
@@ -20,6 +21,7 @@ __all__ = [
     "load_run_config_from_control_file",
     "load_numeric_matrix",
     "load_numeric_vector",
+    "load_soft_priors",
     "parse_fortran_namelist",
     "save_numeric_vector",
     "split_output_filename_for_voxel",

@@ -22,6 +22,7 @@ class RunConfig:
     basis_file: str | None = None
     ppm_axis_file: str | None = None
     basis_names_file: str | None = None
+    priors_file: str | None = None
     table_output_file: str | None = None
     time_domain_input: bool = False
     auto_phase_zero_order: bool = False

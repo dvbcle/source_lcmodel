@@ -64,6 +64,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Optional basis-metabolite names file (one per basis column).",
     )
     parser.add_argument(
+        "--priors-file",
+        default=None,
+        help="Optional priors file rows: name mean sd.",
+    )
+    parser.add_argument(
         "--ppm-start",
         type=float,
         default=None,
@@ -123,6 +128,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         config = replace(config, ppm_axis_file=args.ppm_axis_file)
     if args.basis_names_file is not None:
         config = replace(config, basis_names_file=args.basis_names_file)
+    if args.priors_file is not None:
+        config = replace(config, priors_file=args.priors_file)
     if args.ppm_start is not None:
         config = replace(config, fit_ppm_start=args.ppm_start)
     if args.ppm_end is not None:

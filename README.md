@@ -51,6 +51,12 @@ Windowed/metabolite-selected fit example:
 python -m lcmodel --raw-data-file data\\raw.txt --basis-file data\\basis.txt --ppm-axis-file data\\ppm.txt --basis-names-file data\\names.txt --ppm-start 3.2 --ppm-end 2.0 --include-metabolites NAA,Cr --combine-expressions NAA+Cr
 ```
 
+Fit with soft priors:
+
+```powershell
+python -m lcmodel --raw-data-file data\\raw.txt --basis-file data\\basis.txt --basis-names-file data\\names.txt --priors-file data\\priors.txt
+```
+
 Time-domain (complex) fit example:
 
 ```powershell

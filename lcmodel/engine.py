@@ -10,10 +10,12 @@ from lcmodel.io.numeric import (
     load_numeric_vector,
 )
 from lcmodel.io.pathing import split_output_filename_for_voxel
+from lcmodel.io.priors import load_soft_priors
 from lcmodel.io.report import write_fit_table
 from lcmodel.models import FitResult, RunConfig, RunResult
 from lcmodel.pipeline.fitting import FitConfig, run_fit_stage
 from lcmodel.pipeline.postprocess import compute_combinations
+from lcmodel.pipeline.priors import augment_system_with_soft_priors
 from lcmodel.pipeline.spectral import prepare_frequency_fit_from_time_domain
 from lcmodel.pipeline.setup import prepare_fit_inputs
 from lcmodel.core.text import split_title_lines
@@ -66,9 +68,19 @@ class LCModelRunner:
                 basis_names=basis_names,
                 include_metabolites=self.config.include_metabolites,
             )
+            fit_matrix = [list(row) for row in setup.matrix]
+            fit_vector = list(setup.vector)
+            if self.config.priors_file:
+                priors = load_soft_priors(self.config.priors_file)
+                fit_matrix, fit_vector = augment_system_with_soft_priors(
+                    fit_matrix,
+                    fit_vector,
+                    setup.metabolite_names,
+                    priors,
+                )
             stage = run_fit_stage(
-                setup.matrix,
-                setup.vector,
+                fit_matrix,
+                fit_vector,
                 FitConfig(baseline_order=self.config.baseline_order),
             )
             combined = compute_combinations(

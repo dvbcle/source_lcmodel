@@ -53,6 +53,8 @@ output_split_right=.ps
   - Optional ppm values aligned with each data row.
 - `--basis-names-file`
   - Optional metabolite names aligned with basis columns.
+- `--priors-file`
+  - Optional soft priors file with rows `name mean sd`.
 - `--ppm-start`, `--ppm-end`
   - Optional ppm window boundaries for row selection before fitting.
 - `--include-metabolites`
