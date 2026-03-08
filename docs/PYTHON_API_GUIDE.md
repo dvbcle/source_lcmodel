@@ -48,6 +48,8 @@ print(batch.csv_file)
   - `coefficients: tuple[float, ...]`
   - `coefficient_sds: tuple[float, ...]`
   - `residual_norm: float`
+  - `relative_residual: float`
+  - `snr_estimate: float`
   - `iterations: int`
   - `method: str`
 - `TitleLayout`

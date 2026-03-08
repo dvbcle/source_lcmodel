@@ -194,6 +194,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(f"fit_metabolites={','.join(result.fit_result.metabolite_names)}")
         if result.fit_result.data_points_used > 0:
             print(f"fit_points_used={result.fit_result.data_points_used}")
+        print(f"fit_relative_residual={result.fit_result.relative_residual:.12g}")
+        print(f"fit_snr_estimate={result.fit_result.snr_estimate:.12g}")
         if result.fit_result.combined:
             combo = ",".join(f"{name}:{value:.12g}:{sd:.12g}" for name, value, sd in result.fit_result.combined)
             print(f"fit_combinations={combo}")

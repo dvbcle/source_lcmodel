@@ -16,6 +16,7 @@ from lcmodel.io.priors import load_soft_priors
 from lcmodel.io.report import write_fit_table
 from lcmodel.models import BatchRunResult, FitResult, RunConfig, RunResult
 from lcmodel.pipeline.fitting import FitConfig, run_fit_stage
+from lcmodel.pipeline.metrics import compute_fit_quality_metrics
 from lcmodel.pipeline.postprocess import compute_combinations
 from lcmodel.pipeline.priors import augment_system_with_soft_priors
 from lcmodel.pipeline.spectral import prepare_frequency_fit_from_time_domain
@@ -91,6 +92,11 @@ class LCModelRunner:
                 stage.coefficient_sds,
                 setup.metabolite_names,
             )
+            relative_residual, snr_estimate = compute_fit_quality_metrics(
+                setup.matrix,
+                setup.vector,
+                stage.coefficients,
+            )
             fit_result = FitResult(
                 coefficients=stage.coefficients,
                 residual_norm=stage.residual_norm,
@@ -100,6 +106,8 @@ class LCModelRunner:
                 metabolite_names=setup.metabolite_names,
                 data_points_used=len(setup.vector),
                 combined=combined,
+                relative_residual=relative_residual,
+                snr_estimate=snr_estimate,
             )
 
         table_written = None

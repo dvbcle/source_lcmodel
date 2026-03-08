@@ -7,6 +7,7 @@ porting from the legacy Fortran LCModel codebase.
 from lcmodel.engine import LCModelRunner
 from lcmodel.models import BatchRunResult, FitResult, RunConfig, RunResult, TitleLayout
 from lcmodel.pipeline.fitting import FitConfig, FitStageResult, run_fit_stage
+from lcmodel.pipeline.metrics import compute_fit_quality_metrics
 from lcmodel.pipeline.mydata import MyDataConfig, MyDataResult, run_mydata_stage
 from lcmodel.pipeline.phasing import apply_zero_order_phase, estimate_zero_order_phase
 from lcmodel.pipeline.postprocess import compute_combinations
@@ -29,6 +30,7 @@ __all__ = [
     "SetupResult",
     "augment_system_with_soft_priors",
     "apply_zero_order_phase",
+    "compute_fit_quality_metrics",
     "compute_combinations",
     "estimate_zero_order_phase",
     "prepare_frequency_fit_from_time_domain",

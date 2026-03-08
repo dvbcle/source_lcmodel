@@ -88,6 +88,10 @@ output_split_right=.ps
   - Metabolite names corresponding to coefficient order.
 - `fit_points_used`
   - Number of rows used after setup-stage selection.
+- `fit_relative_residual`
+  - Norm of residual divided by norm of fitted data vector.
+- `fit_snr_estimate`
+  - Simple peak/residual-noise SNR estimate.
 - `fit_combinations`
   - Combined outputs in `name:value:sd` format.
 

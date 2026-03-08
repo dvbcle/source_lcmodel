@@ -136,6 +136,8 @@ class TestFitPipeline(unittest.TestCase):
             self.assertIn("fit_method=", out)
             self.assertIn("fit_coefficients=", out)
             self.assertIn("fit_coeff_sds=", out)
+            self.assertIn("fit_relative_residual=", out)
+            self.assertIn("fit_snr_estimate=", out)
             self.assertIn("fit_combinations=", out)
             self.assertIn("table_output_file=", out)
             self.assertTrue(tab_file.exists())

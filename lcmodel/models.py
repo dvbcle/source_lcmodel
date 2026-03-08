@@ -47,6 +47,8 @@ class FitResult:
     metabolite_names: tuple[str, ...] = ()
     data_points_used: int = 0
     combined: tuple[tuple[str, float, float], ...] = ()
+    relative_residual: float = 0.0
+    snr_estimate: float = 0.0
 
 
 @dataclass(frozen=True)

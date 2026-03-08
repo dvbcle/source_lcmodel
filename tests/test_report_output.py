@@ -34,6 +34,8 @@ class TestReportOutput(unittest.TestCase):
         self.assertIn("Combined\tCoefficient\tSD\t%SD", text)
         self.assertIn("NAA+Cr\t2\t0.2", text)
         self.assertIn("# method=test_method", text)
+        self.assertIn("# relative_residual=", text)
+        self.assertIn("# snr_estimate=", text)
 
     def test_write_fit_table(self):
         p = self._make_local_tmpdir()
