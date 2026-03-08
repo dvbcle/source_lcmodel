@@ -26,8 +26,10 @@ Fortran sources.
 - `lcmodel/`
   Python runtime package (engine, pipelines, IO, core math/compat, CLI).
 - `semantic_overrides.py`
-  Fortran routine override registry that binds scaffold calls to semantic Python
-  implementations.
+  Thin adapter that composes domain override registries for scaffold calls.
+- `lcmodel/overrides/`
+  Domain override modules (`workflow`, `core_compat`, `postscript`) plus shared
+  state mutation helpers.
 - `lcmodel/fortran_scaffold.py`
   Generated scaffold preserving routine-level mapping to the original source.
 - `fortran_reference/`
