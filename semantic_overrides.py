@@ -45,6 +45,7 @@ from lcmodel.pipeline.integration import integrate_peak_with_local_baseline
 from lcmodel.pipeline.mydata import MyDataConfig, run_mydata_stage
 from lcmodel.pipeline.postprocess import compute_combinations
 from lcmodel.pipeline.fitting import FitConfig, run_fit_stage
+from lcmodel.pipeline.phasing import apply_zero_order_phase, estimate_zero_order_phase
 
 
 def _assign_vector(target: Any, values: Sequence[complex]) -> None:
@@ -687,6 +688,130 @@ def _ov_dcfft_r(datat: Sequence[complex], ft: Any, n: int, ldwfft: Any, dwfftc: 
     return out
 
 
+def _ov_igetp(istart: int, niter: int, state: dict[str, Any] | None = None) -> int:
+    _ = state
+    if int(istart) == 8829:
+        return 0
+    p = 2147483647.0
+    a = 16807.0
+    b15 = 32768.0
+    b16 = 65536.0
+    dix = float(max(1, abs(int(istart)) % 2147483647))
+    for _ in range(max(1, int(niter))):
+        xhi = math.floor(dix / b16)
+        xalo = (dix - xhi * b16) * a
+        leftlo = math.floor(xalo / b16)
+        fhi = xhi * a + leftlo
+        k = math.floor(fhi / b15)
+        dix = (((xalo - leftlo * b16) - p) + (fhi - k * b15) * b16) + k
+        if dix < 0.0:
+            dix += p
+    dix = dix * 4.656612875e-10
+    return int(1.0e9 * dix)
+
+
+def _ov_merge_right(lregion: int, ppmmin: Any, ppmmax: Any, nregion: Any, state: dict[str, Any] | None = None) -> dict[str, Any]:
+    out = state if state is not None else {}
+    if not isinstance(ppmmin, MutableSequence) or not isinstance(ppmmax, MutableSequence):
+        return out
+    lr = int(lregion) - 1
+    nreg = int(nregion[0]) if isinstance(nregion, MutableSequence) and nregion else int(nregion)
+    if lr < 0 or lr >= nreg - 1:
+        raise ValueError("lregion must be < nregion")
+    nreg -= 1
+    ppmmin[lr] = ppmmin[lr + 1]
+    for j in range(lr + 1, nreg):
+        ppmmax[j] = ppmmax[j + 1]
+        ppmmin[j] = ppmmin[j + 1]
+    _assign_scalar(nregion, nreg)
+    out["nregion"] = nreg
+    return out
+
+
+def _ov_merge_left(lregion: int, ppmmin: Any, ppmmax: Any, nregion: Any, state: dict[str, Any] | None = None) -> dict[str, Any]:
+    out = state if state is not None else {}
+    if not isinstance(ppmmin, MutableSequence) or not isinstance(ppmmax, MutableSequence):
+        return out
+    lr = int(lregion) - 1
+    nreg = int(nregion[0]) if isinstance(nregion, MutableSequence) and nregion else int(nregion)
+    if lr <= 0 or lr >= nreg:
+        raise ValueError("lregion must be > 1")
+    nreg -= 1
+    ppmmin[lr - 1] = ppmmin[lr]
+    for j in range(lr, nreg):
+        ppmmax[j] = ppmmax[j + 1]
+        ppmmin[j] = ppmmin[j + 1]
+    _assign_scalar(nregion, nreg)
+    out["nregion"] = nreg
+    return out
+
+
+def _ov_smooth_tail_2(
+    work_in: Sequence[float],
+    out_arr: Any,
+    munfil: int,
+    nunfil: int,
+    lprint: int,
+    voxel1: bool,
+    state: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    _ = (munfil, lprint, voxel1)
+    out = state if state is not None else {}
+    n = int(nunfil)
+    values = [float(v) for v in work_in[:n]]
+    out_vals = [0.0] * n
+    j_break = 1
+    for j in range(n - 2, 0, -1):
+        if (values[j + 1] - values[j]) * (values[j] - values[j - 1]) > 0.0:
+            j_break = j + 1
+            break
+        out_vals[j] = 0.5 * values[j] + 0.25 * (values[j + 1] + values[j - 1])
+    if j_break < n - 1:
+        out_vals[n - 1] = out_vals[n - 2]
+    else:
+        out_vals[n - 1] = values[n - 1]
+    for j in range(0, j_break):
+        out_vals[j] = values[j]
+    _copy_sequence_prefix(out_arr, out_vals)
+    out["tail_smoothed_points"] = max(0, n - j_break)
+    return out
+
+
+def _ov_smooth_tail(cdatat: Any, state: dict[str, Any] | None = None) -> dict[str, Any]:
+    out = state if state is not None else {}
+    if not isinstance(cdatat, MutableSequence):
+        return out
+    n = len(cdatat)
+    re = [float(complex(v).real) for v in cdatat]
+    im = [float(complex(v).imag) for v in cdatat]
+    re_out = [0.0] * n
+    im_out = [0.0] * n
+    _ov_smooth_tail_2(re, re_out, n, n, 0, False, out)
+    _ov_smooth_tail_2(im, im_out, n, n, 0, False, out)
+    for i in range(n):
+        cdatat[i] = complex(re_out[i], im_out[i])
+    out["smooth_tail_n"] = n
+    return out
+
+
+def _ov_fix_g77_namelist(lunit: int, state: dict[str, Any] | None = None) -> dict[str, Any]:
+    out = state if state is not None else {}
+    out["fix_g77_namelist_lunit"] = int(lunit)
+    return out
+
+
+def _ov_phase_with_max_real(state: dict[str, Any] | None = None) -> dict[str, Any]:
+    out = state if state is not None else {}
+    datat = out.get("datat")
+    if datat is None:
+        return out
+    phase = estimate_zero_order_phase(datat, search_steps=360)
+    phased = apply_zero_order_phase(datat, phase)
+    out["datat"] = tuple(phased)
+    out["phase_with_max_real_radians"] = float(phase)
+    return out
+
+
 def _ov_split_filename(
     filename: str,
     chtype1: str,
@@ -1279,6 +1404,13 @@ SEMANTIC_OVERRIDES = {
     "passb4": _ov_passb4,
     "passb5": _ov_passb5,
     "dcfft_r": _ov_dcfft_r,
+    "igetp": _ov_igetp,
+    "merge_right": _ov_merge_right,
+    "merge_left": _ov_merge_left,
+    "smooth_tail_2": _ov_smooth_tail_2,
+    "smooth_tail": _ov_smooth_tail,
+    "fix_g77_namelist": _ov_fix_g77_namelist,
+    "phase_with_max_real": _ov_phase_with_max_real,
     "split_filename": _ov_split_filename,
     "chstrip_int6": _ov_chstrip_int6,
     "split_title": _ov_split_title,

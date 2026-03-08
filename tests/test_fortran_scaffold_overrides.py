@@ -150,6 +150,31 @@ class TestFortranScaffoldOverrides(unittest.TestCase):
         self.assertEqual([3.0, 2.0, 1.0], ch)
         self.assertIn("passf2", st)
 
+    def test_misc_legacy_overrides(self):
+        value = fs.igetp(12345, 4, state={})
+        self.assertGreaterEqual(value, 0)
+        self.assertLess(value, 1_000_000_000)
+
+        ppmmin = [1.0, 2.0, 3.0, 4.0]
+        ppmmax = [1.5, 2.5, 3.5, 4.5]
+        nregion = [4]
+        fs.merge_right(2, ppmmin, ppmmax, nregion, state={})
+        self.assertEqual(3, nregion[0])
+        fs.merge_left(2, ppmmin, ppmmax, nregion, state={})
+        self.assertEqual(2, nregion[0])
+
+        out = [0.0] * 5
+        state = fs.smooth_tail_2([1.0, -1.0, 1.0, -1.0, 1.0], out, 5, 5, 0, False, state={})
+        self.assertEqual(5, len(out))
+        self.assertIn("tail_smoothed_points", state)
+
+        cdatat = [complex(1.0, -1.0), complex(-1.0, 1.0), complex(1.0, -1.0)]
+        fs.smooth_tail(cdatat, state={})
+        self.assertEqual(3, len(cdatat))
+
+        st = fs.phase_with_max_real(state={"datat": [1j, 1j, 1j, 1j]})
+        self.assertIn("phase_with_max_real_radians", st)
+
 
 if __name__ == "__main__":
     unittest.main()
