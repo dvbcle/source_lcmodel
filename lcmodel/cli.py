@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import argparse
-from dataclasses import replace
 from typing import Sequence
 
+from lcmodel.cli_support import apply_cli_args, print_batch_result, print_run_result
 from lcmodel.engine import LCModelRunner
 from lcmodel.io.namelist import load_run_config_from_control_file
 from lcmodel.models import RunConfig
@@ -260,157 +260,16 @@ def main(argv: Sequence[str] | None = None) -> int:
         config = load_run_config_from_control_file(args.control_file)
     else:
         config = RunConfig()
-
-    if args.title is not None:
-        config = replace(config, title=args.title)
-    if args.ntitle is not None:
-        config = replace(config, ntitle=args.ntitle)
-    if args.output_filename is not None:
-        config = replace(config, output_filename=args.output_filename)
-    if args.table_output_file is not None:
-        config = replace(config, table_output_file=args.table_output_file)
-    if args.time_domain_input:
-        config = replace(config, time_domain_input=True)
-    if args.auto_phase_zero_order:
-        config = replace(config, auto_phase_zero_order=True)
-    if args.auto_phase_first_order:
-        config = replace(config, auto_phase_first_order=True)
-    if args.phase_objective is not None:
-        config = replace(config, phase_objective=args.phase_objective)
-    if args.phase_smoothness_power is not None:
-        config = replace(config, phase_smoothness_power=args.phase_smoothness_power)
-    if args.dwell_time is not None:
-        config = replace(config, dwell_time_s=args.dwell_time)
-    if args.line_broadening_hz is not None:
-        config = replace(config, line_broadening_hz=args.line_broadening_hz)
-    if args.average_mode is not None:
-        config = replace(config, average_mode=args.average_mode)
-    if args.average_nback_start is not None:
-        config = replace(config, average_nback_start=args.average_nback_start)
-    if args.average_nback_end is not None:
-        config = replace(config, average_nback_end=args.average_nback_end)
-    if args.average_zero_voxel_check:
-        config = replace(config, average_zero_voxel_check=True)
-    if args.raw_data_file is not None:
-        config = replace(config, raw_data_file=args.raw_data_file)
-    if args.raw_data_list_file is not None:
-        config = replace(config, raw_data_list_file=args.raw_data_list_file)
-    if args.batch_csv_file is not None:
-        config = replace(config, batch_csv_file=args.batch_csv_file)
-    if args.basis_file is not None:
-        config = replace(config, basis_file=args.basis_file)
-    if args.ppm_axis_file is not None:
-        config = replace(config, ppm_axis_file=args.ppm_axis_file)
-    if args.basis_names_file is not None:
-        config = replace(config, basis_names_file=args.basis_names_file)
-    if args.priors_file is not None:
-        config = replace(config, priors_file=args.priors_file)
-    if args.ppm_start is not None:
-        config = replace(config, fit_ppm_start=args.ppm_start)
-    if args.ppm_end is not None:
-        config = replace(config, fit_ppm_end=args.ppm_end)
-    if args.exclude_ppm_ranges is not None:
-        ranges: list[tuple[float, float]] = []
-        for raw_range in args.exclude_ppm_ranges.split(","):
-            part = raw_range.strip()
-            if not part:
-                continue
-            if ":" not in part:
-                raise SystemExit(f"Invalid exclude range '{part}', expected a:b")
-            a_text, b_text = part.split(":", 1)
-            ranges.append((float(a_text), float(b_text)))
-        config = replace(config, exclude_ppm_ranges=tuple(ranges))
-    if args.include_metabolites is not None:
-        names = tuple(p.strip() for p in args.include_metabolites.split(",") if p.strip())
-        config = replace(config, include_metabolites=names)
-    if args.combine_expressions is not None:
-        exprs = tuple(p.strip() for p in args.combine_expressions.split(",") if p.strip())
-        config = replace(config, combine_expressions=exprs)
-    if args.sptype is not None:
-        config = replace(config, sptype=args.sptype)
-    if args.no_sptype_presets:
-        config = replace(config, apply_sptype_presets=False)
-    if args.shift_search_points is not None:
-        config = replace(config, shift_search_points=args.shift_search_points)
-    if args.alignment_mode is not None:
-        config = replace(config, alignment_circular=(args.alignment_mode == "circular"))
-    if args.fractional_shift_refine:
-        config = replace(config, fractional_shift_refine=True)
-    if args.fractional_shift_iterations is not None:
-        config = replace(config, fractional_shift_iterations=args.fractional_shift_iterations)
-    if args.linewidth_scan_points is not None:
-        config = replace(config, linewidth_scan_points=args.linewidth_scan_points)
-    if args.linewidth_scan_max_sigma_points is not None:
-        config = replace(config, linewidth_scan_max_sigma_points=args.linewidth_scan_max_sigma_points)
-    if args.nonlinear_refine:
-        config = replace(config, nonlinear_refine=True)
-    if args.nonlinear_max_iters is not None:
-        config = replace(config, nonlinear_max_iters=args.nonlinear_max_iters)
-    if args.nonlinear_tolerance is not None:
-        config = replace(config, nonlinear_tolerance=args.nonlinear_tolerance)
-    if args.baseline_order is not None:
-        config = replace(config, baseline_order=args.baseline_order)
-    if args.baseline_knots is not None:
-        config = replace(config, baseline_knots=args.baseline_knots)
-    if args.baseline_smoothness is not None:
-        config = replace(config, baseline_smoothness=args.baseline_smoothness)
-    if args.integration_half_width_points is not None:
-        config = replace(config, integration_half_width_points=args.integration_half_width_points)
-    if args.integration_border_points is not None:
-        config = replace(config, integration_border_points=args.integration_border_points)
+    config = apply_cli_args(config, args)
 
     runner = LCModelRunner(config)
     if config.raw_data_list_file:
         batch = runner.run_batch()
-        print(f"batch_rows={len(batch.rows)}")
-        for raw_file, coeffs, residual in batch.rows:
-            coeff_text = ",".join(f"{v:.12g}" for v in coeffs)
-            print(f"batch_row={raw_file}|{residual:.12g}|{coeff_text}")
-        if batch.csv_file:
-            print(f"batch_csv_file={batch.csv_file}")
+        print_batch_result(batch)
         return 0
 
     result = runner.run()
-
-    print(f"title_lines={result.title_layout.line_count}")
-    print(f"title_line_1={result.title_layout.lines[0]}")
-    print(f"title_line_2={result.title_layout.lines[1]}")
-    if result.output_filename_parts is None:
-        print("output_split=<not requested>")
-    else:
-        left, right = result.output_filename_parts
-        print(f"output_split_left={left}")
-        print(f"output_split_right={right}")
-    if result.fit_result is None:
-        print("fit_result=<not requested>")
-    else:
-        print(f"fit_method={result.fit_result.method}")
-        print(f"fit_iterations={result.fit_result.iterations}")
-        print(f"fit_residual_norm={result.fit_result.residual_norm:.12g}")
-        coeffs = ",".join(f"{v:.12g}" for v in result.fit_result.coefficients)
-        print(f"fit_coefficients={coeffs}")
-        if result.fit_result.coefficient_sds:
-            sds = ",".join(f"{v:.12g}" for v in result.fit_result.coefficient_sds)
-            print(f"fit_coeff_sds={sds}")
-        if result.fit_result.metabolite_names:
-            print(f"fit_metabolites={','.join(result.fit_result.metabolite_names)}")
-        if result.fit_result.data_points_used > 0:
-            print(f"fit_points_used={result.fit_result.data_points_used}")
-        print(f"fit_relative_residual={result.fit_result.relative_residual:.12g}")
-        print(f"fit_snr_estimate={result.fit_result.snr_estimate:.12g}")
-        print(f"fit_alignment_shift_points={result.fit_result.alignment_shift_points}")
-        print(f"fit_alignment_shift_fractional_points={result.fit_result.alignment_shift_fractional_points:.12g}")
-        print(f"fit_linewidth_sigma_points={result.fit_result.linewidth_sigma_points:.12g}")
-        print(f"fit_nonlinear_iterations={result.fit_result.nonlinear_iterations}")
-        print(f"fit_integrated_data_area={result.fit_result.integrated_data_area:.12g}")
-        print(f"fit_integrated_fit_area={result.fit_result.integrated_fit_area:.12g}")
-        if result.fit_result.combined:
-            combo = ",".join(f"{name}:{value:.12g}:{sd:.12g}" for name, value, sd in result.fit_result.combined)
-            print(f"fit_combinations={combo}")
-    if result.table_output_file:
-        print(f"table_output_file={result.table_output_file}")
-    if result.postscript_output_file:
-        print(f"postscript_output_file={result.postscript_output_file}")
+    print_run_result(result)
     return 0
 
 
