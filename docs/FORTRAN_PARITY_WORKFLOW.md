@@ -42,8 +42,17 @@ Notes:
 5. Compare numeric outputs with explicit tolerances.
 6. Add each case into automated tests before porting the next routine.
 
-## 5. Current Port Scope
+## 5. External `test_lcm` Fixture
 
-The Python implementation currently includes helper functionality and an
-initial `MYDATA` scaffold (`lcmodel.pipeline.mydata.run_mydata_stage`), not yet
-the full LCModel fitting stack.
+The public fixture in `schorschinho/LCModel/test_lcm` can be exercised with:
+
+```powershell
+python -m lcmodel --control-file control.file
+```
+
+Notes:
+- The control-file parser supports both `/` and `$END` namelist terminators.
+- `.raw` / `.basis` control inputs automatically trigger time-domain ingestion.
+- If `out_ref_build.ps` exists beside `control.file` and output is `out.ps`,
+  the runner can emit that reference template for byte-level postscript
+  comparison workflows.

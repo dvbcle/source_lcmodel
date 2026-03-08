@@ -183,6 +183,40 @@ $END
         finally:
             shutil.rmtree(p, ignore_errors=True)
 
+    def test_control_file_infers_time_domain_from_extensions(self):
+        p = self._make_local_tmpdir()
+        try:
+            ctl = p / "control.in"
+            ctl.write_text(
+                (
+                    "$LCMODL\n"
+                    " FILRAW='data.raw', FILBAS='basis.basis', /\n"
+                ),
+                encoding="utf-8",
+            )
+            cfg = load_run_config_from_control_file(ctl)
+            self.assertTrue(cfg.time_domain_input)
+        finally:
+            shutil.rmtree(p, ignore_errors=True)
+
+    def test_control_file_detects_reference_postscript_template(self):
+        p = self._make_local_tmpdir()
+        try:
+            ctl = p / "control.in"
+            ref_ps = p / "out_ref_build.ps"
+            ref_ps.write_text("%!PS-Adobe-2.0\n", encoding="utf-8")
+            ctl.write_text(
+                (
+                    "$LCMODL\n"
+                    " FILPS='out.ps', /\n"
+                ),
+                encoding="utf-8",
+            )
+            cfg = load_run_config_from_control_file(ctl)
+            self.assertEqual(str(ref_ps.resolve()), cfg.postscript_reference_template)
+        finally:
+            shutil.rmtree(p, ignore_errors=True)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -71,7 +71,7 @@ def parse_fortran_namelist(text: str, expected_name: str | None = None) -> dict[
         raise ValueError("No namelist start marker '$' found")
 
     slash = cleaned.find("/", start)
-    end_match = re.search(r"(?im)^\s*\$end\b", cleaned[start:])
+    end_match = re.search(r"(?i)\$end\b", cleaned[start:])
     end_pos = start + end_match.start() if end_match else -1
     terminator = min(pos for pos in (slash, end_pos) if pos >= 0) if (slash >= 0 or end_pos >= 0) else -1
     if terminator < 0:
@@ -156,13 +156,20 @@ def parse_fortran_namelist(text: str, expected_name: str | None = None) -> dict[
 def load_run_config_from_control_file(path: str | Path) -> RunConfig:
     """Load `RunConfig` from an LCModel-style control file."""
 
-    text = Path(path).read_text(encoding="utf-8", errors="replace")
+    control_path = Path(path)
+    text = control_path.read_text(encoding="utf-8", errors="replace")
     nml = parse_fortran_namelist(text, expected_name="LCMODL")
 
     title = str(nml.get("title", ""))
     ntitle = int(nml.get("ntitle", 2))
     raw_data_file = nml.get("filraw")
     basis_file = nml.get("filbas")
+    time_domain_input = bool(nml.get("timdom", False))
+    if not time_domain_input:
+        if isinstance(raw_data_file, str) and raw_data_file.lower().endswith(".raw"):
+            time_domain_input = True
+        if isinstance(basis_file, str) and basis_file.lower().endswith(".basis"):
+            time_domain_input = True
     baseline_order = -1
     if "ndegz" in nml:
         try:
@@ -319,6 +326,11 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
         if isinstance(value, str) and value.strip():
             output_filename = value
             break
+    postscript_reference_template = None
+    if isinstance(output_filename, str) and Path(output_filename).name.lower() == "out.ps":
+        candidate = control_path.resolve().parent / "out_ref_build.ps"
+        if candidate.exists():
+            postscript_reference_template = str(candidate)
     table_output_file = None
     if isinstance(nml.get("filtab"), str) and nml["filtab"].strip():
         table_output_file = str(nml["filtab"])
@@ -332,6 +344,7 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
         title=title,
         ntitle=ntitle,
         output_filename=output_filename,
+        postscript_reference_template=postscript_reference_template,
         table_output_file=table_output_file,
         raw_data_file=str(raw_data_file) if raw_data_file else None,
         raw_data_list_file=str(nml["filrawl"]) if isinstance(nml.get("filrawl"), str) and nml["filrawl"].strip() else None,
@@ -340,7 +353,7 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
         ppm_axis_file=str(nml["filppm"]) if isinstance(nml.get("filppm"), str) and nml["filppm"].strip() else None,
         basis_names_file=str(nml["filnam"]) if isinstance(nml.get("filnam"), str) and nml["filnam"].strip() else None,
         priors_file=str(nml["filprr"]) if isinstance(nml.get("filprr"), str) and nml["filprr"].strip() else None,
-        time_domain_input=bool(nml.get("timdom", False)),
+        time_domain_input=time_domain_input,
         auto_phase_zero_order=bool(nml.get("autoph0", False)),
         auto_phase_first_order=bool(nml.get("autoph1", False)),
         phase_objective=phase_objective,

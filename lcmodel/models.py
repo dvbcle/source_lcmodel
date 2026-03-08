@@ -18,6 +18,7 @@ class RunConfig:
     title: str = ""
     ntitle: int = 2
     output_filename: str | None = None
+    postscript_reference_template: str | None = None
     raw_data_file: str | None = None
     basis_file: str | None = None
     ppm_axis_file: str | None = None

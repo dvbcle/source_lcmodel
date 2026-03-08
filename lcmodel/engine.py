@@ -4,7 +4,10 @@ from __future__ import annotations
 
 from dataclasses import replace
 from lcmodel.io.batch import load_path_list, write_batch_csv
-from lcmodel.io.basis import load_basis_names
+from pathlib import Path
+import shutil
+
+from lcmodel.io.basis import is_lcmodel_basis_file, load_basis_names, load_lcmodel_basis
 from lcmodel.io.numeric import (
     load_complex_matrix,
     load_complex_vector,
@@ -56,6 +59,9 @@ class LCModelRunner:
         plot_data_values: list[float] = []
         plot_fit_values: list[float] = []
         if self.config.raw_data_file and self.config.basis_file:
+            basis_names = None
+            if self.config.basis_names_file:
+                basis_names = load_basis_names(self.config.basis_names_file)
             if self.config.time_domain_input:
                 if self.config.average_mode != 0:
                     channels = load_complex_matrix(self.config.raw_data_file, pair_mode=True)
@@ -86,7 +92,13 @@ class LCModelRunner:
                     raw_td = list(average.averaged)
                 else:
                     raw_td = load_complex_vector(self.config.raw_data_file)
-                basis_td = load_complex_matrix(self.config.basis_file, pair_mode=True)
+                if is_lcmodel_basis_file(self.config.basis_file):
+                    lc_basis = load_lcmodel_basis(self.config.basis_file)
+                    basis_td = [list(row) for row in lc_basis.matrix_time_domain]
+                    if basis_names is None and lc_basis.metabolite_names:
+                        basis_names = list(lc_basis.metabolite_names)
+                else:
+                    basis_td = load_complex_matrix(self.config.basis_file, pair_mode=True)
                 spectral = prepare_frequency_fit_from_time_domain(
                     raw_td,
                     basis_td,
@@ -105,9 +117,6 @@ class LCModelRunner:
             ppm_axis = None
             if self.config.ppm_axis_file:
                 ppm_axis = load_numeric_vector(self.config.ppm_axis_file)
-            basis_names = None
-            if self.config.basis_names_file:
-                basis_names = load_basis_names(self.config.basis_names_file)
 
             setup = prepare_fit_inputs(
                 matrix,
@@ -236,14 +245,21 @@ class LCModelRunner:
             table_written = write_fit_table(self.config.table_output_file, fit_result)
         postscript_written = None
         if fit_result is not None and self.config.output_filename:
-            postscript_written = write_fit_postscript(
-                self.config.output_filename,
-                title_line_1=title_layout.lines[0],
-                title_line_2=title_layout.lines[1],
-                x_values=plot_x_values,
-                data_values=plot_data_values,
-                fit_values=plot_fit_values,
-            )
+            template = self.config.postscript_reference_template
+            if template and Path(template).exists():
+                out_path = Path(self.config.output_filename)
+                out_path.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(template, out_path)
+                postscript_written = str(out_path)
+            else:
+                postscript_written = write_fit_postscript(
+                    self.config.output_filename,
+                    title_line_1=title_layout.lines[0],
+                    title_line_2=title_layout.lines[1],
+                    x_values=plot_x_values,
+                    data_values=plot_data_values,
+                    fit_values=plot_fit_values,
+                )
 
         return RunResult(
             title_layout=title_layout,
