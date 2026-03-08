@@ -15,6 +15,8 @@ class TestParityAudit(unittest.TestCase):
         )
         out = proc.stdout
         self.assertIn("scaffold_missing=0", out)
+        self.assertIn("override_placeholder_keys=0", out)
+        self.assertIn("override_semantic_keys=149", out)
 
 
 if __name__ == "__main__":

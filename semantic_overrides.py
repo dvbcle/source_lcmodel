@@ -8,6 +8,7 @@ import builtins
 import math
 import pathlib
 import re
+from dataclasses import replace
 
 from lcmodel.core.array_ops import reverse_first_n
 from lcmodel.core.axis import round_axis_endpoints
@@ -44,6 +45,15 @@ from lcmodel.core.legacy_parsing import (
 )
 from lcmodel.core.text import int_to_compact_text, split_title_lines
 from lcmodel.core.text import escape_postscript_text, first_non_space_index
+from lcmodel.io.namelist import load_run_config_from_control_file
+from lcmodel.io.numeric import (
+    load_complex_matrix,
+    load_complex_vector,
+    load_numeric_matrix,
+    load_numeric_vector,
+)
+from lcmodel.engine import LCModelRunner
+from lcmodel.models import RunConfig
 from lcmodel.io.pathing import split_output_filename_for_voxel
 from lcmodel.pipeline.averaging import (
     detect_zero_voxels,
@@ -54,6 +64,8 @@ from lcmodel.pipeline.integration import integrate_peak_with_local_baseline
 from lcmodel.pipeline.mydata import MyDataConfig, run_mydata_stage
 from lcmodel.pipeline.postprocess import compute_combinations
 from lcmodel.pipeline.fitting import FitConfig, run_fit_stage
+from lcmodel.pipeline.nonlinear import NonlinearConfig, run_nonlinear_refinement
+from lcmodel.pipeline.setup import prepare_fit_inputs
 from lcmodel.pipeline.phasing import apply_zero_order_phase, estimate_zero_order_phase
 
 
@@ -1162,6 +1174,486 @@ def _ov_r_base_sol_big(istage: int, state: dict[str, Any] | None = None) -> bool
     return (base_dist / solmax) > float(rbasmx[idx])
 
 
+def _ov_initia(state: dict[str, Any] | None = None) -> dict[str, Any]:
+    out = state if state is not None else {}
+    out.setdefault("config", RunConfig())
+    out.setdefault("initialized", True)
+    out.setdefault("snapshots", {})
+    return out
+
+
+def _ov_mycont(state: dict[str, Any] | None = None) -> dict[str, Any]:
+    out = _ov_initia(state)
+    control_file = out.get("control_file")
+    if control_file:
+        out["config"] = load_run_config_from_control_file(control_file)
+    elif isinstance(out.get("config"), RunConfig):
+        out["config"] = out["config"]
+    else:
+        out["config"] = RunConfig()
+    return out
+
+
+def _ov_datain(state: dict[str, Any] | None = None) -> dict[str, Any]:
+    out = _ov_mycont(state)
+    cfg = out.get("config", RunConfig())
+    if not isinstance(cfg, RunConfig):
+        cfg = RunConfig()
+    if cfg.raw_data_file:
+        if cfg.time_domain_input:
+            out["datat"] = load_complex_vector(cfg.raw_data_file)
+        else:
+            out["raw_vector"] = load_numeric_vector(cfg.raw_data_file)
+    if cfg.basis_file:
+        if cfg.time_domain_input:
+            out["basis_time"] = load_complex_matrix(cfg.basis_file, pair_mode=True)
+        else:
+            out["basis_matrix"] = load_numeric_matrix(cfg.basis_file)
+    return out
+
+
+def _ov_mybasi(lstage: int, state: dict[str, Any] | None = None) -> dict[str, Any]:
+    _ = lstage
+    out = _ov_datain(state)
+    out["mybasi_loaded"] = bool(out.get("basis_matrix") or out.get("basis_time"))
+    return out
+
+
+def _ov_setup(lstage: int, state: dict[str, Any] | None = None) -> dict[str, Any]:
+    _ = lstage
+    out = _ov_mybasi(lstage, state)
+    cfg = out.get("config", RunConfig())
+    if not isinstance(cfg, RunConfig):
+        return out
+    matrix = out.get("basis_matrix")
+    vector = out.get("raw_vector")
+    if matrix is None or vector is None:
+        return out
+    ppm_axis = None
+    if cfg.ppm_axis_file:
+        ppm_axis = load_numeric_vector(cfg.ppm_axis_file)
+    setup = prepare_fit_inputs(
+        matrix,
+        vector,
+        ppm_axis=ppm_axis,
+        ppm_start=cfg.fit_ppm_start,
+        ppm_end=cfg.fit_ppm_end,
+        exclude_ppm_ranges=cfg.exclude_ppm_ranges,
+        include_metabolites=cfg.include_metabolites,
+    )
+    out["setup_result"] = setup
+    return out
+
+
+def _ov_setup3(state: dict[str, Any] | None = None) -> dict[str, Any]:
+    out = _ov_setup(3, state)
+    out["setup3_done"] = True
+    return out
+
+
+def _ov_startv(ipass: int, state: dict[str, Any] | None = None) -> dict[str, Any]:
+    out = _ov_setup(1, state)
+    out["startv_ipass"] = int(ipass)
+    return out
+
+
+def _ov_ftdata(ishift: int, state: dict[str, Any] | None = None) -> dict[str, Any]:
+    out = state if state is not None else {}
+    datat = out.get("datat")
+    if datat is None:
+        return out
+    ft = list(cfft_r_compat(datat))
+    shift = int(ishift)
+    if shift != 0 and ft:
+        n = len(ft)
+        ft = [ft[(i - shift) % n] for i in range(n)]
+    out["dataf"] = tuple(ft)
+    out["ftdata_shift"] = shift
+    return out
+
+
+def _ov_shiftd(ishift: int, state: dict[str, Any] | None = None) -> dict[str, Any]:
+    out = state if state is not None else {}
+    vector = out.get("raw_vector")
+    if vector is None:
+        return out
+    shift = int(ishift)
+    n = len(vector)
+    shifted = [0.0] * n
+    for i in range(n):
+        shifted[i] = float(vector[(i - shift) % n])
+    out["raw_vector"] = shifted
+    out["shiftd_shift"] = shift
+    return out
+
+
+def _ov_phasta(state: dict[str, Any] | None = None) -> dict[str, Any]:
+    return _ov_phase_with_max_real(state)
+
+
+def _ov_rephas(state: dict[str, Any] | None = None) -> dict[str, Any]:
+    return _ov_phase_with_max_real(state)
+
+
+def _ov_gbackg(state: dict[str, Any] | None = None) -> dict[str, Any]:
+    out = state if state is not None else {}
+    vec = out.get("raw_vector")
+    if vec is None:
+        return out
+    vals = [float(v) for v in vec]
+    n = len(vals)
+    baseline = [0.0] * n
+    for i in range(n):
+        lo = max(0, i - 2)
+        hi = min(n, i + 3)
+        window = vals[lo:hi]
+        baseline[i] = sum(window) / max(1, len(window))
+    out["baseline"] = tuple(baseline)
+    return out
+
+
+def _ov_plinls(istage: int, ierror: Any, state: dict[str, Any] | None = None) -> dict[str, Any]:
+    _ = istage
+    out = _ov_setup(2, state)
+    setup = out.get("setup_result")
+    if setup is None:
+        _assign_scalar(ierror, 1)
+        return out
+    fit = run_fit_stage(setup.matrix, setup.vector, FitConfig())
+    out["fit_stage"] = fit
+    _assign_scalar(ierror, 0)
+    return out
+
+
+def _ov_solve(
+    lstage: int,
+    dononl: bool,
+    pmqact: float,
+    onlyft: bool,
+    lerror: Any,
+    state: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    _ = (lstage, pmqact, onlyft)
+    out = _ov_setup(2, state)
+    setup = out.get("setup_result")
+    if setup is None:
+        _assign_scalar(lerror, True)
+        return out
+    nonlin = run_nonlinear_refinement(
+        setup.matrix,
+        setup.vector,
+        FitConfig(),
+        NonlinearConfig(max_iters=2 if bool(dononl) else 1),
+    )
+    out["nonlinear_result"] = nonlin
+    out["fit_stage"] = nonlin.stage
+    _assign_scalar(lerror, False)
+    return out
+
+
+def _ov_tworeg(state: dict[str, Any] | None = None) -> dict[str, Any]:
+    return _ov_solve(2, True, 0.0, False, [False], state)
+
+
+def _ov_tworg1(state: dict[str, Any] | None = None) -> dict[str, Any]:
+    out = state if state is not None else {}
+    out["tworg1_called"] = True
+    return _ov_solve(1, True, 0.0, False, [False], out)
+
+
+def _ov_tworeg_sav(state: dict[str, Any] | None = None) -> dict[str, Any]:
+    out = state if state is not None else {}
+    fit = out.get("fit_stage")
+    if fit is not None:
+        out.setdefault("snapshots", {})["tworeg"] = fit
+    return out
+
+
+def _ov_tworg2(jpass: int, fixed_degppm_series: bool, state: dict[str, Any] | None = None) -> dict[str, Any]:
+    out = state if state is not None else {}
+    out["tworg2_jpass"] = int(jpass)
+    out["tworg2_fixed_degppm_series"] = bool(fixed_degppm_series)
+    return _ov_solve(2, True, 0.0, False, [False], out)
+
+
+def _ov_tworg3(jrepha: int, state: dict[str, Any] | None = None) -> dict[str, Any]:
+    out = state if state is not None else {}
+    out["tworg3_jrepha"] = int(jrepha)
+    return _ov_rephas(out)
+
+
+def _ov_fshssq(prej: float, idfish: int, nyuse: int, refndf: float, ssqref: float, lprint: int, rrange: float, state: dict[str, Any] | None = None) -> float:
+    _ = (idfish, nyuse, refndf, lprint, rrange, state)
+    return float(ssqref) * (1.0 + abs(float(prej)))
+
+
+def _ov_ssrang(irange: int, state: dict[str, Any] | None = None) -> dict[str, Any]:
+    out = state if state is not None else {}
+    prmnmx = out.get("prmnmx", ((0.0, 0.1, 0.2), (0.1, 0.2, 0.3)))
+    idx = max(0, min(2, int(irange) - 1))
+    ssqref = float(out.get("ssqref", 1.0))
+    ssqmin = _ov_fshssq(float(prmnmx[0][idx]), 0, 0, 1.0, ssqref, 0, 1e30, out)
+    ssqmax = _ov_fshssq(float(prmnmx[1][idx]), 0, 0, 1.0, ssqref, 0, 1e30, out)
+    out["ssqmin"] = min(ssqmin, ssqmax)
+    out["ssqmax"] = max(ssqmin, ssqmax)
+    out["ssqaim"] = 0.5 * (out["ssqmin"] + out["ssqmax"])
+    return out
+
+
+def _ov_rfalsi(
+    ialpha: int,
+    irange: int,
+    lrepha: bool,
+    alphb: float,
+    alphs: float,
+    assqlo: float,
+    aalplo: float,
+    assqhi: float,
+    aalphi: float,
+    aalpha: Any,
+    prejok: Any,
+    prej1: Any,
+    state: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    _ = (ialpha, lrepha, prej1)
+    out = _ov_ssrang(irange, state)
+    ssq_lo = float(assqlo)
+    ssq_hi = float(assqhi)
+    alpha_lo = float(aalplo)
+    alpha_hi = float(aalphi)
+    target = float(out.get("ssqaim", 0.5 * (ssq_lo + ssq_hi)))
+    if abs(ssq_hi - ssq_lo) <= 1e-20:
+        alpha = float(aalpha[0]) if isinstance(aalpha, MutableSequence) and aalpha else 0.5 * (alpha_lo + alpha_hi)
+    else:
+        alpha = alpha_lo + (target - ssq_lo) * (alpha_hi - alpha_lo) / (ssq_hi - ssq_lo)
+    alpha = max(min(alpha, max(alpha_lo, alpha_hi)), min(alpha_lo, alpha_hi))
+    _assign_scalar(aalpha, alpha)
+    _assign_scalar(prejok, True)
+    out["alphab"] = float(alphb) * alpha
+    out["alphas"] = float(alphs) * alpha
+    return out
+
+
+def _ov_pastep(rstep: float, state: dict[str, Any] | None = None) -> dict[str, Any]:
+    out = state if state is not None else {}
+    out["rstep"] = float(rstep)
+    return out
+
+
+def _ov_penlty(alpb: float, alps: float, sol: Sequence[float], parnl: Sequence[float], state: dict[str, Any] | None = None) -> float:
+    _ = state
+    s1 = sum(float(v) * float(v) for v in sol)
+    s2 = sum(float(v) * float(v) for v in parnl)
+    return float(alpb) * s1 + float(alps) * s2
+
+
+def _ov_savbes(ilevel: int, state: dict[str, Any] | None = None) -> dict[str, Any]:
+    out = state if state is not None else {}
+    fit = out.get("fit_stage")
+    if fit is not None:
+        out.setdefault("snapshots", {})[f"level_{int(ilevel)}"] = fit
+    return out
+
+
+def _ov_dump1(lstage: int, state: dict[str, Any] | None = None) -> dict[str, Any]:
+    out = state if state is not None else {}
+    out.setdefault("dumps", []).append({"stage": int(lstage), "keys": tuple(sorted(out.keys()))})
+    return out
+
+
+def _ov_restore_settings(state: dict[str, Any] | None = None) -> dict[str, Any]:
+    out = state if state is not None else {}
+    snap = out.get("snapshots", {}).get("level_2")
+    if snap is not None:
+        out["fit_stage"] = snap
+    return out
+
+
+def _ov_update_priors(state: dict[str, Any] | None = None) -> dict[str, Any]:
+    out = state if state is not None else {}
+    fit = out.get("fit_stage")
+    if fit is None:
+        return out
+    coeffs = list(getattr(fit, "coefficients", ()))
+    out["prior_mean"] = tuple(coeffs)
+    out["prior_sd"] = tuple(max(1e-6, abs(v) * 0.1) for v in coeffs)
+    return out
+
+
+def _ov_set_lshape_false(state: dict[str, Any] | None = None) -> dict[str, Any]:
+    out = state if state is not None else {}
+    out["lshape_enabled"] = False
+    return out
+
+
+def _ov_make_cgroup_shift(state: dict[str, Any] | None = None) -> dict[str, Any]:
+    out = state if state is not None else {}
+    names = tuple(builtins.str(v) for v in out.get("nacomb", ()))
+    groups = tuple(builtins.str(v) for v in out.get("chgrsh", ()))
+    rows = []
+    for g in groups:
+        if not g:
+            continue
+        idx = [j for j, name in enumerate(names) if name.startswith(g)]
+        if not idx:
+            continue
+        for j in idx:
+            row = [0.0] * len(names)
+            term = 1.0 / float(len(idx))
+            for k in idx:
+                row[k] = -term
+            row[j] += 1.0
+            rows.append(tuple(row))
+    out["cgroup_shift"] = tuple(rows)
+    return out
+
+
+def _ov_open_output(state: dict[str, Any] | None = None) -> dict[str, Any]:
+    out = _ov_mycont(state)
+    cfg = out.get("config", RunConfig())
+    if not isinstance(cfg, RunConfig):
+        return out
+    title = cfg.title or builtins.str(out.get("title", ""))
+    row = int(out.get("idrow", 1))
+    col = int(out.get("idcol", 1))
+    slc = int(out.get("idslic", 1))
+    if int(out.get("single_voxel", 1)) == 0:
+        title = f"Slice#{slc} Row#{row} Col#{col}  {title}"
+    out["title"] = title
+    out["output_opened"] = True
+    return out
+
+
+def _ov_loadch(state: dict[str, Any] | None = None) -> dict[str, Any]:
+    out = state if state is not None else {}
+    control_file = out.get("control_file")
+    if control_file:
+        text = pathlib.Path(control_file).read_text(encoding="utf-8", errors="replace")
+        out["changes"] = tuple(line.rstrip() for line in text.splitlines())
+    else:
+        out["changes"] = ()
+    return out
+
+
+def _ov_finout(state: dict[str, Any] | None = None) -> dict[str, Any]:
+    out = state if state is not None else {}
+    fit = out.get("fit_stage")
+    if fit is not None:
+        out["final_summary"] = {
+            "residual_norm": float(getattr(fit, "residual_norm", 0.0)),
+            "iterations": int(getattr(fit, "iterations", 0)),
+        }
+    return out
+
+
+def _ov_errtbl(state: dict[str, Any] | None = None) -> dict[str, Any]:
+    out = state if state is not None else {}
+    out["error_table"] = tuple(out.get("errors", ()))
+    return out
+
+
+def _ov_exitps(lstop: bool, state: dict[str, Any] | None = None) -> dict[str, Any]:
+    out = state if state is not None else {}
+    if bool(lstop):
+        _ov_endps(out)
+    out["exitps_stop"] = bool(lstop)
+    return out
+
+
+def _ov_ecc_truncate(state: dict[str, Any] | None = None) -> dict[str, Any]:
+    out = state if state is not None else {}
+    h2ot = out.get("h2ot")
+    datat = out.get("datat")
+    if not isinstance(h2ot, Sequence) or not isinstance(datat, MutableSequence):
+        return out
+    n = min(len(h2ot), len(datat))
+    for i in range(n):
+        hv = complex(h2ot[i])
+        dv = complex(datat[i])
+        denom = (hv.real * hv.real + hv.imag * hv.imag) ** 0.5
+        if denom > 0.0:
+            corr = complex(hv.real, -hv.imag) / denom
+            datat[i] = dv * corr
+    out["ecc_done"] = True
+    return out
+
+
+def _ov_f2tcb(n: int, c: Sequence[complex], yout: Any, wsave: Any, state: dict[str, Any] | None = None) -> dict[str, Any]:
+    _ = (wsave, state)
+    vals = cfftin_r_compat(c[: int(n)])
+    _copy_sequence_prefix(yout, vals)
+    return {"f2tcb": tuple(vals)}
+
+
+def _ov_dpasf(
+    nac: int,
+    ido: int,
+    ip: int,
+    l1: int,
+    idl1: int,
+    cc: Any,
+    c1: Any,
+    c2: Any,
+    ch: Any,
+    ch2: Any,
+    wa: Any,
+    state: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    return _ov_passf(nac, ido, ip, l1, idl1, cc, c1, c2, ch, ch2, wa, state)
+
+
+def _ov_dpasf2(ido: int, l1: int, cc: Any, ch: Any, wa1: Any, state: dict[str, Any] | None = None) -> dict[str, Any]:
+    return _ov_passf2(ido, l1, cc, ch, wa1, state)
+
+
+def _ov_dpasf3(ido: int, l1: int, cc: Any, ch: Any, wa1: Any, wa2: Any, state: dict[str, Any] | None = None) -> dict[str, Any]:
+    return _ov_passf3(ido, l1, cc, ch, wa1, wa2, state)
+
+
+def _ov_dpasf4(ido: int, l1: int, cc: Any, ch: Any, wa1: Any, wa2: Any, wa3: Any, state: dict[str, Any] | None = None) -> dict[str, Any]:
+    return _ov_passf4(ido, l1, cc, ch, wa1, wa2, wa3, state)
+
+
+def _ov_dpasf5(
+    ido: int,
+    l1: int,
+    cc: Any,
+    ch: Any,
+    wa1: Any,
+    wa2: Any,
+    wa3: Any,
+    wa4: Any,
+    state: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    return _ov_passf5(ido, l1, cc, ch, wa1, wa2, wa3, wa4, state)
+
+
+def _ov_arbbox(n: int, a: Any, amn: float, amx: float, state: dict[str, Any] | None = None) -> dict[str, Any]:
+    out = state if state is not None else {}
+    if isinstance(a, MutableSequence):
+        for i in range(min(int(n), len(a))):
+            a[i] = max(float(amn), min(float(amx), float(a[i])))
+    out["arbbox_bounds"] = (float(amn), float(amx))
+    return out
+
+
+def _ov_lcmodl(state: dict[str, Any] | None = None) -> dict[str, Any]:
+    out = _ov_mycont(state)
+    cfg = out.get("config", RunConfig())
+    if not isinstance(cfg, RunConfig):
+        cfg = RunConfig()
+    runner = LCModelRunner(cfg)
+    if cfg.raw_data_list_file:
+        batch = runner.run_batch()
+        out["batch_result"] = batch
+    else:
+        result = runner.run()
+        out["run_result"] = result
+        if result.fit_result is not None:
+            out["fit_stage"] = result.fit_result
+    return out
+
+
 def _ov_split_filename(
     filename: str,
     chtype1: str,
@@ -1708,6 +2200,50 @@ def _ov_end_table(
 
 
 SEMANTIC_OVERRIDES = {
+    "lcmodl": _ov_lcmodl,
+    "mycont": _ov_mycont,
+    "restore_settings": _ov_restore_settings,
+    "update_priors": _ov_update_priors,
+    "open_output": _ov_open_output,
+    "loadch": _ov_loadch,
+    "initia": _ov_initia,
+    "datain": _ov_datain,
+    "ecc_truncate": _ov_ecc_truncate,
+    "mybasi": _ov_mybasi,
+    "make_cgroup_shift": _ov_make_cgroup_shift,
+    "set_lshape_false": _ov_set_lshape_false,
+    "startv": _ov_startv,
+    "ftdata": _ov_ftdata,
+    "shiftd": _ov_shiftd,
+    "setup": _ov_setup,
+    "setup3": _ov_setup3,
+    "phasta": _ov_phasta,
+    "gbackg": _ov_gbackg,
+    "tworeg": _ov_tworeg,
+    "tworg1": _ov_tworg1,
+    "tworeg_sav": _ov_tworeg_sav,
+    "tworg2": _ov_tworg2,
+    "tworg3": _ov_tworg3,
+    "ssrang": _ov_ssrang,
+    "rfalsi": _ov_rfalsi,
+    "penlty": _ov_penlty,
+    "rephas": _ov_rephas,
+    "fshssq": _ov_fshssq,
+    "plinls": _ov_plinls,
+    "dump1": _ov_dump1,
+    "pastep": _ov_pastep,
+    "solve": _ov_solve,
+    "savbes": _ov_savbes,
+    "finout": _ov_finout,
+    "exitps": _ov_exitps,
+    "errtbl": _ov_errtbl,
+    "arbbox": _ov_arbbox,
+    "dpasf": _ov_dpasf,
+    "dpasf2": _ov_dpasf2,
+    "dpasf3": _ov_dpasf3,
+    "dpasf4": _ov_dpasf4,
+    "dpasf5": _ov_dpasf5,
+    "f2tcb": _ov_f2tcb,
     "ilen": _ov_ilen,
     "icharst": _ov_icharst,
     "remove_blank_start": _ov_remove_blank_start,
