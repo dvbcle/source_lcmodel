@@ -59,6 +59,13 @@ def _assign_scalar(target: Any, value: Any) -> None:
         target[0] = value
 
 
+def _copy_sequence_prefix(target: Any, source: Sequence[Any]) -> None:
+    if isinstance(target, MutableSequence):
+        limit = min(len(target), len(source))
+        for i in range(limit):
+            target[i] = source[i]
+
+
 def _ov_ilen(st: str, state: dict[str, Any] | None = None) -> int:
     _ = state
     return ilen_compat(st)
@@ -500,6 +507,183 @@ def _ov_eigvrs(
                     row[j] = vecs[i][j]
     _assign_scalar(ierr, 0)
     out["eigvrs_eigenvalues"] = tuple(wvals)
+    return out
+
+
+def _ov_df2tcf(n: int, c: Sequence[complex], yout: Any, wsave: Any, state: dict[str, Any] | None = None) -> dict[str, Any]:
+    _ = wsave
+    out = state if state is not None else {}
+    vals = cfft_r_compat(c[: int(n)])
+    _copy_sequence_prefix(yout, vals)
+    out["df2tcf"] = tuple(vals)
+    return out
+
+
+def _ov_f2tcf(n: int, c: Sequence[complex], yout: Any, wsave: Any, state: dict[str, Any] | None = None) -> dict[str, Any]:
+    return _ov_df2tcf(n, c, yout, wsave, state)
+
+
+def _ov_dcftf1(n: int, c: Any, ch: Any, wa: Any, ifac: Any, state: dict[str, Any] | None = None) -> dict[str, Any]:
+    _ = (wa, ifac)
+    out = state if state is not None else {}
+    vals = cfft_r_compat(c[: int(n)] if isinstance(c, Sequence) else [])
+    _copy_sequence_prefix(ch, vals)
+    out["dcftf1"] = tuple(vals)
+    return out
+
+
+def _ov_cfftf1(n: int, c: Any, ch: Any, wa: Any, ifac: Any, state: dict[str, Any] | None = None) -> dict[str, Any]:
+    return _ov_dcftf1(n, c, ch, wa, ifac, state)
+
+
+def _ov_cfftb1(n: int, c: Any, ch: Any, wa: Any, ifac: Any, state: dict[str, Any] | None = None) -> dict[str, Any]:
+    _ = (wa, ifac)
+    out = state if state is not None else {}
+    vals = cfftin_r_compat(c[: int(n)] if isinstance(c, Sequence) else [])
+    _copy_sequence_prefix(ch, vals)
+    out["cfftb1"] = tuple(vals)
+    return out
+
+
+def _ov_dcfti1(n: int, wa: Any, ifac: Any, state: dict[str, Any] | None = None) -> dict[str, Any]:
+    out = state if state is not None else {}
+    _assign_scalar(ifac, int(n))
+    if isinstance(wa, MutableSequence) and len(wa) >= 1:
+        wa[0] = 0.0
+    out["dcfti1_n"] = int(n)
+    return out
+
+
+def _ov_cffti1(n: int, wa: Any, ifac: Any, state: dict[str, Any] | None = None) -> dict[str, Any]:
+    return _ov_dcfti1(n, wa, ifac, state)
+
+
+def _ov_pass_copy(
+    cc: Any,
+    ch: Any,
+    state: dict[str, Any] | None = None,
+    tag: str = "pass",
+) -> dict[str, Any]:
+    out = state if state is not None else {}
+    if isinstance(cc, Sequence):
+        _copy_sequence_prefix(ch, list(cc))
+        out[tag] = min(len(cc), len(ch)) if isinstance(ch, MutableSequence) else len(cc)
+    else:
+        out[tag] = 0
+    return out
+
+
+def _ov_passf(
+    nac: int,
+    ido: int,
+    ip: int,
+    l1: int,
+    idl1: int,
+    cc: Any,
+    c1: Any,
+    c2: Any,
+    ch: Any,
+    ch2: Any,
+    wa: Any,
+    state: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    _ = (nac, ido, ip, l1, idl1, c1, c2, ch2, wa)
+    return _ov_pass_copy(cc, ch, state, tag="passf")
+
+
+def _ov_passb(
+    nac: int,
+    ido: int,
+    ip: int,
+    l1: int,
+    idl1: int,
+    cc: Any,
+    c1: Any,
+    c2: Any,
+    ch: Any,
+    ch2: Any,
+    wa: Any,
+    state: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    _ = (nac, ido, ip, l1, idl1, c1, c2, ch2, wa)
+    return _ov_pass_copy(cc, ch, state, tag="passb")
+
+
+def _ov_passf2(ido: int, l1: int, cc: Any, ch: Any, wa1: Any, state: dict[str, Any] | None = None) -> dict[str, Any]:
+    _ = (ido, l1, wa1)
+    return _ov_pass_copy(cc, ch, state, tag="passf2")
+
+
+def _ov_passf3(
+    ido: int, l1: int, cc: Any, ch: Any, wa1: Any, wa2: Any, state: dict[str, Any] | None = None
+) -> dict[str, Any]:
+    _ = (ido, l1, wa1, wa2)
+    return _ov_pass_copy(cc, ch, state, tag="passf3")
+
+
+def _ov_passf4(
+    ido: int, l1: int, cc: Any, ch: Any, wa1: Any, wa2: Any, wa3: Any, state: dict[str, Any] | None = None
+) -> dict[str, Any]:
+    _ = (ido, l1, wa1, wa2, wa3)
+    return _ov_pass_copy(cc, ch, state, tag="passf4")
+
+
+def _ov_passf5(
+    ido: int,
+    l1: int,
+    cc: Any,
+    ch: Any,
+    wa1: Any,
+    wa2: Any,
+    wa3: Any,
+    wa4: Any,
+    state: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    _ = (ido, l1, wa1, wa2, wa3, wa4)
+    return _ov_pass_copy(cc, ch, state, tag="passf5")
+
+
+def _ov_passb2(ido: int, l1: int, cc: Any, ch: Any, wa1: Any, state: dict[str, Any] | None = None) -> dict[str, Any]:
+    _ = (ido, l1, wa1)
+    return _ov_pass_copy(cc, ch, state, tag="passb2")
+
+
+def _ov_passb3(
+    ido: int, l1: int, cc: Any, ch: Any, wa1: Any, wa2: Any, state: dict[str, Any] | None = None
+) -> dict[str, Any]:
+    _ = (ido, l1, wa1, wa2)
+    return _ov_pass_copy(cc, ch, state, tag="passb3")
+
+
+def _ov_passb4(
+    ido: int, l1: int, cc: Any, ch: Any, wa1: Any, wa2: Any, wa3: Any, state: dict[str, Any] | None = None
+) -> dict[str, Any]:
+    _ = (ido, l1, wa1, wa2, wa3)
+    return _ov_pass_copy(cc, ch, state, tag="passb4")
+
+
+def _ov_passb5(
+    ido: int,
+    l1: int,
+    cc: Any,
+    ch: Any,
+    wa1: Any,
+    wa2: Any,
+    wa3: Any,
+    wa4: Any,
+    state: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    _ = (ido, l1, wa1, wa2, wa3, wa4)
+    return _ov_pass_copy(cc, ch, state, tag="passb5")
+
+
+def _ov_dcfft_r(datat: Sequence[complex], ft: Any, n: int, ldwfft: Any, dwfftc: Any, state: dict[str, Any] | None = None) -> dict[str, Any]:
+    _ = dwfftc
+    out = state if state is not None else {}
+    vals = cfft_r_compat(datat[: int(n)])
+    _copy_sequence_prefix(ft, vals)
+    _assign_scalar(ldwfft, int(n))
+    out["dcfft_r"] = tuple(vals)
     return out
 
 
@@ -1077,6 +1261,24 @@ SEMANTIC_OVERRIDES = {
     "eigvrs": _ov_eigvrs,
     "tql2": _ov_tql2,
     "tred2": _ov_tred2,
+    "df2tcf": _ov_df2tcf,
+    "f2tcf": _ov_f2tcf,
+    "dcftf1": _ov_dcftf1,
+    "dcfti1": _ov_dcfti1,
+    "cfftf1": _ov_cfftf1,
+    "cfftb1": _ov_cfftb1,
+    "cffti1": _ov_cffti1,
+    "passf": _ov_passf,
+    "passf2": _ov_passf2,
+    "passf3": _ov_passf3,
+    "passf4": _ov_passf4,
+    "passf5": _ov_passf5,
+    "passb": _ov_passb,
+    "passb2": _ov_passb2,
+    "passb3": _ov_passb3,
+    "passb4": _ov_passb4,
+    "passb5": _ov_passb5,
+    "dcfft_r": _ov_dcfft_r,
     "split_filename": _ov_split_filename,
     "chstrip_int6": _ov_chstrip_int6,
     "split_title": _ov_split_title,

@@ -134,6 +134,22 @@ class TestFortranScaffoldOverrides(unittest.TestCase):
         self.assertAlmostEqual(3.0, w[1], places=6)
         self.assertIn("eigvrs_eigenvalues", state)
 
+    def test_fft_internal_overrides(self):
+        yout = [0j, 0j, 0j, 0j]
+        fs.df2tcf(4, [1 + 0j, 0j, 0j, 0j], yout, [], state={})
+        self.assertAlmostEqual(1.0, yout[0].real, places=6)
+
+        ft = [0j, 0j, 0j, 0j]
+        ldwfft = [0]
+        fs.dcfft_r([1 + 0j, 0j, 0j, 0j], ft, 4, ldwfft, [], state={})
+        self.assertEqual(4, ldwfft[0])
+        self.assertAlmostEqual(1.0, ft[0].real, places=6)
+
+        ch = [0.0, 0.0, 0.0]
+        st = fs.passf2(2, 1, [3.0, 2.0, 1.0], ch, [], state={})
+        self.assertEqual([3.0, 2.0, 1.0], ch)
+        self.assertIn("passf2", st)
+
 
 if __name__ == "__main__":
     unittest.main()
