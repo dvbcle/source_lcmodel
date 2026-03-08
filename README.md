@@ -3,18 +3,15 @@
 Python-first implementation of LCModel with traceability back to the original
 Fortran sources.
 
-## Current status
+For first-time visitors: start with `Project goals`, then run `Quick start`,
+then check `Current status` for migration and compatibility details.
 
-- Hard cutover is complete: the supported runtime surface is the `lcmodel/`
-  Python package and CLI.
-- Legacy scaffold entry points (`fortran_scaffold`, `semantic_overrides`) are
-  no longer part of the supported runtime product surface.
-- Legacy Fortran files are retained for audit/reference in
-  [`fortran_reference/`](fortran_reference/).
-- Routine-level traceability is maintained through a machine-readable manifest,
-  provenance decorators, and parity audits.
-- External `test_lcm` regression from `schorschinho/LCModel` has a successful
-  `out.ps` vs `out_ref_build.ps` byte-identical comparison.
+## Project goals
+
+1. Keep numerical and behavioral parity with the reference Fortran baseline.
+2. Continue improving architecture toward maintainable, testable Python modules.
+3. Preserve traceability so each behavior can be audited back to original
+   Fortran routines.
 
 ## Development history
 
@@ -29,12 +26,40 @@ Fortran sources.
    parity audit tooling, and runtime trace logs were added for collaborator and
    legacy-user transparency.
 
-## Project goals
+## Current status
 
-1. Keep numerical and behavioral parity with the reference Fortran baseline.
-2. Continue improving architecture toward maintainable, testable Python modules.
-3. Preserve traceability so each behavior can be audited back to original
-   Fortran routines.
+- The migration cutover is complete: the supported runtime surface is the
+  `lcmodel/` Python package and CLI.
+- The historical conversion scaffold was an intermediate, generated
+  Fortran-shaped call layer used during migration; it is no longer used for
+  production execution.
+- Legacy scaffold entry points (`fortran_scaffold`, `semantic_overrides`) were
+  removed from the runtime product surface. New features and fixes should be
+  implemented in Python-first modules under `lcmodel/`.
+- Legacy Fortran files are retained for audit/reference in
+  [`fortran_reference/`](fortran_reference/).
+- Routine-level traceability is maintained through a machine-readable manifest,
+  provenance decorators, and parity audits.
+- External `test_lcm` regression from `schorschinho/LCModel` has a successful
+  `out.ps` vs `out_ref_build.ps` byte-identical comparison.
+
+### Architectural approach details
+
+The conversion was done as a staged architecture migration rather than a
+single rewrite:
+
+1. Compatibility bootstrap:
+   - Start from generated routine-level coverage so every Fortran unit had a
+     tracked Python counterpart.
+2. Semantic extraction:
+   - Move behavior into domain modules (`core`, `io`, `pipeline`, `engine`)
+     with Python datamodels and tests.
+3. Product-surface cutover:
+   - Remove scaffold runtime entrypoints and keep only Python-first CLI/API
+     execution paths.
+4. Traceability preservation:
+   - Keep Fortran parity visibility via manifest/audit/provenance tooling
+     instead of scaffold-based runtime dispatch.
 
 ## Repository layout
 
@@ -124,9 +149,9 @@ python -m lcmodel --control-file data\\control.in --traceability-log-file artifa
 - Fortran routine map: `docs/FORTRAN_ROUTINE_MAP.md`
 - Conversion statistics snapshot: `docs/CONVERSION_STATS.md`
 
-## First Successful External Regression Test
+## External Regression Validation
 
-The first complete external fixture run used `test_lcm` from
+External fixture validation uses `test_lcm` from
 `https://github.com/schorschinho/LCModel`.
 
 Workflow used:
@@ -142,8 +167,29 @@ Verification:
 
 ## Developer workflow
 
-1. Make focused, reviewable commits.
-2. Run `python -m unittest discover -s tests -p "test_*.py"`.
-3. Run `python tools/audit_parity.py`.
-4. If routine mapping changes, run `python tools/build_traceability_manifest.py`
-   then regenerate `docs/FORTRAN_ROUTINE_MAP.md`.
+1. Sync to latest `main` and read `docs/PYTHON_ARCHITECTURE.md` plus `docs/TRACEABILITY_SYSTEM.md`.
+2. Make a focused change in Python-first runtime modules (`lcmodel/core`, `lcmodel/io`, `lcmodel/pipeline`, `lcmodel/engine`).
+3. Run `python -m unittest discover -s tests -p "test_*.py"`.
+4. Run `python tools/audit_parity.py`.
+5. If mapping or Fortran inventory changes, run:
+   `python tools/build_traceability_manifest.py`
+   then
+   `python tools/export_routine_map.py --output docs/FORTRAN_ROUTINE_MAP.md`.
+6. Update docs for user-visible behavior changes, then commit in small, reviewable units.
+
+## How to contribute
+
+New collaborators can help effectively in any of these areas:
+
+1. Numerical parity:
+   add/expand oracle-style comparisons (compare Python outputs against a
+   trusted reference output for identical inputs) and external regression
+   fixtures.
+2. Algorithm depth:
+   improve specific fitting, baseline, phasing, or nonlinear refinement behaviors while preserving tests.
+3. Reliability:
+   add edge-case tests for control-file parsing, IO variants, and malformed inputs.
+4. Traceability:
+   improve manifest quality, provenance coverage, and mapping documentation.
+5. Developer UX:
+   improve docs, CLI ergonomics, and reproducible validation workflows.
