@@ -52,6 +52,8 @@ class LCModelRunner:
                     basis_td,
                     auto_phase_zero_order=self.config.auto_phase_zero_order,
                     auto_phase_first_order=self.config.auto_phase_first_order,
+                    phase_objective=self.config.phase_objective,
+                    phase_smoothness_power=self.config.phase_smoothness_power,
                     dwell_time_s=self.config.dwell_time_s,
                     line_broadening_hz=self.config.line_broadening_hz,
                 )

@@ -91,6 +91,7 @@ rot2 = apply_phase([1j, 1j, 1j, 1j, 1j], phase0, phase1)
 setup = prepare_fit_inputs([[1, 2], [3, 4]], [10, 20], basis_names=["NAA", "Cr"], include_metabolites=("Cr",))
 spectral = prepare_frequency_fit_from_time_domain([1+0j, 0+0j, 0+0j, 0+0j], [[1+0j], [0+0j], [0+0j], [0+0j]], auto_phase_zero_order=True)
 spectral_apodized = prepare_frequency_fit_from_time_domain([1+0j, 0+0j, 0+0j, 0+0j], [[1+0j], [0+0j], [0+0j], [0+0j]], dwell_time_s=0.0005, line_broadening_hz=4.0)
+spectral_phasta = prepare_frequency_fit_from_time_domain([1+0j, 0+0j, 0+0j, 0+0j], [[1+0j], [0+0j], [0+0j], [0+0j]], auto_phase_first_order=True, phase_objective="smooth_real", phase_smoothness_power=6)
 integ = integrate_peak_with_local_baseline([1, 1, 1, 2, 3, 2, 1, 1], peak_index=4, start_index=2, end_index=6, border_width=2)
 priors = load_soft_priors("data/priors.txt")
 aug_a, aug_b = augment_system_with_soft_priors([[1, 0], [0, 1]], [2, 3], ["NAA", "Cr"], priors)
@@ -121,6 +122,7 @@ print(result.processing_log)
 
 - The fit core now uses an active-set PNNLS-style solver with optional mixed sign constraints.
 - Alternating baseline fitting supports either polynomial (`baseline_order`) or cubic B-spline (`baseline_knots`, `baseline_smoothness`) modes.
+- Time-domain auto-phasing supports `imag_abs` and Fortran-inspired `smooth_real` objectives.
 - This is still not the full original LCModel nonlinear optimization stack.
 - `split_output_filename_for_voxel` handles three extension cases:
   - `.../ps` -> left ends with `/`, right starts with `.ps`

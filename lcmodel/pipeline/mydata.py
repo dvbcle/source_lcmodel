@@ -73,6 +73,8 @@ class MyDataConfig:
     phase_search_steps: int = 720
     phase1_search_steps: int = 41
     phase1_search_range_radians: float = 1.5
+    phase_objective: str = "imag_abs"
+    phase_smoothness_power: int = 6
     dwell_time_s: float = 0.0
     line_broadening_hz: float = 0.0
 
@@ -147,12 +149,24 @@ def run_mydata_stage(
                 zero_steps=config.phase_search_steps,
                 first_steps=config.phase1_search_steps,
                 first_range_radians=config.phase1_search_range_radians,
+                objective=config.phase_objective,
+                smoothness_power=config.phase_smoothness_power,
             )
             spectrum = apply_phase(spectrum, phase0, phase1)
             log.append(f"phase0={phase0:.12g}")
             log.append(f"phase1={phase1:.12g}")
         elif config.auto_phase_zero_order:
-            phase0 = estimate_zero_order_phase(spectrum, search_steps=config.phase_search_steps)
+            if config.phase_objective == "smooth_real":
+                phase0, _ = estimate_zero_first_order_phase(
+                    spectrum,
+                    zero_steps=config.phase_search_steps,
+                    first_steps=1,
+                    first_range_radians=0.0,
+                    objective="smooth_real",
+                    smoothness_power=config.phase_smoothness_power,
+                )
+            else:
+                phase0 = estimate_zero_order_phase(spectrum, search_steps=config.phase_search_steps)
             spectrum = apply_zero_order_phase(spectrum, phase0)
             log.append(f"phase0={phase0:.12g}")
         log.append("fft=enabled")

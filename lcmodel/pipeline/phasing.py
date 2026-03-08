@@ -63,14 +63,38 @@ def estimate_zero_order_phase(spectrum: Sequence[complex], search_steps: int = 7
     return best_phase
 
 
+def _score_smooth_real_distance(rotated: Sequence[complex], power: int) -> tuple[float, float]:
+    """Fortran PHASTA-like objective: real-part vertical travel."""
+
+    if len(rotated) <= 1:
+        return 0.0, 0.0
+    p = max(1, int(power))
+    dist = 0.0
+    real_sum = 0.0
+    prev = float(rotated[0].real)
+    for v in rotated[1:]:
+        cur = float(v.real)
+        dist += abs(cur - prev) ** p
+        real_sum += cur
+        prev = cur
+    return dist, real_sum
+
+
 def estimate_zero_first_order_phase(
     spectrum: Sequence[complex],
     *,
     zero_steps: int = 360,
     first_steps: int = 41,
     first_range_radians: float = 1.5,
+    objective: str = "imag_abs",
+    smoothness_power: int = 6,
 ) -> tuple[float, float]:
-    """Grid-search estimate for (phase0, phase1) minimizing imaginary magnitude."""
+    """Grid-search estimate for (phase0, phase1).
+
+    Objectives:
+    - ``imag_abs``: minimize sum(abs(imaginary))
+    - ``smooth_real``: Fortran PHASTA-style smoothness of real-part trace
+    """
 
     if len(spectrum) == 0:
         return 0.0, 0.0
@@ -79,7 +103,7 @@ def estimate_zero_first_order_phase(
 
     best0 = 0.0
     best1 = 0.0
-    best_imag = math.inf
+    best_obj = math.inf
     best_real = -math.inf
 
     for i0 in range(zero_steps):
@@ -91,19 +115,31 @@ def estimate_zero_first_order_phase(
                 frac = i1 / (first_steps - 1)
                 ph1 = -first_range_radians + 2.0 * first_range_radians * frac
             rotated = apply_phase(spectrum, ph0, ph1)
-            imag_score = 0.0
-            real_score = 0.0
-            for v in rotated:
-                imag_score += abs(v.imag)
-                real_score += v.real
-            if imag_score < best_imag - 1e-12:
-                best_imag = imag_score
+            if objective == "smooth_real":
+                obj_score, real_score = _score_smooth_real_distance(rotated, smoothness_power)
+            else:
+                obj_score = 0.0
+                real_score = 0.0
+                for v in rotated:
+                    obj_score += abs(v.imag)
+                    real_score += v.real
+            if obj_score < best_obj - 1e-12:
+                best_obj = obj_score
                 best_real = real_score
                 best0 = ph0
                 best1 = ph1
-            elif abs(imag_score - best_imag) <= 1e-12 and real_score > best_real:
+            elif abs(obj_score - best_obj) <= 1e-12 and real_score > best_real:
                 best_real = real_score
                 best0 = ph0
                 best1 = ph1
+
+    # For PHASTA-style objective, flip by 180 degrees if the selected phase
+    # yields an overall negative real spectrum.
+    if objective == "smooth_real" and zero_steps > 1 and best_real < 0.0:
+        best0 -= math.pi
+        while best0 <= -math.pi:
+            best0 += 2.0 * math.pi
+        while best0 > math.pi:
+            best0 -= 2.0 * math.pi
 
     return best0, best1

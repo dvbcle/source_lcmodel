@@ -94,6 +94,35 @@ class TestOracleAndMyData(unittest.TestCase):
         imag_sum = sum(abs(v.imag) for v in corrected)
         self.assertLess(imag_sum, 0.2)
 
+    def test_first_order_phase_smooth_real_objective(self):
+        import cmath
+
+        base = [1 + 0j, 2 + 0j, 3 + 0j, 4 + 0j, 5 + 0j]
+        x = [-1.0, -0.5, 0.0, 0.5, 1.0]
+        ph0 = 0.35
+        ph1 = -0.55
+        spectrum = [v * cmath.exp(1j * (ph0 + ph1 * xi)) for v, xi in zip(base, x)]
+        est0, est1 = estimate_zero_first_order_phase(
+            spectrum,
+            zero_steps=360,
+            first_steps=81,
+            first_range_radians=1.5,
+            objective="smooth_real",
+            smoothness_power=6,
+        )
+        before = apply_phase(spectrum, 0.0, 0.0)
+        corrected = apply_phase(spectrum, est0, est1)
+        def roughness(values: list[complex] | tuple[complex, ...]) -> float:
+            total = 0.0
+            prev = float(values[0].real)
+            for v in values[1:]:
+                cur = float(v.real)
+                total += abs(cur - prev) ** 6
+                prev = cur
+            return total
+
+        self.assertLess(roughness(corrected), roughness(before))
+
     def test_mydata_auto_phase_first_order(self):
         n = 16
         # This test validates first-order mode wiring and output fields.

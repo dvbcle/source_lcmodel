@@ -176,6 +176,18 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
             line_broadening_hz = max(0.0, float(nml["lbhz"]))
         except Exception:
             line_broadening_hz = 0.0
+    phase_objective = "imag_abs"
+    if isinstance(nml.get("phobj"), str):
+        obj = str(nml["phobj"]).strip().lower()
+        if obj in {"imag_abs", "smooth_real"}:
+            phase_objective = obj
+    phase_smoothness_power = 6
+    if "ipowph" in nml:
+        try:
+            phase_smoothness_power = max(1, int(nml["ipowph"]))
+            phase_objective = "smooth_real"
+        except Exception:
+            phase_smoothness_power = 6
     baseline_knots = 0
     if "nbackg" in nml:
         try:
@@ -236,6 +248,8 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
         time_domain_input=bool(nml.get("timdom", False)),
         auto_phase_zero_order=bool(nml.get("autoph0", False)),
         auto_phase_first_order=bool(nml.get("autoph1", False)),
+        phase_objective=phase_objective,
+        phase_smoothness_power=phase_smoothness_power,
         dwell_time_s=dwell_time_s,
         line_broadening_hz=line_broadening_hz,
         fit_ppm_start=ppm_start,

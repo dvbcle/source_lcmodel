@@ -47,6 +47,10 @@ output_split_right=.ps
   - Apply auto-estimated zero-order phase after FFT conversion.
 - `--auto-phase-first-order`
   - Apply joint zero/first-order auto-phasing after FFT conversion.
+- `--phase-objective`
+  - Phasing objective: `imag_abs` (default) or `smooth_real` (PHASTA-style).
+- `--phase-smoothness-power`
+  - Exponent used by `smooth_real` objective (Fortran `IPOWPH` analog).
 - `--dwell-time`
   - Time between time-domain samples (seconds).
 - `--line-broadening-hz`

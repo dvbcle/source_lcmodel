@@ -49,6 +49,18 @@ def build_parser() -> argparse.ArgumentParser:
         help="Enable joint zero/first-order auto-phasing for time-domain conversion.",
     )
     parser.add_argument(
+        "--phase-objective",
+        choices=("imag_abs", "smooth_real"),
+        default=None,
+        help="Objective used by auto-phasing search.",
+    )
+    parser.add_argument(
+        "--phase-smoothness-power",
+        type=int,
+        default=None,
+        help="Power used by smooth_real phasing objective (Fortran PHASTA analog).",
+    )
+    parser.add_argument(
         "--dwell-time",
         type=float,
         default=None,
@@ -179,6 +191,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         config = replace(config, auto_phase_zero_order=True)
     if args.auto_phase_first_order:
         config = replace(config, auto_phase_first_order=True)
+    if args.phase_objective is not None:
+        config = replace(config, phase_objective=args.phase_objective)
+    if args.phase_smoothness_power is not None:
+        config = replace(config, phase_smoothness_power=args.phase_smoothness_power)
     if args.dwell_time is not None:
         config = replace(config, dwell_time_s=args.dwell_time)
     if args.line_broadening_hz is not None:

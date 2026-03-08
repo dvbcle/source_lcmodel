@@ -29,6 +29,8 @@ class RunConfig:
     time_domain_input: bool = False
     auto_phase_zero_order: bool = False
     auto_phase_first_order: bool = False
+    phase_objective: str = "imag_abs"
+    phase_smoothness_power: int = 6
     dwell_time_s: float = 0.0
     line_broadening_hz: float = 0.0
     fit_ppm_start: float | None = None
