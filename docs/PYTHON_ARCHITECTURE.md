@@ -57,3 +57,4 @@ Traceability combines five mechanisms:
    - `python tools/build_traceability_manifest.py` (when Fortran source changes)
    - `python tools/export_routine_map.py`
 5. Ensure tests and parity audit stay green before commit.
+6. Refresh `docs/CONVERSION_STATS.md` after any source-code change set.

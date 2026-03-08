@@ -197,7 +197,8 @@ Verification:
    `python tools/build_traceability_manifest.py`
    then
    `python tools/export_routine_map.py --output docs/FORTRAN_ROUTINE_MAP.md`.
-6. Update docs for user-visible behavior changes, then commit in small, reviewable units.
+6. If source code changed, refresh `docs/CONVERSION_STATS.md`.
+7. Update docs for user-visible behavior changes, then commit in small, reviewable units.
 
 ## How to contribute
 
