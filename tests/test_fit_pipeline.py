@@ -11,7 +11,7 @@ from lcmodel.cli import main as cli_main
 from lcmodel.engine import LCModelRunner
 from lcmodel.io.numeric import load_numeric_matrix, load_numeric_vector, save_numeric_vector
 from lcmodel.models import RunConfig
-from lcmodel.pipeline.fitting import run_fit_stage
+from lcmodel.pipeline.fitting import FitConfig, run_fit_stage
 
 
 class TestFitPipeline(unittest.TestCase):
@@ -39,6 +39,15 @@ class TestFitPipeline(unittest.TestCase):
         self.assertAlmostEqual(2.0, fit.coefficients[0], places=3)
         self.assertAlmostEqual(3.0, fit.coefficients[1], places=3)
         self.assertLess(fit.residual_norm, 1e-3)
+
+    def test_run_fit_stage_with_baseline(self):
+        fit = run_fit_stage(
+            [[1.0], [0.0], [0.0], [0.0], [0.0]],
+            [2.0, 0.1, 0.1, 0.1, 0.1],
+            FitConfig(baseline_order=0),
+        )
+        self.assertEqual("alt_nnls_poly_baseline", fit.method)
+        self.assertGreater(fit.coefficients[0], 1.5)
 
     def test_runner_with_fit_inputs(self):
         p = self._make_local_tmpdir()
@@ -79,6 +88,8 @@ class TestFitPipeline(unittest.TestCase):
                         str(vec_file),
                         "--basis-file",
                         str(mat_file),
+                        "--baseline-order",
+                        "0",
                     ]
                 )
             self.assertEqual(0, code)
@@ -91,4 +102,3 @@ class TestFitPipeline(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

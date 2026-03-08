@@ -5,7 +5,7 @@ from __future__ import annotations
 from lcmodel.io.numeric import load_numeric_matrix, load_numeric_vector
 from lcmodel.io.pathing import split_output_filename_for_voxel
 from lcmodel.models import FitResult, RunConfig, RunResult
-from lcmodel.pipeline.fitting import run_fit_stage
+from lcmodel.pipeline.fitting import FitConfig, run_fit_stage
 from lcmodel.core.text import split_title_lines
 
 
@@ -29,7 +29,7 @@ class LCModelRunner:
         if self.config.raw_data_file and self.config.basis_file:
             vector = load_numeric_vector(self.config.raw_data_file)
             matrix = load_numeric_matrix(self.config.basis_file)
-            stage = run_fit_stage(matrix, vector)
+            stage = run_fit_stage(matrix, vector, FitConfig(baseline_order=self.config.baseline_order))
             fit_result = FitResult(
                 coefficients=stage.coefficients,
                 residual_norm=stage.residual_norm,

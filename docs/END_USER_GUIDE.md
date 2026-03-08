@@ -43,6 +43,8 @@ output_split_right=.ps
   - Optional numeric vector file for the fit stage.
 - `--basis-file`
   - Optional numeric matrix file for the fit stage.
+- `--baseline-order`
+  - Polynomial baseline degree for alternating fit (`-1` disables baseline).
 
 ## 4. Interpreting Output
 

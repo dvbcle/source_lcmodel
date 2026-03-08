@@ -39,7 +39,7 @@ $LCMODL
         try:
             ctl = p / "control.in"
             ctl.write_text(
-                "$LCMODL\n TITLE='Control Title', NTITLE=1, FILRAW='a.txt', FILBAS='b.txt', FILPS='c.ps', /\n",
+                "$LCMODL\n TITLE='Control Title', NTITLE=1, FILRAW='a.txt', FILBAS='b.txt', FILPS='c.ps', NDEGZ=2, /\n",
                 encoding="utf-8",
             )
             cfg = load_run_config_from_control_file(ctl)
@@ -48,6 +48,7 @@ $LCMODL
             self.assertEqual("a.txt", cfg.raw_data_file)
             self.assertEqual("b.txt", cfg.basis_file)
             self.assertEqual("c.ps", cfg.output_filename)
+            self.assertEqual(2, cfg.baseline_order)
         finally:
             shutil.rmtree(p, ignore_errors=True)
 
@@ -80,4 +81,3 @@ $LCMODL
 
 if __name__ == "__main__":
     unittest.main()
-

@@ -20,6 +20,7 @@ class RunConfig:
     output_filename: str | None = None
     raw_data_file: str | None = None
     basis_file: str | None = None
+    baseline_order: int = -1
 
 
 @dataclass(frozen=True)

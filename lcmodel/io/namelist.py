@@ -125,6 +125,12 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
     ntitle = int(nml.get("ntitle", 2))
     raw_data_file = nml.get("filraw")
     basis_file = nml.get("filbas")
+    baseline_order = -1
+    if "ndegz" in nml:
+        try:
+            baseline_order = int(nml["ndegz"])
+        except Exception:
+            baseline_order = -1
 
     output_filename = None
     for key in ("filps", "filcoo", "filtab", "filpri"):
@@ -139,5 +145,5 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
         output_filename=output_filename,
         raw_data_file=str(raw_data_file) if raw_data_file else None,
         basis_file=str(basis_file) if basis_file else None,
+        baseline_order=baseline_order,
     )
-

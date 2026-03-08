@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+from dataclasses import replace
 from typing import Sequence
 
 from lcmodel.engine import LCModelRunner
@@ -37,6 +38,12 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Path to numeric basis matrix file for fit stage.",
     )
+    parser.add_argument(
+        "--baseline-order",
+        type=int,
+        default=None,
+        help="Polynomial baseline order for alternating fit stage (-1 disables baseline).",
+    )
     return parser
 
 
@@ -50,45 +57,17 @@ def main(argv: Sequence[str] | None = None) -> int:
         config = RunConfig()
 
     if args.title is not None:
-        config = RunConfig(
-            title=args.title,
-            ntitle=config.ntitle,
-            output_filename=config.output_filename,
-            raw_data_file=config.raw_data_file,
-            basis_file=config.basis_file,
-        )
+        config = replace(config, title=args.title)
     if args.ntitle is not None:
-        config = RunConfig(
-            title=config.title,
-            ntitle=args.ntitle,
-            output_filename=config.output_filename,
-            raw_data_file=config.raw_data_file,
-            basis_file=config.basis_file,
-        )
+        config = replace(config, ntitle=args.ntitle)
     if args.output_filename is not None:
-        config = RunConfig(
-            title=config.title,
-            ntitle=config.ntitle,
-            output_filename=args.output_filename,
-            raw_data_file=config.raw_data_file,
-            basis_file=config.basis_file,
-        )
+        config = replace(config, output_filename=args.output_filename)
     if args.raw_data_file is not None:
-        config = RunConfig(
-            title=config.title,
-            ntitle=config.ntitle,
-            output_filename=config.output_filename,
-            raw_data_file=args.raw_data_file,
-            basis_file=config.basis_file,
-        )
+        config = replace(config, raw_data_file=args.raw_data_file)
     if args.basis_file is not None:
-        config = RunConfig(
-            title=config.title,
-            ntitle=config.ntitle,
-            output_filename=config.output_filename,
-            raw_data_file=config.raw_data_file,
-            basis_file=args.basis_file,
-        )
+        config = replace(config, basis_file=args.basis_file)
+    if args.baseline_order is not None:
+        config = replace(config, baseline_order=args.baseline_order)
 
     runner = LCModelRunner(config)
     result = runner.run()
