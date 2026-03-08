@@ -125,6 +125,28 @@ class LCModelRunner:
                 x_values=list(render_payload.plot_x_values) if render_payload else [],
                 data_values=list(render_payload.plot_data_values) if render_payload else [],
                 fit_values=list(render_payload.plot_fit_values) if render_payload else [],
+                fit_result=fit_result,
+                metadata={
+                    "output_filename": Path(self.config.output_filename).name if self.config.output_filename else "",
+                    "raw_data_file": Path(self.config.raw_data_file).name if self.config.raw_data_file else "",
+                    "basis_file": Path(self.config.basis_file).name if self.config.basis_file else "",
+                    "hzpppm": self.config.hzpppm,
+                    "dwell_time_s": self.config.dwell_time_s,
+                    "nunfil": self.config.nunfil,
+                    "shift_ppm": (
+                        float(fit_result.alignment_shift_points)
+                        * (1.0 / (float(self.config.dwell_time_s) * float(2 * self.config.nunfil) * float(self.config.hzpppm)))
+                        if (
+                            fit_result is not None
+                            and self.config.dwell_time_s > 0.0
+                            and self.config.nunfil > 0
+                            and self.config.hzpppm > 0.0
+                        )
+                        else None
+                    ),
+                    "phase0_deg": None,
+                    "phase1_deg_per_ppm": None,
+                },
             )
 
         return RunResult(

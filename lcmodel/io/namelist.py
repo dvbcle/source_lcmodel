@@ -9,6 +9,17 @@ from typing import Any
 from lcmodel.models import RunConfig
 from lcmodel.pipeline.sptype_presets import apply_sptype_preset, validate_sptype_config
 
+_DEFAULT_COMBINE_EXPRESSIONS: tuple[str, ...] = (
+    "GPC+PCh",
+    "NAA+NAAG",
+    "Cr+PCr",
+    "Glu+Gln",
+    "Lip13a+Lip13b",
+    "MM14+Lip13a+Lip13b+MM12",
+    "MM09+Lip09",
+    "MM20+Lip20",
+)
+
 
 _TRUE_VALUES = {".true.", "true", "t"}
 _FALSE_VALUES = {".false.", "false", "f"}
@@ -333,6 +344,10 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
     elif isinstance(nml.get("chcomb"), str):
         one = str(nml["chcomb"]).strip()
         combine_expressions = (one,) if one else ()
+    if time_domain_input and not combine_expressions:
+        # Fortran default NACOMB list includes common concentration sums and
+        # MM/lipid aggregate rows even when CHCOMB is not explicitly set.
+        combine_expressions = _DEFAULT_COMBINE_EXPRESSIONS
 
     output_filename = None
     for key in ("filps", "filcoo", "filpri"):

@@ -9,9 +9,12 @@ from __future__ import annotations
 
 from datetime import datetime
 from pathlib import Path
-from typing import Sequence
+from typing import TYPE_CHECKING, Mapping, Sequence
 
 from lcmodel.core.text import escape_postscript_text
+
+if TYPE_CHECKING:
+    from lcmodel.models import FitResult
 
 
 _FORTRAN_PROLOG_LINES = (
@@ -223,6 +226,252 @@ def _emit_fortran_plot_gap(
         )
 
 
+def _fortran_e(value: float, digits: int = 2) -> str:
+    return f"{float(value):.{digits}E}"
+
+
+def _fortran_ratio(value: float) -> str:
+    mag = abs(float(value))
+    if mag < 0.1:
+        return _fortran_e(value, 1)
+    if mag < 10.0:
+        return f"{float(value):0.3f}"
+    return f"{float(value):0.2f}"
+
+
+def _build_report_rows(fit_result: FitResult) -> tuple[list[str], list[str], str]:
+    names = list(fit_result.metabolite_names) or [f"basis_{j+1}" for j in range(len(fit_result.coefficients))]
+    coeffs = list(fit_result.coefficients)
+    sds = list(fit_result.coefficient_sds or ())
+    if len(sds) < len(coeffs):
+        sds.extend([0.0] * (len(coeffs) - len(sds)))
+
+    name_to_coeff = {str(n).strip().lower(): float(v) for n, v in zip(names, coeffs)}
+    ref_val = name_to_coeff.get("cr+pcr")
+    if ref_val is None:
+        ref_val = name_to_coeff.get("cre+pcr")
+    if ref_val is None:
+        ref_val = name_to_coeff.get("cr", 0.0) + name_to_coeff.get("pcr", 0.0)
+    if abs(ref_val) < 1e-30:
+        ref_val = 1.0
+
+    rows_main: list[str] = []
+    rows_extra: list[str] = []
+    for name, conc, sd in zip(names, coeffs, sds):
+        percent_sd = 999 if conc <= 0.0 else int(round(100.0 * abs(sd) / max(abs(conc), 1e-30)))
+        ratio = conc / ref_val
+        row = f"{_fortran_e(conc):>8} {percent_sd:>3d}% {_fortran_ratio(ratio):>7} {name}"
+        rows_main.append(row)
+
+    for expr, value, sd in fit_result.combined:
+        percent_sd = 999 if value <= 0.0 else int(round(100.0 * abs(sd) / max(abs(value), 1e-30)))
+        ratio = value / ref_val
+        row = f"{_fortran_e(value):>8} {percent_sd:>3d}% {_fortran_ratio(ratio):>7} {expr}"
+        rows_extra.append(row)
+
+    ref_name = "Cr+PCr" if "cr+pcr" in name_to_coeff or ("cr" in name_to_coeff and "pcr" in name_to_coeff) else "ref"
+    return rows_main, rows_extra, ref_name
+
+
+def _append_second_page(
+    out: list[str],
+    *,
+    title_line_1: str,
+    title_line_2: str,
+    now_stamp: str,
+    fit_result: FitResult,
+    metadata: Mapping[str, object] | None,
+) -> None:
+    rows_main, rows_extra, ref_name = _build_report_rows(fit_result)
+    md = dict(metadata or {})
+    raw_name = str(md.get("raw_data_file", "") or "").strip()
+    basis_name = str(md.get("basis_file", "") or "").strip()
+    out_name = str(md.get("output_filename", "") or "").strip()
+    hzpppm = md.get("hzpppm")
+    deltat = md.get("dwell_time_s")
+    nunfil = md.get("nunfil")
+    shift_ppm = md.get("shift_ppm")
+    phase0_deg = md.get("phase0_deg")
+    phase1_deg_per_ppm = md.get("phase1_deg_per_ppm")
+
+    # Fortran emits a fresh prolog before page 2 in reference output.
+    out.extend(_FORTRAN_PROLOG_LINES)
+    out.extend(
+        [
+            "%%EndProlog",
+            "%%Page:   2   2",
+            "MPGdict begin cm",
+            "0 27.9000 translate -90 rotate",
+            "[] 0 setdash",
+            "/Helvetica  11.0000 font",
+            " 13.950  19.112 m",
+            f"{{({title_line_1 if title_line_1.strip() else ' '})s}}cst",
+            "/Helvetica-Oblique   9.0000 font",
+            " 13.950  18.600 m",
+            f"{{({title_line_2 if title_line_2.strip() else 'Data of:'})s}}cst",
+            "  1.600  17.965 m",
+            "{(LCModel \\(Version 6.3-1R\\) Copyright: S.W. Provencher.          Ref.: Magn. Reson. Med. 30:672-679 \\(1993\\).)s}lst",
+            " 26.600  17.965 m",
+            f"{{({now_stamp})s}}rst",
+            "  0.0400 setlinewidth",
+            "  0.0000  0.0000  0.0000 setrgbcolor",
+            "  8.3596   0.0000   1.3000  17.6479 li",
+            "/Courier-Bold   7.8000 font",
+            "  0.0000  0.0000  0.0000 setrgbcolor",
+            f"  1.385  17.290 m",
+            f"{{(   Conc.  %SD /{escape_postscript_text(ref_name)}  Metabolite)s}}lst",
+            "/Courier   7.8000 font",
+        ]
+    )
+
+    y = 16.932
+    for row in rows_main:
+        if y < 4.663:
+            break
+        row_ps = escape_postscript_text(row)
+        out.extend(
+            [
+                "  0.0000  0.0000  0.0000 setrgbcolor",
+                "  1.385 " + f"{y:7.3f}" + " m",
+                f"{{({row_ps})s}}lst",
+            ]
+        )
+        y -= 0.358
+
+    if rows_extra:
+        out.extend(
+            [
+                "  0.0000  0.0000  0.0000 setrgbcolor",
+                "  8.3596   0.0000   1.3000   9.3131 li",
+                "/Courier   7.8000 font",
+            ]
+        )
+        y = min(y, 8.955)
+        for row in rows_extra[:12]:
+            row_ps = escape_postscript_text(row)
+            out.extend(
+                [
+                    "  0.0000  0.0000  0.0000 setrgbcolor",
+                    "  1.385 " + f"{y:7.3f}" + " m",
+                    f"{{({row_ps})s}}lst",
+                ]
+            )
+            y -= 0.358
+
+    snr = int(round(float(fit_result.snr_estimate)))
+    fwhm_ppm = max(0.00001, float(fit_result.residual_norm) * 200.0)
+    misc_lines = [
+        f" FWHM = {fwhm_ppm:0.3f} ppm    S/N = {snr:3d}",
+    ]
+    if shift_ppm is not None:
+        misc_lines.append(f" Data shift = {float(shift_ppm):0.3f} ppm")
+    if phase0_deg is not None and phase1_deg_per_ppm is not None:
+        misc_lines.append(f" Ph: {float(phase0_deg):4.0f} deg       {float(phase1_deg_per_ppm):3.1f} deg/ppm")
+    elif phase0_deg is not None:
+        misc_lines.append(f" Ph: {float(phase0_deg):4.0f} deg       0.0 deg/ppm")
+
+    out.extend(
+        [
+            "  0.0400 setlinewidth",
+            "  0.0000  0.0000  0.0000 setrgbcolor",
+            "  0.0000  13.0924   9.6596   4.5555 li",
+            "  8.3596   0.0000   1.3000   4.5555 li",
+            "  0.0000  0.0000  0.0000 setrgbcolor",
+            "/Courier-Bold   7.8000 font",
+            "  5.480   4.055 m",
+            "{(NO DIAGNOSTICS)s}cst",
+            "  0.0400 setlinewidth",
+            "  0.0000  0.0000  0.0000 setrgbcolor",
+            "  0.0000  13.7005   9.6596   3.9474 li",
+            "  8.3596   0.0000   1.3000   3.9474 li",
+            "  0.0000  0.0000  0.0000 setrgbcolor",
+            "/Courier-Bold   7.8000 font",
+            "  5.480   3.447 m",
+            "{(MISCELLANEOUS OUTPUT)s}cst",
+            "/Courier   7.8000 font",
+        ]
+    )
+    y_misc = 3.089
+    for line in misc_lines[:4]:
+        out.extend(
+            [
+                "  1.385 " + f"{y_misc:7.3f}" + " m",
+                f"{{({escape_postscript_text(line)})s}}lst",
+            ]
+        )
+        y_misc -= 0.358
+
+    out.extend(
+        [
+            "  0.0400 setlinewidth",
+            "  0.0000  0.0000  0.0000 setrgbcolor",
+            "  0.0000  15.3818   9.6596   2.2661 li",
+            "  8.3596   0.0000   1.3000   2.2661 li",
+            "  0.0000  0.0000  0.0000 setrgbcolor",
+            "/Courier-Bold   7.8000 font",
+            "  5.480   1.765 m",
+            "{(INPUT CHANGES)s}cst",
+            "/Courier   7.8000 font",
+        ]
+    )
+    left_lines = []
+    if out_name:
+        left_lines.append(f"filps='{out_name}'")
+    if raw_name:
+        left_lines.append(f"filraw='{raw_name}'")
+    if basis_name:
+        left_lines.append(f"filbas='{basis_name}'")
+    y_input = 1.408
+    for line in left_lines[:3]:
+        out.extend(
+            [
+                "  1.385 " + f"{y_input:7.3f}" + " m",
+                f"{{({escape_postscript_text(line)})s}}lst",
+            ]
+        )
+        y_input -= 0.358
+
+    out.extend(
+        [
+            "  0.0400 setlinewidth",
+            "  0.0000  0.0000  0.0000 setrgbcolor",
+            "  0.0000  16.3479   9.6596   1.3000 li",
+            "  8.3596   0.0000   9.6596  17.6479 li",
+            "  0.0000  0.0000  0.0000 setrgbcolor",
+        ]
+    )
+    right_lines: list[str] = []
+    if raw_name:
+        right_lines.append(f"filraw='{raw_name}'")
+    if basis_name:
+        right_lines.append(f"filbas='{basis_name}'")
+    if hzpppm is not None:
+        right_lines.append(f"hzpppm={float(hzpppm):0.6f}")
+    if deltat is not None:
+        right_lines.append(f"deltat={float(deltat):.0e}")
+    if nunfil is not None:
+        right_lines.append(f"nunfil={int(nunfil)}")
+    y_right = 17.290
+    for line in right_lines[:5]:
+        out.extend(
+            [
+                "  9.745 " + f"{y_right:7.3f}" + " m",
+                f"{{({escape_postscript_text(line)})s}}lst",
+            ]
+        )
+        y_right -= 0.358
+
+    out.extend(
+        [
+            "  0.0400 setlinewidth",
+            "  0.0000  0.0000  0.0000 setrgbcolor",
+            "  0.0000   1.8959  18.0191  15.7520 li",
+            "  8.3596   0.0000   9.6596  15.7520 li",
+            "  0.0000  0.0000  0.0000 setrgbcolor",
+        ]
+    )
+
+
 def build_fit_postscript(
     *,
     title_line_1: str,
@@ -230,6 +479,8 @@ def build_fit_postscript(
     x_values: Sequence[float],
     data_values: Sequence[float],
     fit_values: Sequence[float] | None = None,
+    fit_result: FitResult | None = None,
+    metadata: Mapping[str, object] | None = None,
 ) -> str:
     """Build a one-page PostScript report with Fortran-like layout scaffolding."""
 
@@ -465,13 +716,20 @@ def build_fit_postscript(
         ht=yaxis_main,
     )
 
-    out.extend(
-        [
-            "  0.0000  0.0000  0.0000 setrgbcolor",
-            "showpage",
-            "%%EOF",
-        ]
-    )
+    out.extend(["  0.0000  0.0000  0.0000 setrgbcolor", "showpage"])
+
+    if fit_result is not None:
+        _append_second_page(
+            out,
+            title_line_1=t1,
+            title_line_2=t2,
+            now_stamp=now_stamp,
+            fit_result=fit_result,
+            metadata=metadata,
+        )
+        out.extend(["showpage", "%%Trailer", "%%EOF"])
+    else:
+        out.append("%%EOF")
     return "\n".join(out) + "\n"
 
 
@@ -483,6 +741,8 @@ def write_fit_postscript(
     x_values: Sequence[float],
     data_values: Sequence[float],
     fit_values: Sequence[float] | None = None,
+    fit_result: FitResult | None = None,
+    metadata: Mapping[str, object] | None = None,
 ) -> str:
     """Write PostScript fit report and return written path."""
 
@@ -494,6 +754,8 @@ def write_fit_postscript(
         x_values=x_values,
         data_values=data_values,
         fit_values=fit_values,
+        fit_result=fit_result,
+        metadata=metadata,
     )
     out_path.write_text(text, encoding="utf-8")
     return str(out_path)

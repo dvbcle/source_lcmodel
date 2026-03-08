@@ -201,6 +201,7 @@ $END
             self.assertTrue(cfg.auto_phase_zero_order)
             self.assertEqual(28, cfg.baseline_knots)
             self.assertAlmostEqual(0.17, cfg.baseline_smoothness)
+            self.assertIn("Cr+PCr", cfg.combine_expressions)
         finally:
             shutil.rmtree(p, ignore_errors=True)
 
