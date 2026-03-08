@@ -208,6 +208,35 @@ class TestFitPipeline(unittest.TestCase):
         finally:
             shutil.rmtree(p, ignore_errors=True)
 
+    def test_time_domain_control_defaults_apply_window_when_ppm_missing(self):
+        p = self._make_local_tmpdir()
+        try:
+            raw = p / "raw_td.txt"
+            basis = p / "basis_td.txt"
+            names = p / "names.txt"
+            # 16-point impulse keeps this test deterministic.
+            raw.write_text("1 0\n" + "0 0\n" * 15, encoding="utf-8")
+            basis.write_text("1 0\n" + "0 0\n" * 15, encoding="utf-8")
+            names.write_text("NAA\n", encoding="utf-8")
+
+            result = LCModelRunner(
+                RunConfig(
+                    raw_data_file=str(raw),
+                    basis_file=str(basis),
+                    basis_names_file=str(names),
+                    time_domain_input=True,
+                    dwell_time_s=0.01,
+                    hzpppm=1.0,
+                    nunfil=16,
+                )
+            ).run()
+            self.assertIsNotNone(result.fit_result)
+            assert result.fit_result is not None
+            # The default 4.0..0.2 ppm window should reduce points in this setup.
+            self.assertLess(result.fit_result.data_points_used, 16)
+        finally:
+            shutil.rmtree(p, ignore_errors=True)
+
     def test_shift_search_points(self):
         p = self._make_local_tmpdir()
         try:

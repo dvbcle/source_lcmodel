@@ -247,6 +247,18 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
             dwell_time_s = max(0.0, float(nml["deltat"]))
         except Exception:
             dwell_time_s = 0.0
+    hzpppm = 0.0
+    if "hzpppm" in nml:
+        try:
+            hzpppm = max(0.0, float(nml["hzpppm"]))
+        except Exception:
+            hzpppm = 0.0
+    nunfil = 0
+    if "nunfil" in nml:
+        try:
+            nunfil = max(0, int(nml["nunfil"]))
+        except Exception:
+            nunfil = 0
     line_broadening_hz = 0.0
     if "lbhz" in nml:
         try:
@@ -353,6 +365,8 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
         phase_objective=phase_objective,
         phase_smoothness_power=phase_smoothness_power,
         dwell_time_s=dwell_time_s,
+        hzpppm=hzpppm,
+        nunfil=nunfil,
         line_broadening_hz=line_broadening_hz,
         fit_ppm_start=ppm_start,
         fit_ppm_end=ppm_end,

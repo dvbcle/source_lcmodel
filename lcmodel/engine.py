@@ -137,6 +137,18 @@ class LCModelRunner:
 
     def _run_fit_workflow(self) -> _FitRenderPayload:
         matrix, vector, ppm_axis, basis_names = self._load_fit_system()
+        ppm_start = self.config.fit_ppm_start
+        ppm_end = self.config.fit_ppm_end
+        if (
+            ppm_axis is not None
+            and ppm_start is None
+            and ppm_end is None
+            and self.config.time_domain_input
+            and not self.config.sptype.strip()
+        ):
+            # Fortran MYCONT defaults for standard (blank SPTYPE) runs.
+            ppm_start = 4.0
+            ppm_end = 0.2
 
         # Fortran SETUP/SETUP3:
         # choose analysis window and active basis terms before solve.
@@ -144,8 +156,8 @@ class LCModelRunner:
             matrix,
             vector,
             ppm_axis=ppm_axis,
-            ppm_start=self.config.fit_ppm_start,
-            ppm_end=self.config.fit_ppm_end,
+            ppm_start=ppm_start,
+            ppm_end=ppm_end,
             exclude_ppm_ranges=self.config.exclude_ppm_ranges,
             basis_names=basis_names,
             include_metabolites=self.config.include_metabolites,
@@ -361,6 +373,20 @@ class LCModelRunner:
         ppm_axis = None
         if self.config.ppm_axis_file:
             ppm_axis = load_numeric_vector(self.config.ppm_axis_file)
+        elif (
+            self.config.time_domain_input
+            and self.config.hzpppm > 0.0
+            and self.config.dwell_time_s > 0.0
+            and self.config.nunfil > 0
+        ):
+            # Fortran MYCONT:
+            # PPMINC = 1 / (DELTAT * FNDATA * HZPPPM), where FNDATA=2*NUNFIL.
+            ppminc = 1.0 / (
+                float(self.config.dwell_time_s)
+                * float(2 * self.config.nunfil)
+                * float(self.config.hzpppm)
+            )
+            ppm_axis = [4.0 - i * ppminc for i in range(len(vector))]
         return matrix, vector, ppm_axis, basis_names
 
     def _compute_integration_areas(
