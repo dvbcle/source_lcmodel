@@ -93,7 +93,9 @@ python -m lcmodel --control-file data\\control.in
 
 - End-user CLI guide: `docs/END_USER_GUIDE.md`
 - Python API guide: `docs/PYTHON_API_GUIDE.md`
+- Python architecture guide: `docs/PYTHON_ARCHITECTURE.md`
 - Fortran parity workflow: `docs/FORTRAN_PARITY_WORKFLOW.md`
+- Fortran routine map: `docs/FORTRAN_ROUTINE_MAP.md`
 
 ## Tests
 
