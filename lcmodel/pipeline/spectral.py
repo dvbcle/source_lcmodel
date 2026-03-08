@@ -43,10 +43,8 @@ def _row_major_from_columns(columns: Sequence[Sequence[complex]]) -> list[list[c
     return out
 
 
-@fortran_provenance("mydata", "ftdata", "cfft_r")
-def prepare_frequency_fit_from_time_domain(
+def prepare_frequency_vector_from_time_domain(
     raw_time: Sequence[complex],
-    basis_time: Sequence[Sequence[complex]],
     *,
     auto_phase_zero_order: bool = False,
     auto_phase_first_order: bool = False,
@@ -54,11 +52,9 @@ def prepare_frequency_fit_from_time_domain(
     phase_smoothness_power: int = 6,
     dwell_time_s: float = 0.0,
     line_broadening_hz: float = 0.0,
-) -> SpectralFitInputs:
-    """Convert complex time-domain raw/basis data to real-valued fit inputs."""
+) -> tuple[float, ...]:
+    """Convert raw complex time-domain data to real-valued frequency vector."""
 
-    # Fortran MYDATA + FTDATA:
-    # data path is transformed first, including optional phasing logic.
     data_stage = run_mydata_stage(
         raw_time,
         MyDataConfig(
@@ -73,9 +69,17 @@ def prepare_frequency_fit_from_time_domain(
     )
     if data_stage.frequency_domain is None:
         raise RuntimeError("MYDATA stage did not produce frequency domain data")
+    return tuple(float(v.real) for v in data_stage.frequency_domain)
 
-    # Fortran behavior mirrors basis handling per metabolite: each basis FID is
-    # transformed with matching zero-fill/apodization settings.
+
+def prepare_basis_frequency_matrix_from_time_domain(
+    basis_time: Sequence[Sequence[complex]],
+    *,
+    dwell_time_s: float = 0.0,
+    line_broadening_hz: float = 0.0,
+) -> tuple[tuple[float, ...], ...]:
+    """Convert basis time-domain matrix to real-valued frequency matrix."""
+
     basis_columns_td = _columns_from_row_major(basis_time)
     basis_columns_fd: list[tuple[complex, ...]] = []
     for col in basis_columns_td:
@@ -92,10 +96,37 @@ def prepare_frequency_fit_from_time_domain(
         basis_columns_fd.append(stage.frequency_domain)
 
     basis_row_major_fd = _row_major_from_columns(basis_columns_fd)
-    if len(basis_row_major_fd) != len(data_stage.frequency_domain):
-        raise ValueError("raw and basis frequency lengths do not match")
+    return tuple(tuple(float(v.real) for v in row) for row in basis_row_major_fd)
 
-    # Fortran fit objective is formed on the real component of spectrum rows.
-    vector = tuple(float(v.real) for v in data_stage.frequency_domain)
-    matrix = tuple(tuple(float(v.real) for v in row) for row in basis_row_major_fd)
+
+@fortran_provenance("mydata", "ftdata", "cfft_r")
+def prepare_frequency_fit_from_time_domain(
+    raw_time: Sequence[complex],
+    basis_time: Sequence[Sequence[complex]],
+    *,
+    auto_phase_zero_order: bool = False,
+    auto_phase_first_order: bool = False,
+    phase_objective: str = "imag_abs",
+    phase_smoothness_power: int = 6,
+    dwell_time_s: float = 0.0,
+    line_broadening_hz: float = 0.0,
+) -> SpectralFitInputs:
+    """Convert complex time-domain raw/basis data to real-valued fit inputs."""
+
+    vector = prepare_frequency_vector_from_time_domain(
+        raw_time,
+        auto_phase_zero_order=auto_phase_zero_order,
+        auto_phase_first_order=auto_phase_first_order,
+        phase_objective=phase_objective,
+        phase_smoothness_power=phase_smoothness_power,
+        dwell_time_s=dwell_time_s,
+        line_broadening_hz=line_broadening_hz,
+    )
+    matrix = prepare_basis_frequency_matrix_from_time_domain(
+        basis_time,
+        dwell_time_s=dwell_time_s,
+        line_broadening_hz=line_broadening_hz,
+    )
+    if len(matrix) != len(vector):
+        raise ValueError("raw and basis frequency lengths do not match")
     return SpectralFitInputs(vector=vector, matrix=matrix)

@@ -26,7 +26,10 @@ from lcmodel.pipeline.metrics import compute_fit_quality_metrics
 from lcmodel.pipeline.nonlinear import NonlinearConfig, run_nonlinear_refinement
 from lcmodel.pipeline.postprocess import compute_combinations
 from lcmodel.pipeline.priors import augment_system_with_soft_priors
-from lcmodel.pipeline.spectral import prepare_frequency_fit_from_time_domain
+from lcmodel.pipeline.spectral import (
+    prepare_basis_frequency_matrix_from_time_domain,
+    prepare_frequency_vector_from_time_domain,
+)
 from lcmodel.pipeline.sptype_presets import apply_sptype_preset, validate_sptype_config
 from lcmodel.pipeline.setup import prepare_fit_inputs
 from lcmodel.core.text import split_title_lines
@@ -47,10 +50,21 @@ class _FitRenderPayload:
     plot_fit_values: tuple[float, ...]
 
 
+@dataclass(frozen=True)
+class _CachedBasisSpectral:
+    matrix: tuple[tuple[float, ...], ...]
+    metabolite_names: tuple[str, ...]
+
+
 class LCModelRunner:
     """High-level runner for incremental semantic-port behavior."""
 
-    def __init__(self, config: RunConfig):
+    def __init__(
+        self,
+        config: RunConfig,
+        *,
+        _batch_basis_cache: dict[tuple[str, float, float, str], _CachedBasisSpectral] | None = None,
+    ):
         # Apply legacy SPTYPE defaults once at runner construction time so both
         # CLI and direct API usage share the same behavior.
         if config.apply_sptype_presets:
@@ -58,6 +72,7 @@ class LCModelRunner:
         else:
             self.config = config
         validate_sptype_config(self.config)
+        self._batch_basis_cache = _batch_basis_cache
 
     @fortran_provenance("lcmodl")
     def run(self) -> RunResult:
@@ -281,26 +296,71 @@ class LCModelRunner:
                 # read NUNFIL complex time-domain data into DATAT.
                 raw_td = load_complex_vector(self.config.raw_data_file)
             if is_lcmodel_basis_file(self.config.basis_file):
-                lc_basis = load_lcmodel_basis(self.config.basis_file)
-                basis_td = [list(row) for row in lc_basis.matrix_time_domain]
-                if basis_names is None and lc_basis.metabolite_names:
-                    basis_names = list(lc_basis.metabolite_names)
+                basis_cache_key = (
+                    str(Path(self.config.basis_file).resolve()),
+                    float(self.config.dwell_time_s),
+                    float(self.config.line_broadening_hz),
+                    str(self.config.fft_backend),
+                )
+                cached = None
+                if self._batch_basis_cache is not None:
+                    cached = self._batch_basis_cache.get(basis_cache_key)
+                if cached is None:
+                    lc_basis = load_lcmodel_basis(self.config.basis_file)
+                    basis_td = [list(row) for row in lc_basis.matrix_time_domain]
+                    matrix_tuple = prepare_basis_frequency_matrix_from_time_domain(
+                        basis_td,
+                        dwell_time_s=self.config.dwell_time_s,
+                        line_broadening_hz=self.config.line_broadening_hz,
+                    )
+                    cached = _CachedBasisSpectral(
+                        matrix=matrix_tuple,
+                        metabolite_names=tuple(lc_basis.metabolite_names),
+                    )
+                    if self._batch_basis_cache is not None:
+                        self._batch_basis_cache[basis_cache_key] = cached
+                matrix = [list(row) for row in cached.matrix]
+                if basis_names is None and cached.metabolite_names:
+                    basis_names = list(cached.metabolite_names)
             else:
                 basis_td = load_complex_matrix(self.config.basis_file, pair_mode=True)
+
+                # Batch cache for non-LCMODEL basis files is still safe and useful.
+                basis_cache_key = (
+                    str(Path(self.config.basis_file).resolve()),
+                    float(self.config.dwell_time_s),
+                    float(self.config.line_broadening_hz),
+                    str(self.config.fft_backend),
+                )
+                cached = None
+                if self._batch_basis_cache is not None:
+                    cached = self._batch_basis_cache.get(basis_cache_key)
+                if cached is None:
+                    matrix_tuple = prepare_basis_frequency_matrix_from_time_domain(
+                        basis_td,
+                        dwell_time_s=self.config.dwell_time_s,
+                        line_broadening_hz=self.config.line_broadening_hz,
+                    )
+                    cached = _CachedBasisSpectral(matrix=matrix_tuple, metabolite_names=())
+                    if self._batch_basis_cache is not None:
+                        self._batch_basis_cache[basis_cache_key] = cached
+                matrix = [list(row) for row in cached.matrix]
+
             # Fortran FTDATA/PHASTA/REPHAS:
-            # transform to frequency domain and apply initial phase behavior.
-            spectral = prepare_frequency_fit_from_time_domain(
+            # transform raw data to frequency domain and apply initial phase behavior.
+            vector = list(
+                prepare_frequency_vector_from_time_domain(
                 raw_td,
-                basis_td,
                 auto_phase_zero_order=self.config.auto_phase_zero_order,
                 auto_phase_first_order=self.config.auto_phase_first_order,
                 phase_objective=self.config.phase_objective,
                 phase_smoothness_power=self.config.phase_smoothness_power,
                 dwell_time_s=self.config.dwell_time_s,
                 line_broadening_hz=self.config.line_broadening_hz,
+                )
             )
-            vector = [float(v) for v in spectral.vector]
-            matrix = [list(row) for row in spectral.matrix]
+            if len(matrix) != len(vector):
+                raise ValueError("raw and basis frequency lengths do not match")
         else:
             vector = load_numeric_vector(self.config.raw_data_file)
             matrix = load_numeric_matrix(self.config.basis_file)
@@ -364,6 +424,7 @@ class LCModelRunner:
         if not self.config.raw_data_list_file:
             raise ValueError("raw_data_list_file must be set for batch runs")
         raw_files = load_path_list(self.config.raw_data_list_file)
+        basis_cache: dict[tuple[str, float, float, str], _CachedBasisSpectral] = {}
         rows: list[tuple[str, tuple[float, ...], float]] = []
         for raw_file in raw_files:
             cfg = replace(
@@ -373,7 +434,7 @@ class LCModelRunner:
                 raw_data_list_file=None,
                 batch_csv_file=None,
             )
-            result = LCModelRunner(cfg).run()
+            result = LCModelRunner(cfg, _batch_basis_cache=basis_cache).run()
             if result.fit_result is None:
                 continue
             rows.append((raw_file, result.fit_result.coefficients, result.fit_result.residual_norm))

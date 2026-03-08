@@ -5,9 +5,11 @@ from contextlib import redirect_stdout
 from pathlib import Path
 import shutil
 import unittest
+from unittest.mock import patch
 import uuid
 
 from lcmodel.cli import main as cli_main
+import lcmodel.engine as engine_mod
 from lcmodel.engine import LCModelRunner
 from lcmodel.io.batch import load_path_list
 from lcmodel.models import RunConfig
@@ -78,7 +80,34 @@ class TestBatchMode(unittest.TestCase):
         finally:
             shutil.rmtree(p, ignore_errors=True)
 
+    def test_batch_time_domain_reuses_basis_spectral_conversion(self):
+        p = self._make_local_tmpdir()
+        try:
+            raw1 = p / "raw1_td.txt"
+            raw2 = p / "raw2_td.txt"
+            basis = p / "basis_td.txt"
+            list_file = p / "raw_list.txt"
+            raw1.write_text("1 0\n0 0\n0 0\n0 0\n", encoding="utf-8")
+            raw2.write_text("2 0\n0 0\n0 0\n0 0\n", encoding="utf-8")
+            basis.write_text("1 0\n0 0\n0 0\n0 0\n", encoding="utf-8")
+            list_file.write_text(f"{raw1}\n{raw2}\n", encoding="utf-8")
+
+            with patch(
+                "lcmodel.engine.prepare_basis_frequency_matrix_from_time_domain",
+                wraps=engine_mod.prepare_basis_frequency_matrix_from_time_domain,
+            ) as wrapped:
+                batch = LCModelRunner(
+                    RunConfig(
+                        raw_data_list_file=str(list_file),
+                        basis_file=str(basis),
+                        time_domain_input=True,
+                    )
+                ).run_batch()
+                self.assertEqual(2, len(batch.rows))
+                self.assertEqual(1, wrapped.call_count)
+        finally:
+            shutil.rmtree(p, ignore_errors=True)
+
 
 if __name__ == "__main__":
     unittest.main()
-
