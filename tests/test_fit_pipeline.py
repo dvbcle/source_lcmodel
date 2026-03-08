@@ -88,6 +88,7 @@ class TestFitPipeline(unittest.TestCase):
         try:
             vec_file = p / "vec.txt"
             mat_file = p / "mat.txt"
+            tab_file = p / "fit.table"
             vec_file.write_text("1\n2\n", encoding="utf-8")
             mat_file.write_text("1 0\n0 1\n", encoding="utf-8")
             buf = io.StringIO()
@@ -102,6 +103,8 @@ class TestFitPipeline(unittest.TestCase):
                         str(mat_file),
                         "--baseline-order",
                         "0",
+                        "--table-output-file",
+                        str(tab_file),
                     ]
                 )
             self.assertEqual(0, code)
@@ -109,6 +112,8 @@ class TestFitPipeline(unittest.TestCase):
             self.assertIn("fit_method=", out)
             self.assertIn("fit_coefficients=", out)
             self.assertIn("fit_coeff_sds=", out)
+            self.assertIn("table_output_file=", out)
+            self.assertTrue(tab_file.exists())
         finally:
             shutil.rmtree(p, ignore_errors=True)
 

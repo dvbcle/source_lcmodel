@@ -42,7 +42,7 @@ python -m lcmodel --title "Example title" --ntitle 2 --output-filename "C:/tmp/p
 Fit-stage run example:
 
 ```powershell
-python -m lcmodel --raw-data-file data\\raw.txt --basis-file data\\basis.txt
+python -m lcmodel --raw-data-file data\\raw.txt --basis-file data\\basis.txt --table-output-file out\\fit.table
 ```
 
 Windowed/metabolite-selected fit example:

@@ -52,6 +52,7 @@ You can also call lower-level helpers:
 from lcmodel.core.text import split_title_lines, escape_postscript_text
 from lcmodel.io.namelist import load_run_config_from_control_file
 from lcmodel.io.pathing import split_output_filename_for_voxel
+from lcmodel.io.report import write_fit_table
 from lcmodel.pipeline.fitting import FitConfig, run_fit_stage
 from lcmodel.pipeline.phasing import estimate_zero_order_phase, apply_zero_order_phase
 from lcmodel.pipeline.setup import prepare_fit_inputs
@@ -65,6 +66,7 @@ phase = estimate_zero_order_phase([1j, 1j, 1j])
 rot = apply_zero_order_phase([1j, 1j, 1j], phase)
 setup = prepare_fit_inputs([[1, 2], [3, 4]], [10, 20], basis_names=["NAA", "Cr"], include_metabolites=("Cr",))
 cfg = load_run_config_from_control_file("data/control.in")
+write_fit_table("out/result.table", fit)
 ```
 
 ## 4. MYDATA Scaffold (Initial Semantic Port)

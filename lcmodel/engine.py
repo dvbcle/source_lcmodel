@@ -5,6 +5,7 @@ from __future__ import annotations
 from lcmodel.io.basis import load_basis_names
 from lcmodel.io.numeric import load_numeric_matrix, load_numeric_vector
 from lcmodel.io.pathing import split_output_filename_for_voxel
+from lcmodel.io.report import write_fit_table
 from lcmodel.models import FitResult, RunConfig, RunResult
 from lcmodel.pipeline.fitting import FitConfig, run_fit_stage
 from lcmodel.pipeline.setup import prepare_fit_inputs
@@ -62,8 +63,13 @@ class LCModelRunner:
                 data_points_used=len(setup.vector),
             )
 
+        table_written = None
+        if fit_result is not None and self.config.table_output_file:
+            table_written = write_fit_table(self.config.table_output_file, fit_result)
+
         return RunResult(
             title_layout=title_layout,
             output_filename_parts=filename_parts,
             fit_result=fit_result,
+            table_output_file=table_written,
         )

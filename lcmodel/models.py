@@ -22,6 +22,7 @@ class RunConfig:
     basis_file: str | None = None
     ppm_axis_file: str | None = None
     basis_names_file: str | None = None
+    table_output_file: str | None = None
     fit_ppm_start: float | None = None
     fit_ppm_end: float | None = None
     include_metabolites: tuple[str, ...] = ()
@@ -48,3 +49,4 @@ class RunResult:
     title_layout: TitleLayout
     output_filename_parts: tuple[str, str] | None
     fit_result: FitResult | None = None
+    table_output_file: str | None = None

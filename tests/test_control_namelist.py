@@ -46,7 +46,7 @@ $LCMODL
             ctl.write_text(
                 (
                     "$LCMODL\n"
-                    " TITLE='Control Title', NTITLE=1, FILRAW='a.txt', FILBAS='b.txt', FILPS='c.ps', NDEGZ=2,\n"
+                    " TITLE='Control Title', NTITLE=1, FILRAW='a.txt', FILBAS='b.txt', FILPS='c.ps', FILTAB='tab.out', NDEGZ=2,\n"
                     " CHUSE1(1)='NAA', CHUSE1(2)='Cr', PPMST=3.2, PPMEND=2.0, FILPPM='ppm.txt', FILNAM='names.txt', /\n"
                 ),
                 encoding="utf-8",
@@ -57,6 +57,7 @@ $LCMODL
             self.assertEqual("a.txt", cfg.raw_data_file)
             self.assertEqual("b.txt", cfg.basis_file)
             self.assertEqual("c.ps", cfg.output_filename)
+            self.assertEqual("tab.out", cfg.table_output_file)
             self.assertEqual(2, cfg.baseline_order)
             self.assertEqual(("NAA", "Cr"), cfg.include_metabolites)
             self.assertEqual(3.2, cfg.fit_ppm_start)

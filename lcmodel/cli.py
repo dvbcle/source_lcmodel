@@ -29,6 +29,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Output filename to split for voxel identifier insertion.",
     )
     parser.add_argument(
+        "--table-output-file",
+        default=None,
+        help="Optional output path for fit summary table.",
+    )
+    parser.add_argument(
         "--raw-data-file",
         default=None,
         help="Path to numeric vector file for fit stage (one value per line).",
@@ -89,6 +94,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         config = replace(config, ntitle=args.ntitle)
     if args.output_filename is not None:
         config = replace(config, output_filename=args.output_filename)
+    if args.table_output_file is not None:
+        config = replace(config, table_output_file=args.table_output_file)
     if args.raw_data_file is not None:
         config = replace(config, raw_data_file=args.raw_data_file)
     if args.basis_file is not None:
@@ -134,6 +141,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(f"fit_metabolites={','.join(result.fit_result.metabolite_names)}")
         if result.fit_result.data_points_used > 0:
             print(f"fit_points_used={result.fit_result.data_points_used}")
+    if result.table_output_file:
+        print(f"table_output_file={result.table_output_file}")
     return 0
 
 

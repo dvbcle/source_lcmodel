@@ -39,6 +39,8 @@ output_split_right=.ps
   - `2` allows split logic when needed.
 - `--output-filename`
   - Optional output path used to calculate insertion points for voxel IDs.
+- `--table-output-file`
+  - Optional path for writing a tab-delimited fit summary file.
 - `--raw-data-file`
   - Optional numeric vector file for the fit stage.
 - `--basis-file`
