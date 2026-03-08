@@ -13,6 +13,7 @@ _DIRECT_FIELDS: tuple[tuple[str, str], ...] = (
     ("ntitle", "ntitle"),
     ("output_filename", "output_filename"),
     ("table_output_file", "table_output_file"),
+    ("traceability_log_file", "traceability_log_file"),
     ("phase_objective", "phase_objective"),
     ("phase_smoothness_power", "phase_smoothness_power"),
     ("dwell_time", "dwell_time_s"),

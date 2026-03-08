@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import Sequence
 
 from lcmodel.pipeline.mydata import MyDataConfig, run_mydata_stage
+from lcmodel.traceability import fortran_provenance
 
 
 @dataclass(frozen=True)
@@ -40,6 +41,7 @@ def _row_major_from_columns(columns: Sequence[Sequence[complex]]) -> list[list[c
     return out
 
 
+@fortran_provenance("mydata", "ftdata", "cfft_r")
 def prepare_frequency_fit_from_time_domain(
     raw_time: Sequence[complex],
     basis_time: Sequence[Sequence[complex]],

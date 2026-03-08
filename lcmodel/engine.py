@@ -30,6 +30,12 @@ from lcmodel.pipeline.spectral import prepare_frequency_fit_from_time_domain
 from lcmodel.pipeline.sptype_presets import apply_sptype_preset, validate_sptype_config
 from lcmodel.pipeline.setup import prepare_fit_inputs
 from lcmodel.core.text import split_title_lines
+from lcmodel.traceability import (
+    capture_trace_events,
+    fortran_provenance,
+    record_trace_event,
+    write_trace_log,
+)
 
 
 class LCModelRunner:
@@ -44,9 +50,30 @@ class LCModelRunner:
             self.config = config
         validate_sptype_config(self.config)
 
+    @fortran_provenance("lcmodl")
     def run(self) -> RunResult:
         """Execute currently ported preprocessing behaviors."""
+        trace_path = self.config.traceability_log_file
+        if trace_path:
+            with capture_trace_events() as events:
+                record_trace_event(
+                    "lcmodel.engine.LCModelRunner.run",
+                    ("lcmodl",),
+                )
+                result = self._run_impl()
+            write_trace_log(
+                trace_path,
+                events=events,
+                metadata={
+                    "title": self.config.title,
+                    "raw_data_file": self.config.raw_data_file,
+                    "basis_file": self.config.basis_file,
+                },
+            )
+            return result
+        return self._run_impl()
 
+    def _run_impl(self) -> RunResult:
         title_layout = split_title_lines(self.config.title, self.config.ntitle)
         filename_parts: tuple[str, str] | None = None
         if self.config.output_filename:

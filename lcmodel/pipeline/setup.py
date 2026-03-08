@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Sequence
 
+from lcmodel.traceability import fortran_provenance
+
 
 @dataclass(frozen=True)
 class SetupResult:
@@ -15,6 +17,7 @@ class SetupResult:
     metabolite_names: tuple[str, ...]
 
 
+@fortran_provenance("setup", "setup3")
 def prepare_fit_inputs(
     matrix: Sequence[Sequence[float]],
     vector: Sequence[float],

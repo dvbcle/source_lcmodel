@@ -41,6 +41,9 @@ output_split_right=.ps
   - Optional output path used to calculate insertion points for voxel IDs.
 - `--table-output-file`
   - Optional path for writing a tab-delimited fit summary file.
+- `--traceability-log-file`
+  - Optional JSON path for saving per-call provenance events tagged with
+    Fortran routine names.
 - `--time-domain-input`
   - Treat raw and basis files as complex time-domain values (`re im` format).
 - `--auto-phase-zero-order`
@@ -169,6 +172,12 @@ Run from control file:
 
 ```powershell
 python -m lcmodel --control-file data\\control.in
+```
+
+Run from control file and write provenance trace:
+
+```powershell
+python -m lcmodel --control-file data\\control.in --traceability-log-file artifacts\\trace.json
 ```
 
 Run batch mode:

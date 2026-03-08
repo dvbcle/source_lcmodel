@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 from lcmodel.core.fortran_compat import ilen
+from lcmodel.traceability import fortran_provenance
 
 
+@fortran_provenance("split_filename")
 def split_output_filename_for_voxel(
     filename: str,
     extension_variants: tuple[str, str, str],
@@ -43,4 +45,3 @@ def split_output_filename_for_voxel(
                     return left, right
 
     return left, right
-

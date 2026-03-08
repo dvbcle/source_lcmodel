@@ -8,6 +8,7 @@ from typing import Sequence
 from lcmodel.pipeline.alignment import align_vector_by_fractional_shift, align_vector_by_integer_shift
 from lcmodel.pipeline.fitting import FitConfig, FitStageResult, run_fit_stage
 from lcmodel.pipeline.lineshape import apply_global_gaussian_lineshape
+from lcmodel.traceability import fortran_provenance
 
 
 @dataclass(frozen=True)
@@ -76,6 +77,7 @@ def _fit_for_sigma(
     )
 
 
+@fortran_provenance("tworeg", "tworg1", "tworeg_sav", "tworg2", "tworg3", "rfalsi", "fshssq")
 def run_nonlinear_refinement(
     base_matrix: Sequence[Sequence[float]],
     base_vector: Sequence[float],
@@ -141,4 +143,3 @@ def run_nonlinear_refinement(
         linewidth_sigma_points=best.linewidth_sigma_points,
         iterations=iterations,
     )
-

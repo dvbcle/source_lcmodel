@@ -4,10 +4,12 @@ from __future__ import annotations
 
 from lcmodel.core.fortran_compat import ilen
 from lcmodel.models import TitleLayout
+from lcmodel.traceability import fortran_provenance
 
 ESCAPE_CHARS = {"(", ")", "%", "\\"}
 
 
+@fortran_provenance("icharst")
 def first_non_space_index(text: str, max_chars: int) -> int:
     """Return 1-based index of first non-space char, or -1 if none."""
 
@@ -18,6 +20,7 @@ def first_non_space_index(text: str, max_chars: int) -> int:
     return -1
 
 
+@fortran_provenance("chstrip_int6")
 def int_to_compact_text(value: int, min_value: int = -99999, max_value: int = 999999) -> str:
     """Clamp to Fortran bounds and format without padding spaces."""
 
@@ -25,6 +28,7 @@ def int_to_compact_text(value: int, min_value: int = -99999, max_value: int = 99
     return str(clipped)
 
 
+@fortran_provenance("strchk")
 def escape_postscript_text(text: str, max_output_len: int = 123) -> str:
     """Escape PostScript-sensitive characters using STRCHK semantics."""
 
@@ -45,6 +49,7 @@ def escape_postscript_text(text: str, max_output_len: int = 123) -> str:
     return "".join(out)
 
 
+@fortran_provenance("split_title")
 def split_title_lines(title: str, ntitle: int = 2) -> TitleLayout:
     """Split title into one or two report lines.
 
@@ -85,4 +90,3 @@ def split_title_lines(title: str, ntitle: int = 2) -> TitleLayout:
     line1 = title_trimmed[: max(0, ibreak)]
     line2 = title_trimmed[max(0, istart2 - 1) : ltitle]
     return TitleLayout(lines=(line1, line2), line_count=2)
-

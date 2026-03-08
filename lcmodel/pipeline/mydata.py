@@ -23,6 +23,7 @@ from lcmodel.pipeline.phasing import (
     estimate_zero_first_order_phase,
     estimate_zero_order_phase,
 )
+from lcmodel.traceability import fortran_provenance
 
 
 def _coerce_complex_vector(values: Sequence[complex]) -> list[complex]:
@@ -70,6 +71,7 @@ class MyDataResult:
     first_order_phase_radians: float | None = None
 
 
+@fortran_provenance("mydata", "phasta", "rephas", "cfft_r")
 def run_mydata_stage(
     time_domain: Sequence[complex],
     config: MyDataConfig = MyDataConfig(),

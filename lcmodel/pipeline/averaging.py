@@ -6,6 +6,8 @@ from dataclasses import dataclass
 import math
 from typing import Sequence
 
+from lcmodel.traceability import fortran_provenance
+
 
 @dataclass(frozen=True)
 class ChannelAverageResult:
@@ -18,6 +20,7 @@ class ChannelAverageResult:
     rms_values: tuple[float, ...]
 
 
+@fortran_provenance("check_zero_voxels")
 def detect_zero_voxels(
     channels: Sequence[Sequence[complex]], magnitude_eps: float = 0.0
 ) -> tuple[bool, ...]:
@@ -35,6 +38,7 @@ def detect_zero_voxels(
     return tuple(out)
 
 
+@fortran_provenance("getvar")
 def estimate_tail_variance(
     datat: Sequence[complex], nback_start: int, nback_end: int
 ) -> float:
@@ -82,6 +86,7 @@ def _signal_strength(values: Sequence[complex]) -> float:
     return math.sqrt(sum(v.real * v.real + v.imag * v.imag for v in values) / len(values))
 
 
+@fortran_provenance("average")
 def weighted_average_channels(
     channels: Sequence[Sequence[complex]],
     *,

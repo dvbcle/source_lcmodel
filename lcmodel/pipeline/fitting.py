@@ -6,6 +6,8 @@ from dataclasses import dataclass
 import math
 from typing import Sequence
 
+from lcmodel.traceability import fortran_provenance
+
 
 @dataclass(frozen=True)
 class FitConfig:
@@ -472,6 +474,7 @@ def _estimate_coefficient_sds(
     return tuple(sds)
 
 
+@fortran_provenance("pnnls", "solve", "plinls", "savbes")
 def run_fit_stage(
     matrix: Sequence[Sequence[float]],
     vector: Sequence[float],

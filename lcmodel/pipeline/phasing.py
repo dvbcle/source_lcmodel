@@ -6,6 +6,8 @@ import cmath
 import math
 from typing import Sequence
 
+from lcmodel.traceability import fortran_provenance
+
 
 def _phase_axis(n: int) -> list[float]:
     if n <= 1:
@@ -13,6 +15,7 @@ def _phase_axis(n: int) -> list[float]:
     return [2.0 * i / (n - 1) - 1.0 for i in range(n)]
 
 
+@fortran_provenance("rephas")
 def apply_phase(
     spectrum: Sequence[complex],
     phase0_radians: float,
@@ -28,12 +31,14 @@ def apply_phase(
     return tuple(out)
 
 
+@fortran_provenance("rephas", "phase_with_max_real")
 def apply_zero_order_phase(spectrum: Sequence[complex], phase_radians: float) -> tuple[complex, ...]:
     """Apply constant phase rotation to all points."""
 
     return apply_phase(spectrum, phase_radians, 0.0)
 
 
+@fortran_provenance("phase_with_max_real", "getpha")
 def estimate_zero_order_phase(spectrum: Sequence[complex], search_steps: int = 720) -> float:
     """Estimate zero-order phase by minimizing imaginary energy."""
 
@@ -80,6 +85,7 @@ def _score_smooth_real_distance(rotated: Sequence[complex], power: int) -> tuple
     return dist, real_sum
 
 
+@fortran_provenance("phasta", "getpha")
 def estimate_zero_first_order_phase(
     spectrum: Sequence[complex],
     *,

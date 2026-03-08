@@ -5,6 +5,8 @@ from __future__ import annotations
 import re
 from typing import Sequence
 
+from lcmodel.traceability import fortran_provenance
+
 
 _TERM_RE = re.compile(r"([+-]?)\s*([A-Za-z0-9_\-]+)")
 
@@ -68,6 +70,7 @@ def _evaluate_expression(
     return total, var**0.5
 
 
+@fortran_provenance("combis")
 def compute_combinations(
     expressions: Sequence[str],
     coeffs: Sequence[float],

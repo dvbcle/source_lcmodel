@@ -34,6 +34,18 @@ print(batch.rows)
 print(batch.csv_file)
 ```
 
+Traceability-log example:
+
+```python
+runner = LCModelRunner(
+    RunConfig(
+        title="Trace run",
+        traceability_log_file="artifacts/trace.json",
+    )
+)
+runner.run()
+```
+
 ## 2. Core Types
 
 - `RunConfig`
@@ -44,6 +56,9 @@ print(batch.csv_file)
   - `title_layout: TitleLayout`
   - `output_filename_parts: tuple[str, str] | None`
   - `fit_result: FitResult | None`
+- `RunConfig`
+  - `traceability_log_file: str | None`
+    - Optional JSON output path for function-level provenance events.
 - `FitResult`
   - `coefficients: tuple[float, ...]`
   - `coefficient_sds: tuple[float, ...]`

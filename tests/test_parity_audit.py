@@ -6,7 +6,7 @@ import unittest
 
 
 class TestParityAudit(unittest.TestCase):
-    def test_audit_reports_zero_scaffold_gaps(self):
+    def test_audit_reports_full_traceability_coverage(self):
         proc = subprocess.run(
             [sys.executable, "tools/audit_parity.py"],
             check=True,
@@ -14,9 +14,10 @@ class TestParityAudit(unittest.TestCase):
             text=True,
         )
         out = proc.stdout
-        self.assertIn("scaffold_missing=0", out)
-        self.assertIn("override_placeholder_keys=0", out)
-        self.assertIn("override_semantic_keys=149", out)
+        self.assertIn("manifest_missing=0", out)
+        self.assertIn("manifest_unmapped=0", out)
+        self.assertIn("manifest_placeholder=0", out)
+        self.assertIn("manifest_import_failures=0", out)
 
 
 if __name__ == "__main__":

@@ -34,6 +34,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Optional output path for fit summary table.",
     )
     parser.add_argument(
+        "--traceability-log-file",
+        default=None,
+        help="Optional JSON output path for function-level Fortran provenance trace.",
+    )
+    parser.add_argument(
         "--time-domain-input",
         action="store_true",
         help="Interpret raw/basis files as complex time-domain input before FFT-based fitting.",

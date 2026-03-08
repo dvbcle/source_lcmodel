@@ -1,0 +1,1200 @@
+{
+  "manifest_version": 1,
+  "generated_from": "semantic_overrides",
+  "fortran_source": "fortran_reference/LCModel.f",
+  "fortran_unit_count": 149,
+  "entries": [
+    {
+      "fortran_name": "arbbox",
+      "fortran_kind": "FUNCTION",
+      "fortran_source_line": 12372,
+      "python_target": "lcmodel.overrides.workflow._ov_arbbox",
+      "python_target_kind": "semantic",
+      "python_source_line": 454
+    },
+    {
+      "fortran_name": "areaba",
+      "fortran_kind": "FUNCTION",
+      "fortran_source_line": 5175,
+      "python_target": "lcmodel.overrides.core_compat._ov_areaba",
+      "python_target_kind": "semantic",
+      "python_source_line": 1031
+    },
+    {
+      "fortran_name": "areaw2",
+      "fortran_kind": "FUNCTION",
+      "fortran_source_line": 4885,
+      "python_target": "lcmodel.overrides.core_compat._ov_areaw2",
+      "python_target_kind": "semantic",
+      "python_source_line": 961
+    },
+    {
+      "fortran_name": "areawa",
+      "fortran_kind": "FUNCTION",
+      "fortran_source_line": 4806,
+      "python_target": "lcmodel.overrides.core_compat._ov_areawa",
+      "python_target_kind": "semantic",
+      "python_source_line": 994
+    },
+    {
+      "fortran_name": "average",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 1236,
+      "python_target": "lcmodel.overrides.core_compat._ov_average",
+      "python_target_kind": "semantic",
+      "python_source_line": 130
+    },
+    {
+      "fortran_name": "axis",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 12197,
+      "python_target": "lcmodel.overrides.postscript._ov_axis",
+      "python_target_kind": "semantic",
+      "python_source_line": 273
+    },
+    {
+      "fortran_name": "betain",
+      "fortran_kind": "FUNCTION",
+      "fortran_source_line": 14486,
+      "python_target": "lcmodel.overrides.core_compat._ov_betain",
+      "python_target_kind": "semantic",
+      "python_source_line": 201
+    },
+    {
+      "fortran_name": "box",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 12391,
+      "python_target": "lcmodel.overrides.postscript._ov_box",
+      "python_target_kind": "semantic",
+      "python_source_line": 86
+    },
+    {
+      "fortran_name": "cfft",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 12910,
+      "python_target": "lcmodel.overrides.workflow._ov_cfft",
+      "python_target_kind": "semantic",
+      "python_source_line": 677
+    },
+    {
+      "fortran_name": "cfft_r",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 12936,
+      "python_target": "lcmodel.overrides.workflow._ov_cfft_r",
+      "python_target_kind": "semantic",
+      "python_source_line": 692
+    },
+    {
+      "fortran_name": "cfftb1",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 13914,
+      "python_target": "lcmodel.overrides.core_compat._ov_cfftb1",
+      "python_target_kind": "semantic",
+      "python_source_line": 527
+    },
+    {
+      "fortran_name": "cfftf1",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 13493,
+      "python_target": "lcmodel.overrides.core_compat._ov_cfftf1",
+      "python_target_kind": "semantic",
+      "python_source_line": 523
+    },
+    {
+      "fortran_name": "cffti1",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 14332,
+      "python_target": "lcmodel.overrides.core_compat._ov_cffti1",
+      "python_target_kind": "semantic",
+      "python_source_line": 545
+    },
+    {
+      "fortran_name": "cfftin",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 12847,
+      "python_target": "lcmodel.overrides.workflow._ov_cfftin",
+      "python_target_kind": "semantic",
+      "python_source_line": 651
+    },
+    {
+      "fortran_name": "cfftin_r",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 12873,
+      "python_target": "lcmodel.overrides.workflow._ov_cfftin_r",
+      "python_target_kind": "semantic",
+      "python_source_line": 666
+    },
+    {
+      "fortran_name": "check_bottom",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 11846,
+      "python_target": "lcmodel.overrides.postscript._ov_check_bottom",
+      "python_target_kind": "semantic",
+      "python_source_line": 304
+    },
+    {
+      "fortran_name": "check_chless",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 6962,
+      "python_target": "lcmodel.overrides.core_compat._ov_check_chless",
+      "python_target_kind": "semantic",
+      "python_source_line": 912
+    },
+    {
+      "fortran_name": "check_zero_voxels",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 1182,
+      "python_target": "lcmodel.overrides.core_compat._ov_check_zero_voxels",
+      "python_target_kind": "semantic",
+      "python_source_line": 114
+    },
+    {
+      "fortran_name": "chreal",
+      "fortran_kind": "FUNCTION",
+      "fortran_source_line": 12045,
+      "python_target": "lcmodel.overrides.core_compat._ov_chreal",
+      "python_target_kind": "semantic",
+      "python_source_line": 907
+    },
+    {
+      "fortran_name": "chstrip_int6",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 1971,
+      "python_target": "lcmodel.overrides.workflow._ov_chstrip_int6",
+      "python_target_kind": "semantic",
+      "python_source_line": 498
+    },
+    {
+      "fortran_name": "combis",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 5341,
+      "python_target": "lcmodel.overrides.workflow._ov_combis",
+      "python_target_kind": "semantic",
+      "python_source_line": 582
+    },
+    {
+      "fortran_name": "compact_string",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 2210,
+      "python_target": "lcmodel.overrides.core_compat._ov_compact_string",
+      "python_target_kind": "semantic",
+      "python_source_line": 91
+    },
+    {
+      "fortran_name": "conc_prior",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 7629,
+      "python_target": "lcmodel.overrides.core_compat._ov_conc_prior",
+      "python_target_kind": "semantic",
+      "python_source_line": 878
+    },
+    {
+      "fortran_name": "csft_r",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 12688,
+      "python_target": "lcmodel.overrides.workflow._ov_csft_r",
+      "python_target_kind": "semantic",
+      "python_source_line": 613
+    },
+    {
+      "fortran_name": "csftin_r",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 12725,
+      "python_target": "lcmodel.overrides.workflow._ov_csftin_r",
+      "python_target_kind": "semantic",
+      "python_source_line": 622
+    },
+    {
+      "fortran_name": "dash",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 12272,
+      "python_target": "lcmodel.overrides.postscript._ov_dash",
+      "python_target_kind": "semantic",
+      "python_source_line": 56
+    },
+    {
+      "fortran_name": "datain",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 2473,
+      "python_target": "lcmodel.overrides.workflow._ov_datain",
+      "python_target_kind": "semantic",
+      "python_source_line": 60
+    },
+    {
+      "fortran_name": "dcfft_r",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 2232,
+      "python_target": "lcmodel.overrides.core_compat._ov_dcfft_r",
+      "python_target_kind": "semantic",
+      "python_source_line": 668
+    },
+    {
+      "fortran_name": "dcftf1",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 12985,
+      "python_target": "lcmodel.overrides.core_compat._ov_dcftf1",
+      "python_target_kind": "semantic",
+      "python_source_line": 514
+    },
+    {
+      "fortran_name": "dcfti1",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 13409,
+      "python_target": "lcmodel.overrides.core_compat._ov_dcfti1",
+      "python_target_kind": "semantic",
+      "python_source_line": 536
+    },
+    {
+      "fortran_name": "df2tcf",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 12968,
+      "python_target": "lcmodel.overrides.core_compat._ov_df2tcf",
+      "python_target_kind": "semantic",
+      "python_source_line": 501
+    },
+    {
+      "fortran_name": "dfftci",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 13395,
+      "python_target": "lcmodel.overrides.workflow._ov_fftci",
+      "python_target_kind": "semantic",
+      "python_source_line": 702
+    },
+    {
+      "fortran_name": "dgamln",
+      "fortran_kind": "FUNCTION",
+      "fortran_source_line": 14457,
+      "python_target": "lcmodel.overrides.core_compat._ov_dgamln",
+      "python_target_kind": "semantic",
+      "python_source_line": 196
+    },
+    {
+      "fortran_name": "diff",
+      "fortran_kind": "FUNCTION",
+      "fortran_source_line": 14879,
+      "python_target": "lcmodel.overrides.core_compat._ov_diff",
+      "python_target_kind": "semantic",
+      "python_source_line": 213
+    },
+    {
+      "fortran_name": "dpasf",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 13053,
+      "python_target": "lcmodel.overrides.workflow._ov_dpasf",
+      "python_target_kind": "semantic",
+      "python_source_line": 416
+    },
+    {
+      "fortran_name": "dpasf2",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 13307,
+      "python_target": "lcmodel.overrides.workflow._ov_dpasf2",
+      "python_target_kind": "semantic",
+      "python_source_line": 432
+    },
+    {
+      "fortran_name": "dpasf3",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 13258,
+      "python_target": "lcmodel.overrides.workflow._ov_dpasf3",
+      "python_target_kind": "semantic",
+      "python_source_line": 435
+    },
+    {
+      "fortran_name": "dpasf4",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 13337,
+      "python_target": "lcmodel.overrides.workflow._ov_dpasf4",
+      "python_target_kind": "semantic",
+      "python_source_line": 438
+    },
+    {
+      "fortran_name": "dpasf5",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 13176,
+      "python_target": "lcmodel.overrides.workflow._ov_dpasf5",
+      "python_target_kind": "semantic",
+      "python_source_line": 441
+    },
+    {
+      "fortran_name": "dump1",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 9035,
+      "python_target": "lcmodel.overrides.workflow._ov_dump1",
+      "python_target_kind": "semantic",
+      "python_source_line": 298
+    },
+    {
+      "fortran_name": "ecc_truncate",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 3076,
+      "python_target": "lcmodel.overrides.workflow._ov_ecc_truncate",
+      "python_target_kind": "semantic",
+      "python_source_line": 393
+    },
+    {
+      "fortran_name": "eigvrs",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 15106,
+      "python_target": "lcmodel.overrides.core_compat._ov_eigvrs",
+      "python_target_kind": "semantic",
+      "python_source_line": 471
+    },
+    {
+      "fortran_name": "end_table",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 11830,
+      "python_target": "lcmodel.overrides.postscript._ov_end_table",
+      "python_target_kind": "semantic",
+      "python_source_line": 325
+    },
+    {
+      "fortran_name": "endps",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 12637,
+      "python_target": "lcmodel.overrides.postscript._ov_endps",
+      "python_target_kind": "semantic",
+      "python_source_line": 208
+    },
+    {
+      "fortran_name": "endrnd",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 12028,
+      "python_target": "lcmodel.overrides.workflow._ov_endrnd",
+      "python_target_kind": "semantic",
+      "python_source_line": 528
+    },
+    {
+      "fortran_name": "errmes",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 2264,
+      "python_target": "lcmodel.overrides.core_compat._ov_errmes",
+      "python_target_kind": "semantic",
+      "python_source_line": 161
+    },
+    {
+      "fortran_name": "errtbl",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 10914,
+      "python_target": "lcmodel.overrides.workflow._ov_errtbl",
+      "python_target_kind": "semantic",
+      "python_source_line": 381
+    },
+    {
+      "fortran_name": "exitps",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 10856,
+      "python_target": "lcmodel.overrides.workflow._ov_exitps",
+      "python_target_kind": "semantic",
+      "python_source_line": 386
+    },
+    {
+      "fortran_name": "f2tcb",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 13897,
+      "python_target": "lcmodel.overrides.workflow._ov_f2tcb",
+      "python_target_kind": "semantic",
+      "python_source_line": 410
+    },
+    {
+      "fortran_name": "f2tcf",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 13476,
+      "python_target": "lcmodel.overrides.core_compat._ov_f2tcf",
+      "python_target_kind": "semantic",
+      "python_source_line": 510
+    },
+    {
+      "fortran_name": "fftci",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 14318,
+      "python_target": "lcmodel.overrides.workflow._ov_fftci",
+      "python_target_kind": "semantic",
+      "python_source_line": 702
+    },
+    {
+      "fortran_name": "finout",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 10107,
+      "python_target": "lcmodel.overrides.workflow._ov_finout",
+      "python_target_kind": "semantic",
+      "python_source_line": 371
+    },
+    {
+      "fortran_name": "fishni",
+      "fortran_kind": "FUNCTION",
+      "fortran_source_line": 14444,
+      "python_target": "lcmodel.overrides.core_compat._ov_fishni",
+      "python_target_kind": "semantic",
+      "python_source_line": 207
+    },
+    {
+      "fortran_name": "fix_g77_namelist",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 11974,
+      "python_target": "lcmodel.overrides.core_compat._ov_fix_g77_namelist",
+      "python_target_kind": "semantic",
+      "python_source_line": 784
+    },
+    {
+      "fortran_name": "font",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 12560,
+      "python_target": "lcmodel.overrides.postscript._ov_font",
+      "python_target_kind": "semantic",
+      "python_source_line": 163
+    },
+    {
+      "fortran_name": "fshssq",
+      "fortran_kind": "FUNCTION",
+      "fortran_source_line": 8686,
+      "python_target": "lcmodel.overrides.workflow._ov_fshssq",
+      "python_target_kind": "semantic",
+      "python_source_line": 231
+    },
+    {
+      "fortran_name": "ftdata",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 6038,
+      "python_target": "lcmodel.overrides.workflow._ov_ftdata",
+      "python_target_kind": "semantic",
+      "python_source_line": 118
+    },
+    {
+      "fortran_name": "g1",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 14886,
+      "python_target": "lcmodel.overrides.core_compat._ov_g1",
+      "python_target_kind": "semantic",
+      "python_source_line": 261
+    },
+    {
+      "fortran_name": "g2",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 14928,
+      "python_target": "lcmodel.overrides.core_compat._ov_g2",
+      "python_target_kind": "semantic",
+      "python_source_line": 271
+    },
+    {
+      "fortran_name": "gbackg",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 6697,
+      "python_target": "lcmodel.overrides.workflow._ov_gbackg",
+      "python_target_kind": "semantic",
+      "python_source_line": 152
+    },
+    {
+      "fortran_name": "get_field",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 7836,
+      "python_target": "lcmodel.overrides.core_compat._ov_get_field",
+      "python_target_kind": "semantic",
+      "python_source_line": 802
+    },
+    {
+      "fortran_name": "getpha",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 4980,
+      "python_target": "lcmodel.overrides.core_compat._ov_getpha",
+      "python_target_kind": "semantic",
+      "python_source_line": 933
+    },
+    {
+      "fortran_name": "getvar",
+      "fortran_kind": "FUNCTION",
+      "fortran_source_line": 1404,
+      "python_target": "lcmodel.overrides.core_compat._ov_getvar",
+      "python_target_kind": "semantic",
+      "python_source_line": 121
+    },
+    {
+      "fortran_name": "h12",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 14972,
+      "python_target": "lcmodel.overrides.core_compat._ov_h12",
+      "python_target_kind": "semantic",
+      "python_source_line": 282
+    },
+    {
+      "fortran_name": "hex",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 11881,
+      "python_target": "lcmodel.overrides.postscript._ov_hex",
+      "python_target_kind": "semantic",
+      "python_source_line": 293
+    },
+    {
+      "fortran_name": "icharst",
+      "fortran_kind": "FUNCTION",
+      "fortran_source_line": 1952,
+      "python_target": "lcmodel.overrides.core_compat._ov_icharst",
+      "python_target_kind": "semantic",
+      "python_source_line": 62
+    },
+    {
+      "fortran_name": "icycle",
+      "fortran_kind": "FUNCTION",
+      "fortran_source_line": 2742,
+      "python_target": "lcmodel.overrides.core_compat._ov_icycle",
+      "python_target_kind": "semantic",
+      "python_source_line": 228
+    },
+    {
+      "fortran_name": "icycle_r",
+      "fortran_kind": "FUNCTION",
+      "fortran_source_line": 2732,
+      "python_target": "lcmodel.overrides.core_compat._ov_icycle_r",
+      "python_target_kind": "semantic",
+      "python_source_line": 223
+    },
+    {
+      "fortran_name": "igetp",
+      "fortran_kind": "FUNCTION",
+      "fortran_source_line": 3141,
+      "python_target": "lcmodel.overrides.core_compat._ov_igetp",
+      "python_target_kind": "semantic",
+      "python_source_line": 678
+    },
+    {
+      "fortran_name": "ilen",
+      "fortran_kind": "FUNCTION",
+      "fortran_source_line": 12648,
+      "python_target": "lcmodel.overrides.core_compat._ov_ilen",
+      "python_target_kind": "semantic",
+      "python_source_line": 57
+    },
+    {
+      "fortran_name": "inflec",
+      "fortran_kind": "FUNCTION",
+      "fortran_source_line": 8134,
+      "python_target": "lcmodel.overrides.core_compat._ov_inflec",
+      "python_target_kind": "semantic",
+      "python_source_line": 247
+    },
+    {
+      "fortran_name": "initia",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 2365,
+      "python_target": "lcmodel.overrides.workflow._ov_initia",
+      "python_target_kind": "semantic",
+      "python_source_line": 42
+    },
+    {
+      "fortran_name": "integrate",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 5094,
+      "python_target": "lcmodel.overrides.workflow._ov_integrate",
+      "python_target_kind": "semantic",
+      "python_source_line": 547
+    },
+    {
+      "fortran_name": "lcmodl",
+      "fortran_kind": "PROGRAM",
+      "fortran_source_line": 6,
+      "python_target": "lcmodel.overrides.workflow._ov_lcmodl",
+      "python_target_kind": "semantic",
+      "python_source_line": 462
+    },
+    {
+      "fortran_name": "ldegmx",
+      "fortran_kind": "FUNCTION",
+      "fortran_source_line": 8046,
+      "python_target": "lcmodel.overrides.core_compat._ov_ldegmx",
+      "python_target_kind": "semantic",
+      "python_source_line": 1102
+    },
+    {
+      "fortran_name": "line",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 12408,
+      "python_target": "lcmodel.overrides.postscript._ov_line",
+      "python_target_kind": "semantic",
+      "python_source_line": 70
+    },
+    {
+      "fortran_name": "linewd",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 12242,
+      "python_target": "lcmodel.overrides.postscript._ov_linewd",
+      "python_target_kind": "semantic",
+      "python_source_line": 41
+    },
+    {
+      "fortran_name": "loadch",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 2072,
+      "python_target": "lcmodel.overrides.workflow._ov_loadch",
+      "python_target_kind": "semantic",
+      "python_source_line": 361
+    },
+    {
+      "fortran_name": "make_cgroup_shift",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 4561,
+      "python_target": "lcmodel.overrides.workflow._ov_make_cgroup_shift",
+      "python_target_kind": "semantic",
+      "python_source_line": 325
+    },
+    {
+      "fortran_name": "makeps",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 10942,
+      "python_target": "lcmodel.overrides.postscript._ov_makeps",
+      "python_target_kind": "semantic",
+      "python_source_line": 223
+    },
+    {
+      "fortran_name": "merge_left",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 6944,
+      "python_target": "lcmodel.overrides.core_compat._ov_merge_left",
+      "python_target_kind": "semantic",
+      "python_source_line": 718
+    },
+    {
+      "fortran_name": "merge_right",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 6926,
+      "python_target": "lcmodel.overrides.core_compat._ov_merge_right",
+      "python_target_kind": "semantic",
+      "python_source_line": 700
+    },
+    {
+      "fortran_name": "mybasi",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 3216,
+      "python_target": "lcmodel.overrides.workflow._ov_mybasi",
+      "python_target_kind": "semantic",
+      "python_source_line": 77
+    },
+    {
+      "fortran_name": "mycont",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 703,
+      "python_target": "lcmodel.overrides.workflow._ov_mycont",
+      "python_target_kind": "semantic",
+      "python_source_line": 49
+    },
+    {
+      "fortran_name": "mydata",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 2756,
+      "python_target": "lcmodel.overrides.workflow._ov_mydata",
+      "python_target_kind": "semantic",
+      "python_source_line": 591
+    },
+    {
+      "fortran_name": "nextre",
+      "fortran_kind": "FUNCTION",
+      "fortran_source_line": 8069,
+      "python_target": "lcmodel.overrides.core_compat._ov_nextre",
+      "python_target_kind": "semantic",
+      "python_source_line": 233
+    },
+    {
+      "fortran_name": "onepag",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 11061,
+      "python_target": "lcmodel.overrides.postscript._ov_onepag",
+      "python_target_kind": "semantic",
+      "python_source_line": 232
+    },
+    {
+      "fortran_name": "open_output",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 1682,
+      "python_target": "lcmodel.overrides.workflow._ov_open_output",
+      "python_target_kind": "semantic",
+      "python_source_line": 346
+    },
+    {
+      "fortran_name": "parse_chsimu",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 4639,
+      "python_target": "lcmodel.overrides.core_compat._ov_parse_chsimu",
+      "python_target_kind": "semantic",
+      "python_source_line": 898
+    },
+    {
+      "fortran_name": "parse_prior",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 7779,
+      "python_target": "lcmodel.overrides.core_compat._ov_parse_prior",
+      "python_target_kind": "semantic",
+      "python_source_line": 826
+    },
+    {
+      "fortran_name": "parse_sum",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 7939,
+      "python_target": "lcmodel.overrides.core_compat._ov_parse_sum",
+      "python_target_kind": "semantic",
+      "python_source_line": 839
+    },
+    {
+      "fortran_name": "passb",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 13981,
+      "python_target": "lcmodel.overrides.core_compat._ov_passb",
+      "python_target_kind": "semantic",
+      "python_source_line": 582
+    },
+    {
+      "fortran_name": "passb2",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 14232,
+      "python_target": "lcmodel.overrides.core_compat._ov_passb2",
+      "python_target_kind": "semantic",
+      "python_source_line": 634
+    },
+    {
+      "fortran_name": "passb3",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 14184,
+      "python_target": "lcmodel.overrides.core_compat._ov_passb3",
+      "python_target_kind": "semantic",
+      "python_source_line": 639
+    },
+    {
+      "fortran_name": "passb4",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 14261,
+      "python_target": "lcmodel.overrides.core_compat._ov_passb4",
+      "python_target_kind": "semantic",
+      "python_source_line": 646
+    },
+    {
+      "fortran_name": "passb5",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 14103,
+      "python_target": "lcmodel.overrides.core_compat._ov_passb5",
+      "python_target_kind": "semantic",
+      "python_source_line": 653
+    },
+    {
+      "fortran_name": "passf",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 13560,
+      "python_target": "lcmodel.overrides.core_compat._ov_passf",
+      "python_target_kind": "semantic",
+      "python_source_line": 564
+    },
+    {
+      "fortran_name": "passf2",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 13811,
+      "python_target": "lcmodel.overrides.core_compat._ov_passf2",
+      "python_target_kind": "semantic",
+      "python_source_line": 600
+    },
+    {
+      "fortran_name": "passf3",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 13763,
+      "python_target": "lcmodel.overrides.core_compat._ov_passf3",
+      "python_target_kind": "semantic",
+      "python_source_line": 605
+    },
+    {
+      "fortran_name": "passf4",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 13840,
+      "python_target": "lcmodel.overrides.core_compat._ov_passf4",
+      "python_target_kind": "semantic",
+      "python_source_line": 612
+    },
+    {
+      "fortran_name": "passf5",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 13682,
+      "python_target": "lcmodel.overrides.core_compat._ov_passf5",
+      "python_target_kind": "semantic",
+      "python_source_line": 619
+    },
+    {
+      "fortran_name": "pastep",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 9060,
+      "python_target": "lcmodel.overrides.workflow._ov_pastep",
+      "python_target_kind": "semantic",
+      "python_source_line": 280
+    },
+    {
+      "fortran_name": "penlty",
+      "fortran_kind": "FUNCTION",
+      "fortran_source_line": 8587,
+      "python_target": "lcmodel.overrides.workflow._ov_penlty",
+      "python_target_kind": "semantic",
+      "python_source_line": 285
+    },
+    {
+      "fortran_name": "phase_with_max_real",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 2951,
+      "python_target": "lcmodel.overrides.core_compat._ov_phase_with_max_real",
+      "python_target_kind": "semantic",
+      "python_source_line": 790
+    },
+    {
+      "fortran_name": "phasta",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 6538,
+      "python_target": "lcmodel.overrides.workflow._ov_phasta",
+      "python_target_kind": "semantic",
+      "python_source_line": 146
+    },
+    {
+      "fortran_name": "plinls",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 8795,
+      "python_target": "lcmodel.overrides.workflow._ov_plinls",
+      "python_target_kind": "semantic",
+      "python_source_line": 168
+    },
+    {
+      "fortran_name": "plot",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 12295,
+      "python_target": "lcmodel.overrides.postscript._ov_plot",
+      "python_target_kind": "semantic",
+      "python_source_line": 114
+    },
+    {
+      "fortran_name": "plot_gap",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 12330,
+      "python_target": "lcmodel.overrides.postscript._ov_plot_gap",
+      "python_target_kind": "semantic",
+      "python_source_line": 145
+    },
+    {
+      "fortran_name": "plprin",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 15039,
+      "python_target": "lcmodel.overrides.core_compat._ov_plprin",
+      "python_target_kind": "semantic",
+      "python_source_line": 372
+    },
+    {
+      "fortran_name": "pnnls",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 14616,
+      "python_target": "lcmodel.overrides.core_compat._ov_pnnls",
+      "python_target_kind": "semantic",
+      "python_source_line": 320
+    },
+    {
+      "fortran_name": "psetup",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 12422,
+      "python_target": "lcmodel.overrides.postscript._ov_psetup",
+      "python_target_kind": "semantic",
+      "python_source_line": 21
+    },
+    {
+      "fortran_name": "pythag",
+      "fortran_kind": "FUNCTION",
+      "fortran_source_line": 15497,
+      "python_target": "lcmodel.overrides.core_compat._ov_pythag",
+      "python_target_kind": "semantic",
+      "python_source_line": 218
+    },
+    {
+      "fortran_name": "r_base_sol_big",
+      "fortran_kind": "FUNCTION",
+      "fortran_source_line": 7548,
+      "python_target": "lcmodel.overrides.core_compat._ov_r_base_sol_big",
+      "python_target_kind": "semantic",
+      "python_source_line": 1126
+    },
+    {
+      "fortran_name": "random",
+      "fortran_kind": "FUNCTION",
+      "fortran_source_line": 14403,
+      "python_target": "lcmodel.overrides.core_compat._ov_random",
+      "python_target_kind": "semantic",
+      "python_source_line": 172
+    },
+    {
+      "fortran_name": "remove_blank_start",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 11915,
+      "python_target": "lcmodel.overrides.core_compat._ov_remove_blank_start",
+      "python_target_kind": "semantic",
+      "python_source_line": 67
+    },
+    {
+      "fortran_name": "rephas",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 8657,
+      "python_target": "lcmodel.overrides.workflow._ov_rephas",
+      "python_target_kind": "semantic",
+      "python_source_line": 149
+    },
+    {
+      "fortran_name": "restore_settings",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 1449,
+      "python_target": "lcmodel.overrides.workflow._ov_restore_settings",
+      "python_target_kind": "semantic",
+      "python_source_line": 303
+    },
+    {
+      "fortran_name": "revers",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 11045,
+      "python_target": "lcmodel.overrides.workflow._ov_revers",
+      "python_target_kind": "semantic",
+      "python_source_line": 521
+    },
+    {
+      "fortran_name": "rfalsi",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 8213,
+      "python_target": "lcmodel.overrides.workflow._ov_rfalsi",
+      "python_target_kind": "semantic",
+      "python_source_line": 247
+    },
+    {
+      "fortran_name": "rgb",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 12258,
+      "python_target": "lcmodel.overrides.postscript._ov_rgb",
+      "python_target_kind": "semantic",
+      "python_source_line": 47
+    },
+    {
+      "fortran_name": "savbes",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 10008,
+      "python_target": "lcmodel.overrides.workflow._ov_savbes",
+      "python_target_kind": "semantic",
+      "python_source_line": 291
+    },
+    {
+      "fortran_name": "seqtot",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 12765,
+      "python_target": "lcmodel.overrides.workflow._ov_seqtot",
+      "python_target_kind": "semantic",
+      "python_source_line": 635
+    },
+    {
+      "fortran_name": "set_lshape_false",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 4743,
+      "python_target": "lcmodel.overrides.workflow._ov_set_lshape_false",
+      "python_target_kind": "semantic",
+      "python_source_line": 320
+    },
+    {
+      "fortran_name": "setup",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 6105,
+      "python_target": "lcmodel.overrides.workflow._ov_setup",
+      "python_target_kind": "semantic",
+      "python_source_line": 83
+    },
+    {
+      "fortran_name": "setup3",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 6465,
+      "python_target": "lcmodel.overrides.workflow._ov_setup3",
+      "python_target_kind": "semantic",
+      "python_source_line": 108
+    },
+    {
+      "fortran_name": "shiftd",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 6079,
+      "python_target": "lcmodel.overrides.workflow._ov_shiftd",
+      "python_target_kind": "semantic",
+      "python_source_line": 132
+    },
+    {
+      "fortran_name": "show",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 12611,
+      "python_target": "lcmodel.overrides.postscript._ov_show",
+      "python_target_kind": "semantic",
+      "python_source_line": 192
+    },
+    {
+      "fortran_name": "showpg",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 12626,
+      "python_target": "lcmodel.overrides.postscript._ov_showpg",
+      "python_target_kind": "semantic",
+      "python_source_line": 202
+    },
+    {
+      "fortran_name": "smooth_tail",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 3011,
+      "python_target": "lcmodel.overrides.core_compat._ov_smooth_tail",
+      "python_target_kind": "semantic",
+      "python_source_line": 767
+    },
+    {
+      "fortran_name": "smooth_tail_2",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 3045,
+      "python_target": "lcmodel.overrides.core_compat._ov_smooth_tail_2",
+      "python_target_kind": "semantic",
+      "python_source_line": 736
+    },
+    {
+      "fortran_name": "solve",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 9091,
+      "python_target": "lcmodel.overrides.workflow._ov_solve",
+      "python_target_kind": "semantic",
+      "python_source_line": 180
+    },
+    {
+      "fortran_name": "split_filename",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 1895,
+      "python_target": "lcmodel.overrides.workflow._ov_split_filename",
+      "python_target_kind": "semantic",
+      "python_source_line": 478
+    },
+    {
+      "fortran_name": "split_title",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 2008,
+      "python_target": "lcmodel.overrides.workflow._ov_split_title",
+      "python_target_kind": "semantic",
+      "python_source_line": 511
+    },
+    {
+      "fortran_name": "ssrang",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 8190,
+      "python_target": "lcmodel.overrides.workflow._ov_ssrang",
+      "python_target_kind": "semantic",
+      "python_source_line": 235
+    },
+    {
+      "fortran_name": "startv",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 5441,
+      "python_target": "lcmodel.overrides.workflow._ov_startv",
+      "python_target_kind": "semantic",
+      "python_source_line": 113
+    },
+    {
+      "fortran_name": "strchk",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 12131,
+      "python_target": "lcmodel.overrides.core_compat._ov_strchk",
+      "python_target_kind": "semantic",
+      "python_source_line": 105
+    },
+    {
+      "fortran_name": "string",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 12586,
+      "python_target": "lcmodel.overrides.postscript._ov_string",
+      "python_target_kind": "semantic",
+      "python_source_line": 171
+    },
+    {
+      "fortran_name": "strpou",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 12660,
+      "python_target": "lcmodel.overrides.postscript._ov_strpou",
+      "python_target_kind": "semantic",
+      "python_source_line": 216
+    },
+    {
+      "fortran_name": "tick",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 12162,
+      "python_target": "lcmodel.overrides.postscript._ov_tick",
+      "python_target_kind": "semantic",
+      "python_source_line": 252
+    },
+    {
+      "fortran_name": "toupper_lower",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 11936,
+      "python_target": "lcmodel.overrides.core_compat._ov_toupper_lower",
+      "python_target_kind": "semantic",
+      "python_source_line": 77
+    },
+    {
+      "fortran_name": "tql2",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 15157,
+      "python_target": "lcmodel.overrides.core_compat._ov_tql2",
+      "python_target_kind": "semantic",
+      "python_source_line": 433
+    },
+    {
+      "fortran_name": "tred2",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 15330,
+      "python_target": "lcmodel.overrides.core_compat._ov_tred2",
+      "python_target_kind": "semantic",
+      "python_source_line": 403
+    },
+    {
+      "fortran_name": "tworeg",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 7029,
+      "python_target": "lcmodel.overrides.workflow._ov_tworeg",
+      "python_target_kind": "semantic",
+      "python_source_line": 205
+    },
+    {
+      "fortran_name": "tworeg_sav",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 7192,
+      "python_target": "lcmodel.overrides.workflow._ov_tworeg_sav",
+      "python_target_kind": "semantic",
+      "python_source_line": 213
+    },
+    {
+      "fortran_name": "tworg1",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 7175,
+      "python_target": "lcmodel.overrides.workflow._ov_tworg1",
+      "python_target_kind": "semantic",
+      "python_source_line": 208
+    },
+    {
+      "fortran_name": "tworg2",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 7214,
+      "python_target": "lcmodel.overrides.workflow._ov_tworg2",
+      "python_target_kind": "semantic",
+      "python_source_line": 220
+    },
+    {
+      "fortran_name": "tworg3",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 7402,
+      "python_target": "lcmodel.overrides.workflow._ov_tworg3",
+      "python_target_kind": "semantic",
+      "python_source_line": 226
+    },
+    {
+      "fortran_name": "update_priors",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 1566,
+      "python_target": "lcmodel.overrides.workflow._ov_update_priors",
+      "python_target_kind": "semantic",
+      "python_source_line": 310
+    },
+    {
+      "fortran_name": "water_scale",
+      "fortran_kind": "SUBROUTINE",
+      "fortran_source_line": 4766,
+      "python_target": "lcmodel.overrides.core_compat._ov_water_scale",
+      "python_target_kind": "semantic",
+      "python_source_line": 1074
+    }
+  ]
+}

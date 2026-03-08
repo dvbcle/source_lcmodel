@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Sequence
 
+from lcmodel.traceability import fortran_provenance
+
 
 @dataclass(frozen=True)
 class IntegrationResult:
@@ -16,6 +18,7 @@ class IntegrationResult:
     baseline_level: float
 
 
+@fortran_provenance("integrate")
 def integrate_peak_with_local_baseline(
     values: Sequence[float],
     *,
@@ -92,4 +95,3 @@ def integrate_peak_with_local_baseline(
         end_index=window_end,
         baseline_level=baseline,
     )
-
