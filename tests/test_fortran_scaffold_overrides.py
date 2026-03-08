@@ -76,6 +76,24 @@ class TestFortranScaffoldOverrides(unittest.TestCase):
         self.assertEqual(1, fs.nextre(parnl, 2, None, dgauss, 0.0, 1, state={}))
         self.assertEqual(2, fs.inflec(parnl, 2, None, dgauss, 0.0, 1, state={}))
 
+    def test_postscript_primitive_overrides(self):
+        state = {}
+        fs.psetup(True, 612.0, 792.0, False, state=state)
+        fs.linewd(1.5, state=state)
+        fs.rgb([1.0, 0.0, 0.0], state=state)
+        fs.dash(1, [3.0, 2.0], state=state)
+        fs.line(10.0, 20.0, 30.0, 40.0, state=state)
+        fs.box(50.0, 60.0, 70.0, 80.0, state=state)
+        fs.plot(3, [0.0, 1.0, 2.0], [0.0, 1.0, 0.0], 0.0, 2.0, 0.0, 1.0, 100.0, 200.0, 50.0, 50.0, state=state)
+        fs.string(False, 0.0, 20.0, 30.0, "hello", state=state)
+        fs.showpg(state=state)
+        fs.endps(state=state)
+        text = state.get("postscript", "")
+        self.assertIn("%!PS-Adobe-3.0", text)
+        self.assertIn("setlinewidth", text)
+        self.assertIn("setrgbcolor", text)
+        self.assertIn("showpage", text)
+
 
 if __name__ == "__main__":
     unittest.main()
