@@ -37,6 +37,32 @@ class TestFortranScaffoldOverrides(unittest.TestCase):
         self.assertIn("mydata_stage", state)
         self.assertIn("dataf", state)
 
+    def test_text_and_numeric_function_overrides(self):
+        self.assertEqual(3, fs.ilen("abc  ", state={}))
+        self.assertEqual(3, fs.icharst("  x", 3, state={}))
+        seed = [1.0]
+        value = fs.random(seed, state={})
+        self.assertGreater(value, 0.0)
+        self.assertLess(value, 1.0)
+        self.assertGreater(seed[0], 0.0)
+
+    def test_average_and_getvar_overrides(self):
+        state = fs.check_zero_voxels(
+            state={
+                "channels": [
+                    [1 + 0j, 2 + 0j, 3 + 0j, 4 + 0j],
+                    [0j, 0j, 0j, 0j],
+                ]
+            }
+        )
+        self.assertEqual((False, True), state["zero_voxel"])
+        state["iaverg"] = 3
+        state["nback"] = (3, 1)
+        state = fs.average(state=state)
+        self.assertIn("datat", state)
+        variance = fs.getvar(state=state)
+        self.assertGreaterEqual(variance, 0.0)
+
 
 if __name__ == "__main__":
     unittest.main()
