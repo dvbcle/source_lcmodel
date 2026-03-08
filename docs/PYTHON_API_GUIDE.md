@@ -102,6 +102,7 @@ write_fit_table("out/result.table", fit)
 Combination expressions can be provided via:
 - `RunConfig(combine_expressions=("NAA+NAAG", "Glu+Gln"))`
 - control file `CHCOMB(1)=...` entries
+- `RunConfig(exclude_ppm_ranges=((4.9, 4.5),))` or control `PPMGAP(1,J)/PPMGAP(2,J)` entries
 
 ## 4. MYDATA Scaffold (Initial Semantic Port)
 

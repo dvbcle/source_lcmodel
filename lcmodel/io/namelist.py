@@ -11,7 +11,7 @@ from lcmodel.models import RunConfig
 
 _TRUE_VALUES = {".true.", "true", "t"}
 _FALSE_VALUES = {".false.", "false", "f"}
-_INDEXED_KEY_RE = re.compile(r"^([A-Za-z_]\w*)\((\d+)\)$")
+_INDEXED_KEY_RE = re.compile(r"^([A-Za-z_]\w*)\((\d+)(?:\s*,\s*(\d+))?\)$")
 
 
 def _strip_inline_comment(line: str) -> str:
@@ -86,6 +86,7 @@ def parse_fortran_namelist(text: str, expected_name: str | None = None) -> dict[
     cur: list[str] = []
     in_quote = False
     quote_char = ""
+    paren_depth = 0
     for ch in payload:
         if ch in {"'", '"'}:
             if not in_quote:
@@ -96,7 +97,12 @@ def parse_fortran_namelist(text: str, expected_name: str | None = None) -> dict[
                 quote_char = ""
             cur.append(ch)
             continue
-        if ch == "," and not in_quote:
+        if not in_quote:
+            if ch == "(":
+                paren_depth += 1
+            elif ch == ")" and paren_depth > 0:
+                paren_depth -= 1
+        if ch == "," and not in_quote and paren_depth == 0:
             token = "".join(cur).strip()
             if token:
                 tokens.append(token)
@@ -117,13 +123,26 @@ def parse_fortran_namelist(text: str, expected_name: str | None = None) -> dict[
         m = _INDEXED_KEY_RE.match(key)
         if m:
             base = m.group(1).lower()
-            idx = int(m.group(2)) - 1
+            idx1 = int(m.group(2)) - 1
+            idx2_text = m.group(3)
             existing = result.get(base)
             if not isinstance(existing, list):
                 existing = []
-            while len(existing) <= idx:
-                existing.append("")
-            existing[idx] = value
+            if idx2_text is None:
+                while len(existing) <= idx1:
+                    existing.append("")
+                existing[idx1] = value
+            else:
+                idx2 = int(idx2_text) - 1
+                while len(existing) <= idx2:
+                    existing.append([])
+                inner = existing[idx2]
+                if not isinstance(inner, list):
+                    inner = []
+                while len(inner) <= idx1:
+                    inner.append("")
+                inner[idx1] = value
+                existing[idx2] = inner
             result[base] = existing
         else:
             result[key] = value
@@ -158,6 +177,18 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
             ppm_end = float(nml["ppmend"])
         except Exception:
             ppm_end = None
+    exclude_ppm_ranges: tuple[tuple[float, float], ...] = ()
+    if isinstance(nml.get("ppmgap"), list):
+        pairs: list[tuple[float, float]] = []
+        for item in nml["ppmgap"]:
+            if isinstance(item, list) and len(item) >= 2:
+                try:
+                    a = float(item[0])
+                    b = float(item[1])
+                except Exception:
+                    continue
+                pairs.append((a, b))
+        exclude_ppm_ranges = tuple(pairs)
     shift_search_points = 0
     if "nshifw" in nml:
         try:
@@ -276,6 +307,7 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
         line_broadening_hz=line_broadening_hz,
         fit_ppm_start=ppm_start,
         fit_ppm_end=ppm_end,
+        exclude_ppm_ranges=exclude_ppm_ranges,
         include_metabolites=include_metabolites,
         combine_expressions=combine_expressions,
         shift_search_points=shift_search_points,

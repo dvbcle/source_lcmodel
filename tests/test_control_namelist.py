@@ -32,6 +32,8 @@ $LCMODL
  CHCOMB(1)='NAA+Cr',
  PPMST=3.2,
  PPMEND=2.0,
+ PPMGAP(1,1)=4.9,
+ PPMGAP(2,1)=4.5,
 /
 """
         nml = parse_fortran_namelist(text, expected_name="LCMODL")
@@ -40,6 +42,7 @@ $LCMODL
         self.assertEqual("raw.txt", nml["filraw"])
         self.assertEqual(["NAA", "Cr"], nml["chuse1"])
         self.assertEqual(["NAA+Cr"], nml["chcomb"])
+        self.assertEqual([[4.9, 4.5]], nml["ppmgap"])
 
     def test_load_run_config_from_control_file(self):
         p = self._make_local_tmpdir()
@@ -49,7 +52,7 @@ $LCMODL
                 (
                     "$LCMODL\n"
                     " TITLE='Control Title', NTITLE=1, FILRAW='a.txt', FILRAWL='raw_list.txt', FILCSV='batch.csv', FILBAS='b.txt', FILPS='c.ps', FILTAB='tab.out', FILPRR='priors.txt', NDEGZ=2, NSHIFW=3, SHFTCYC=.false., FSHREF=.true., NSHIFIT=14, NLWSCN=5, LWSCMX=2.5, TIMDOM=.true., AUTOPH0=.true., AUTOPH1=.true., DELTAT=0.0005, LBHZ=4.0, NBACKG=8, ALPHAB=0.25, NWNDO=5, IPOWPH=7,\n"
-                    " CHUSE1(1)='NAA', CHUSE1(2)='Cr', CHCOMB(1)='NAA+Cr', PPMST=3.2, PPMEND=2.0, FILPPM='ppm.txt', FILNAM='names.txt', /\n"
+                    " CHUSE1(1)='NAA', CHUSE1(2)='Cr', CHCOMB(1)='NAA+Cr', PPMST=3.2, PPMEND=2.0, PPMGAP(1,1)=4.9, PPMGAP(2,1)=4.5, FILPPM='ppm.txt', FILNAM='names.txt', /\n"
                 ),
                 encoding="utf-8",
             )
@@ -79,6 +82,7 @@ $LCMODL
             self.assertEqual(5, cfg.integration_border_points)
             self.assertEqual(3.2, cfg.fit_ppm_start)
             self.assertEqual(2.0, cfg.fit_ppm_end)
+            self.assertEqual(((4.9, 4.5),), cfg.exclude_ppm_ranges)
             self.assertEqual("ppm.txt", cfg.ppm_axis_file)
             self.assertEqual("names.txt", cfg.basis_names_file)
             self.assertTrue(cfg.time_domain_input)

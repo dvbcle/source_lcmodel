@@ -120,6 +120,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Optional ppm window end for selecting fit rows.",
     )
     parser.add_argument(
+        "--exclude-ppm-ranges",
+        default=None,
+        help="Comma-separated ranges to exclude, e.g. 4.9:4.5,2.1:1.9.",
+    )
+    parser.add_argument(
         "--include-metabolites",
         default=None,
         help="Comma-separated metabolite names to include from basis_names_file.",
@@ -246,6 +251,17 @@ def main(argv: Sequence[str] | None = None) -> int:
         config = replace(config, fit_ppm_start=args.ppm_start)
     if args.ppm_end is not None:
         config = replace(config, fit_ppm_end=args.ppm_end)
+    if args.exclude_ppm_ranges is not None:
+        ranges: list[tuple[float, float]] = []
+        for raw_range in args.exclude_ppm_ranges.split(","):
+            part = raw_range.strip()
+            if not part:
+                continue
+            if ":" not in part:
+                raise SystemExit(f"Invalid exclude range '{part}', expected a:b")
+            a_text, b_text = part.split(":", 1)
+            ranges.append((float(a_text), float(b_text)))
+        config = replace(config, exclude_ppm_ranges=tuple(ranges))
     if args.include_metabolites is not None:
         names = tuple(p.strip() for p in args.include_metabolites.split(",") if p.strip())
         config = replace(config, include_metabolites=names)

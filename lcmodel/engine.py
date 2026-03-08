@@ -76,6 +76,7 @@ class LCModelRunner:
                 ppm_axis=ppm_axis,
                 ppm_start=self.config.fit_ppm_start,
                 ppm_end=self.config.fit_ppm_end,
+                exclude_ppm_ranges=self.config.exclude_ppm_ranges,
                 basis_names=basis_names,
                 include_metabolites=self.config.include_metabolites,
             )

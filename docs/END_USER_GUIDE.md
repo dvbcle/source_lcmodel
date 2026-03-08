@@ -71,6 +71,8 @@ output_split_right=.ps
   - Optional soft priors file with rows `name mean sd`.
 - `--ppm-start`, `--ppm-end`
   - Optional ppm window boundaries for row selection before fitting.
+- `--exclude-ppm-ranges`
+  - Optional comma-separated ppm ranges to exclude within the fit window.
 - `--include-metabolites`
   - Optional comma-separated metabolite names to keep in the fit.
 - `--combine-expressions`

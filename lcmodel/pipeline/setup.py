@@ -22,6 +22,7 @@ def prepare_fit_inputs(
     ppm_axis: Sequence[float] | None = None,
     ppm_start: float | None = None,
     ppm_end: float | None = None,
+    exclude_ppm_ranges: Sequence[tuple[float, float]] = (),
     basis_names: Sequence[str] | None = None,
     include_metabolites: Sequence[str] = (),
 ) -> SetupResult:
@@ -46,6 +47,19 @@ def prepare_fit_inputs(
         row_indices = [i for i, ppm in enumerate(ppm_axis) if lo <= float(ppm) <= hi]
         if not row_indices:
             raise ValueError("ppm window selection produced zero rows")
+    if ppm_axis is not None and exclude_ppm_ranges:
+        gaps: list[tuple[float, float]] = []
+        for a, b in exclude_ppm_ranges:
+            lo = min(float(a), float(b))
+            hi = max(float(a), float(b))
+            gaps.append((lo, hi))
+        row_indices = [
+            i
+            for i in row_indices
+            if all(not (gap_lo <= float(ppm_axis[i]) <= gap_hi) for gap_lo, gap_hi in gaps)
+        ]
+        if not row_indices:
+            raise ValueError("ppm gap exclusion produced zero rows")
 
     column_indices = list(range(ncols))
     selected_names: list[str] = []
@@ -77,4 +91,3 @@ def prepare_fit_inputs(
         column_indices=tuple(column_indices),
         metabolite_names=tuple(selected_names),
     )
-
