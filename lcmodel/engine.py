@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
+from lcmodel.io.batch import load_path_list, write_batch_csv
 from lcmodel.io.basis import load_basis_names
 from lcmodel.io.numeric import (
     load_complex_matrix,
@@ -12,7 +14,7 @@ from lcmodel.io.numeric import (
 from lcmodel.io.pathing import split_output_filename_for_voxel
 from lcmodel.io.priors import load_soft_priors
 from lcmodel.io.report import write_fit_table
-from lcmodel.models import FitResult, RunConfig, RunResult
+from lcmodel.models import BatchRunResult, FitResult, RunConfig, RunResult
 from lcmodel.pipeline.fitting import FitConfig, run_fit_stage
 from lcmodel.pipeline.postprocess import compute_combinations
 from lcmodel.pipeline.priors import augment_system_with_soft_priors
@@ -110,3 +112,28 @@ class LCModelRunner:
             fit_result=fit_result,
             table_output_file=table_written,
         )
+
+    def run_batch(self) -> BatchRunResult:
+        """Run fit for each raw file listed in `raw_data_list_file`."""
+
+        if not self.config.raw_data_list_file:
+            raise ValueError("raw_data_list_file must be set for batch runs")
+        raw_files = load_path_list(self.config.raw_data_list_file)
+        rows: list[tuple[str, tuple[float, ...], float]] = []
+        for raw_file in raw_files:
+            cfg = replace(
+                self.config,
+                raw_data_file=raw_file,
+                table_output_file=None,
+                raw_data_list_file=None,
+                batch_csv_file=None,
+            )
+            result = LCModelRunner(cfg).run()
+            if result.fit_result is None:
+                continue
+            rows.append((raw_file, result.fit_result.coefficients, result.fit_result.residual_norm))
+
+        csv_file = None
+        if self.config.batch_csv_file:
+            csv_file = write_batch_csv(self.config.batch_csv_file, rows)
+        return BatchRunResult(rows=tuple(rows), csv_file=csv_file)

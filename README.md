@@ -57,6 +57,12 @@ Fit with soft priors:
 python -m lcmodel --raw-data-file data\\raw.txt --basis-file data\\basis.txt --basis-names-file data\\names.txt --priors-file data\\priors.txt
 ```
 
+Batch mode:
+
+```powershell
+python -m lcmodel --raw-data-list-file data\\raw_list.txt --basis-file data\\basis.txt --batch-csv-file out\\batch.csv
+```
+
 Time-domain (complex) fit example:
 
 ```powershell

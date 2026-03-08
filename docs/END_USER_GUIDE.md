@@ -47,6 +47,10 @@ output_split_right=.ps
   - Apply auto-estimated zero-order phase after FFT conversion.
 - `--raw-data-file`
   - Optional numeric vector file for the fit stage.
+- `--raw-data-list-file`
+  - Optional file list for batch mode (one raw file path per line).
+- `--batch-csv-file`
+  - Optional output CSV for batch summary results.
 - `--basis-file`
   - Optional numeric matrix file for the fit stage.
 - `--ppm-axis-file`
@@ -111,6 +115,12 @@ Run from control file:
 
 ```powershell
 python -m lcmodel --control-file data\\control.in
+```
+
+Run batch mode:
+
+```powershell
+python -m lcmodel --raw-data-list-file data\\raw_list.txt --basis-file data\\basis.txt --batch-csv-file out\\batch.csv
 ```
 
 ## 6. Troubleshooting

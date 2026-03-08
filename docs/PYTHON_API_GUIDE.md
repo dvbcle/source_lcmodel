@@ -24,6 +24,16 @@ print(result.output_filename_parts)
 print(result.fit_result)
 ```
 
+Batch mode example:
+
+```python
+batch = LCModelRunner(
+    RunConfig(raw_data_list_file="data/raw_list.txt", basis_file="data/basis.txt", batch_csv_file="out/batch.csv")
+).run_batch()
+print(batch.rows)
+print(batch.csv_file)
+```
+
 ## 2. Core Types
 
 - `RunConfig`

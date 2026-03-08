@@ -191,6 +191,8 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
         output_filename=output_filename,
         table_output_file=table_output_file,
         raw_data_file=str(raw_data_file) if raw_data_file else None,
+        raw_data_list_file=str(nml["filrawl"]) if isinstance(nml.get("filrawl"), str) and nml["filrawl"].strip() else None,
+        batch_csv_file=str(nml["filcsv"]) if isinstance(nml.get("filcsv"), str) and nml["filcsv"].strip() else None,
         basis_file=str(basis_file) if basis_file else None,
         ppm_axis_file=str(nml["filppm"]) if isinstance(nml.get("filppm"), str) and nml["filppm"].strip() else None,
         basis_names_file=str(nml["filnam"]) if isinstance(nml.get("filnam"), str) and nml["filnam"].strip() else None,

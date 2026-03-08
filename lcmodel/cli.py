@@ -49,6 +49,16 @@ def build_parser() -> argparse.ArgumentParser:
         help="Path to numeric vector file for fit stage (one value per line).",
     )
     parser.add_argument(
+        "--raw-data-list-file",
+        default=None,
+        help="Path to list of raw data files for batch mode.",
+    )
+    parser.add_argument(
+        "--batch-csv-file",
+        default=None,
+        help="Output CSV path for batch summary.",
+    )
+    parser.add_argument(
         "--basis-file",
         default=None,
         help="Path to numeric basis matrix file for fit stage.",
@@ -122,6 +132,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         config = replace(config, auto_phase_zero_order=True)
     if args.raw_data_file is not None:
         config = replace(config, raw_data_file=args.raw_data_file)
+    if args.raw_data_list_file is not None:
+        config = replace(config, raw_data_list_file=args.raw_data_list_file)
+    if args.batch_csv_file is not None:
+        config = replace(config, batch_csv_file=args.batch_csv_file)
     if args.basis_file is not None:
         config = replace(config, basis_file=args.basis_file)
     if args.ppm_axis_file is not None:
@@ -144,6 +158,16 @@ def main(argv: Sequence[str] | None = None) -> int:
         config = replace(config, baseline_order=args.baseline_order)
 
     runner = LCModelRunner(config)
+    if config.raw_data_list_file:
+        batch = runner.run_batch()
+        print(f"batch_rows={len(batch.rows)}")
+        for raw_file, coeffs, residual in batch.rows:
+            coeff_text = ",".join(f"{v:.12g}" for v in coeffs)
+            print(f"batch_row={raw_file}|{residual:.12g}|{coeff_text}")
+        if batch.csv_file:
+            print(f"batch_csv_file={batch.csv_file}")
+        return 0
+
     result = runner.run()
 
     print(f"title_lines={result.title_layout.line_count}")

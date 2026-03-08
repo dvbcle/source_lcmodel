@@ -24,6 +24,8 @@ class RunConfig:
     basis_names_file: str | None = None
     priors_file: str | None = None
     table_output_file: str | None = None
+    raw_data_list_file: str | None = None
+    batch_csv_file: str | None = None
     time_domain_input: bool = False
     auto_phase_zero_order: bool = False
     fit_ppm_start: float | None = None
@@ -55,3 +57,11 @@ class RunResult:
     output_filename_parts: tuple[str, str] | None
     fit_result: FitResult | None = None
     table_output_file: str | None = None
+
+
+@dataclass(frozen=True)
+class BatchRunResult:
+    """Batch-run summary for multiple raw data files."""
+
+    rows: tuple[tuple[str, tuple[float, ...], float], ...]
+    csv_file: str | None = None
