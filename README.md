@@ -1,3 +1,10 @@
+# Update about current status - Mar 9, 2026
+
+Plan to reframe this project as a spec-driven AI assisted porting, where Codex 
+first generates detailed specifications based on review of the Fortran code.
+This pivot is because the current code in a state where AI based debug and fix
+isn't making any progress
+
 # LCModel Python Port
 
 Python-first implementation of LCModel with traceability back to the original
