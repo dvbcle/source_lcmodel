@@ -64,6 +64,9 @@ line-by-line manual transcription of every change:
 - External `test_lcm` regression now runs in strict generated-only mode:
   `out.ps` must be produced by Python execution and only then compared to
   `out_ref_build.ps` (no template-copy path).
+- Current external regression state (as of March 9, 2026): **not passing**
+  (`byte_match=False`), despite clean isolated execution (`python_returncode=0`,
+  `hygiene_ok=True`).
 
 ### Architectural approach details
 
@@ -197,6 +200,13 @@ Verification:
   - pre/post inventory and hash-based mutation checks in each run directory
 - Current strict generated-only run status is recorded in
   `docs/EXTERNAL_REGRESSION_PROOF.md`.
+- Latest recorded strict run (March 9, 2026, run directory
+  `artifacts/external_regression_clean_20260309_075544_880525`) reports:
+  - `python_returncode=0`
+  - `hygiene_ok=True`
+  - `byte_match=False`
+  - `out_sha256=EA00C82D7334C23137DC711ABF2D0F9EA0F23851E8B75CBDB2AFFDC525D84811`
+  - `ref_sha256=ED84E9B18FC0968528939C1355E90A6220D96DA770AD4032094FD9D13DD5E2E5`
 
 ## Developer workflow
 

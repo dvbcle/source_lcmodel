@@ -10,11 +10,11 @@ public fixture from `schorschinho/LCModel` (`test_lcm`).
 
 ## Latest run metadata
 
-- Date/time: `2026-03-08 16:47:18 -04:00`
+- Date/time: `2026-03-09 07:57:31 -04:00`
 - Fixture source: `https://github.com/schorschinho/LCModel`
 - Fixture files used: `control.file`, `data.raw`, `3t.basis`, `out_ref_build.ps`
 - Evidence directory:
-  `artifacts/external_regression_clean_20260308_164718_011144/`
+  `artifacts/external_regression_clean_20260309_075544_880525/`
 
 ## Commands executed
 
@@ -48,7 +48,7 @@ python tools/run_external_regression_clean.py
   - `added_files=out.ps,python_run.log`
   - `modified_preexisting_files=`
   - `byte_match=False`
-  - `out_sha256=D65B8CD5FB4B99AD099EA26CA54FA0FA355D76F82AF79A7F8AAFF36846985710`
+  - `out_sha256=EA00C82D7334C23137DC711ABF2D0F9EA0F23851E8B75CBDB2AFFDC525D84811`
   - `ref_sha256=ED84E9B18FC0968528939C1355E90A6220D96DA770AD4032094FD9D13DD5E2E5`
 
 ## Interpretation
