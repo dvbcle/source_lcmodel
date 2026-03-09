@@ -59,6 +59,9 @@ class _FitRenderPayload:
     phase0_deg: float | None = None
     phase1_deg_per_ppm: float | None = None
     alignment_shift_fractional_points: float = 0.0
+    filcor_phase0_deg: float | None = None
+    filcor_phase1_deg_per_ppm: float | None = None
+    filcor_shift_points: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -189,9 +192,9 @@ class LCModelRunner:
                 hzpppm=self.config.hzpppm,
                 nunfil=self.config.nunfil if self.config.nunfil > 0 else None,
                 dwell_time_s=self.config.dwell_time_s if self.config.dwell_time_s > 0.0 else None,
-                phase0_deg=render_payload.phase0_deg,
-                phase1_deg_per_ppm=render_payload.phase1_deg_per_ppm,
-                shift_points=render_payload.alignment_shift_fractional_points,
+                phase0_deg=render_payload.filcor_phase0_deg,
+                phase1_deg_per_ppm=render_payload.filcor_phase1_deg_per_ppm,
+                shift_points=render_payload.filcor_shift_points,
             )
 
         return RunResult(
@@ -211,6 +214,7 @@ class LCModelRunner:
             phase0_deg,
             phase1_deg_per_ppm,
             corrected_time_domain,
+            frequency_domain_complex,
         ) = self._load_fit_system()
         ppm_start = self.config.fit_ppm_start
         ppm_end = self.config.fit_ppm_end
@@ -237,6 +241,68 @@ class LCModelRunner:
             basis_names=basis_names,
             include_metabolites=self.config.include_metabolites,
         )
+        setup_complex: tuple[complex, ...] | None = None
+        setup_ppm_axis: tuple[float, ...] | None = None
+        if (
+            frequency_domain_complex is not None
+            and setup.row_indices
+            and max(setup.row_indices) < len(frequency_domain_complex)
+        ):
+            setup_complex = tuple(complex(frequency_domain_complex[i]) for i in setup.row_indices)
+        if ppm_axis is not None:
+            setup_ppm_axis = tuple(float(ppm_axis[i]) for i in setup.row_indices)
+
+        nonlinear_cfg = NonlinearConfig(
+            shift_search_points=self.config.shift_search_points,
+            alignment_circular=self.config.alignment_circular,
+            fractional_shift_refine=self.config.fractional_shift_refine,
+            fractional_shift_iterations=self.config.fractional_shift_iterations,
+            linewidth_scan_points=self.config.linewidth_scan_points,
+            linewidth_scan_max_sigma_points=self.config.linewidth_scan_max_sigma_points,
+            max_iters=self.config.nonlinear_max_iters if self.config.nonlinear_refine else 1,
+            tolerance=self.config.nonlinear_tolerance,
+        )
+        if self.config.time_domain_input:
+            ppminc_window = 0.0
+            if setup_ppm_axis is not None and len(setup_ppm_axis) > 1:
+                ppminc_window = abs(float(setup_ppm_axis[1]) - float(setup_ppm_axis[0]))
+            elif self.config.dwell_time_s > 0.0 and self.config.hzpppm > 0.0 and self.config.nunfil > 0:
+                ppminc_window = 1.0 / (
+                    float(self.config.dwell_time_s)
+                    * float(2 * self.config.nunfil)
+                    * float(self.config.hzpppm)
+                )
+            default_shift_points = 8
+            if ppminc_window > 0.0:
+                default_shift_points = max(2, min(10, int(round(0.06 / ppminc_window))))
+            use_default_shift = self.config.shift_search_points <= 0
+            nonlinear_cfg = NonlinearConfig(
+                shift_search_points=(
+                    default_shift_points
+                    if use_default_shift
+                    else self.config.shift_search_points
+                ),
+                alignment_circular=self.config.alignment_circular,
+                fractional_shift_refine=self.config.fractional_shift_refine,
+                fractional_shift_iterations=self.config.fractional_shift_iterations,
+                linewidth_scan_points=(
+                    self.config.linewidth_scan_points
+                    if self.config.linewidth_scan_points > 0
+                    else 3
+                ),
+                linewidth_scan_max_sigma_points=(
+                    self.config.linewidth_scan_max_sigma_points
+                    if self.config.linewidth_scan_max_sigma_points > 0.0
+                    else 1.2
+                ),
+                max_iters=self.config.nonlinear_max_iters if self.config.nonlinear_refine else 1,
+                tolerance=self.config.nonlinear_tolerance,
+                enable_phase_refinement=(setup_complex is not None and setup_ppm_axis is not None),
+                phase0_search_range_deg=12.0,
+                phase0_search_steps=5,
+                phase1_search_range_deg_per_ppm=3.0,
+                phase1_search_steps=3,
+            )
         # Fortran TWOREG/TWORG*/RFALSI outer-loop intent:
         # refine shift/linewidth search state before final linear solve.
         nonlinear = run_nonlinear_refinement(
@@ -247,16 +313,9 @@ class LCModelRunner:
                 baseline_knots=self.config.baseline_knots,
                 baseline_smoothness=self.config.baseline_smoothness,
             ),
-            NonlinearConfig(
-                shift_search_points=self.config.shift_search_points,
-                alignment_circular=self.config.alignment_circular,
-                fractional_shift_refine=self.config.fractional_shift_refine,
-                fractional_shift_iterations=self.config.fractional_shift_iterations,
-                linewidth_scan_points=self.config.linewidth_scan_points,
-                linewidth_scan_max_sigma_points=self.config.linewidth_scan_max_sigma_points,
-                max_iters=self.config.nonlinear_max_iters if self.config.nonlinear_refine else 1,
-                tolerance=self.config.nonlinear_tolerance,
-            ),
+            nonlinear_cfg,
+            base_complex_vector=setup_complex,
+            ppm_axis=setup_ppm_axis,
         )
         # Fortran STARTV/TWOREG handoff:
         # downstream reporting should use the refined (shift/linewidth-adjusted)
@@ -329,6 +388,15 @@ class LCModelRunner:
             ppm_axis=ppm_axis,
             row_indices=setup.row_indices,
         )
+        phase0_total: float | None = phase0_deg
+        phase1_total: float | None = phase1_deg_per_ppm
+        if phase0_total is None:
+            phase0_total = 0.0
+        phase0_total = float(phase0_total) + float(nonlinear.phase0_deg)
+        if phase1_total is None:
+            phase1_total = 0.0
+        phase1_total = float(phase1_total) + float(nonlinear.phase1_deg_per_ppm)
+
         fit_result = FitResult(
             coefficients=stage.coefficients,
             residual_norm=stage.residual_norm,
@@ -354,9 +422,16 @@ class LCModelRunner:
             plot_fit_values=plot_fit_values,
             plot_background_values=plot_background_values,
             corrected_time_domain=corrected_time_domain,
-            phase0_deg=phase0_deg,
-            phase1_deg_per_ppm=phase1_deg_per_ppm,
+            phase0_deg=phase0_total,
+            phase1_deg_per_ppm=phase1_total,
             alignment_shift_fractional_points=float(nonlinear.alignment_shift_fractional_points),
+            filcor_phase0_deg=phase0_deg,
+            filcor_phase1_deg_per_ppm=phase1_deg_per_ppm,
+            filcor_shift_points=(
+                float(nonlinear.alignment_shift_fractional_points)
+                if abs(float(nonlinear.alignment_shift_fractional_points)) <= 2.0
+                else 0.0
+            ),
         )
 
     def _load_fit_system(
@@ -369,6 +444,7 @@ class LCModelRunner:
         float | None,
         float | None,
         tuple[complex, ...],
+        tuple[complex, ...] | None,
     ]:
         def _fortran_real(value: float) -> float:
             """Round through IEEE-754 single precision to mirror Fortran REAL."""
@@ -380,6 +456,7 @@ class LCModelRunner:
         phase1_deg_per_ppm: float | None = None
         h2o_td: list[complex] | None = None
         corrected_time_domain: tuple[complex, ...] = ()
+        frequency_domain_complex: tuple[complex, ...] | None = None
         if self.config.basis_names_file:
             basis_names = load_basis_names(self.config.basis_names_file)
         if self.config.time_domain_input:
@@ -501,7 +578,8 @@ class LCModelRunner:
             if data_stage.frequency_domain is None:
                 raise RuntimeError("MYDATA stage did not produce frequency domain data")
             corrected_time_domain = tuple(complex(v) for v in data_stage.time_domain)
-            vector = [float(v.real) for v in data_stage.frequency_domain]
+            frequency_domain_complex = tuple(complex(v) for v in data_stage.frequency_domain)
+            vector = [float(v.real) for v in frequency_domain_complex]
             if self.config.dows and h2o_td is not None:
                 # Fortran WATER_SCALE:
                 # compute FCALIB from water + metabolite reference areas.
@@ -531,6 +609,10 @@ class LCModelRunner:
                 )
                 if fcalib is not None and fcalib > 0.0:
                     vector = [float(v) * float(fcalib) for v in vector]
+                    if frequency_domain_complex is not None:
+                        frequency_domain_complex = tuple(
+                            complex(v) * float(fcalib) for v in frequency_domain_complex
+                        )
             if data_stage.zero_order_phase_radians is not None:
                 # Python phasing rotates spectrum by exp(-i*phi); Fortran REPHAS/
                 # FINOUT conventions store +phi, so negate for FILCOR-style export.
@@ -572,6 +654,7 @@ class LCModelRunner:
             phase0_deg,
             phase1_deg_per_ppm,
             corrected_time_domain,
+            frequency_domain_complex,
         )
 
     def _select_water_reference_spectrum(

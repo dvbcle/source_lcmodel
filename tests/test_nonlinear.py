@@ -32,6 +32,8 @@ class TestNonlinear(unittest.TestCase):
         self.assertGreaterEqual(result.iterations, 1)
         self.assertGreaterEqual(result.stage.residual_norm, 0.0)
         self.assertGreater(abs(result.alignment_shift_fractional_points), 0.1)
+        self.assertTrue(abs(result.phase0_deg) >= 0.0)
+        self.assertTrue(abs(result.phase1_deg_per_ppm) >= 0.0)
 
     def test_run_nonlinear_refinement_one_shot(self):
         matrix = (
@@ -47,8 +49,9 @@ class TestNonlinear(unittest.TestCase):
         )
         self.assertAlmostEqual(2.0, result.stage.coefficients[0], places=6)
         self.assertAlmostEqual(3.0, result.stage.coefficients[1], places=6)
+        self.assertAlmostEqual(0.0, result.phase0_deg, places=12)
+        self.assertAlmostEqual(0.0, result.phase1_deg_per_ppm, places=12)
 
 
 if __name__ == "__main__":
     unittest.main()
-

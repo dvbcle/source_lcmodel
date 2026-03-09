@@ -100,3 +100,28 @@ Current likely dominant parity gap:
   corrections (`Data shift = 0.008 ppm`, `Ph: 9 deg, 2.2 deg/ppm`,
   `FWHM = 0.084 ppm`) while the current Python run remains at near-zero
   nonlinear shift/linewidth estimates in this fixture path.
+
+## 8. STARTV/TWOREG Work (2026-03-09 10:28 -04:00)
+
+- Artifact root: `artifacts/parity_iteration_20260309_102838/`
+- Focus of this pass:
+  - Added a STARTV/TWOREG-style nonlinear refinement path in Python:
+    coarse phase candidate search, bounded shift/linewidth scan, and
+    lightweight objective solves for runtime feasibility.
+  - Added routine-level provenance coverage for
+    `startv`, `phasta`, `rephas`, and `shiftd` tags in nonlinear flow.
+  - Kept FILCOR output conservative by avoiding unstable nonlinear phase/shift
+    corrections when estimates are out-of-family.
+
+Measured impact vs prior baseline (`artifacts/parity_iteration_20260309_090928/`):
+
+- `coo.phased_data` RMS: `9.5597e-05` -> `9.2926e-05` (improved)
+- `coo.fit_data` RMS: `9.3338e-05` -> `8.9060e-05` (improved)
+- `cor.real` RMS: `4.9579e-05` -> `4.9579e-05` (held)
+- `cor.imag` RMS: `5.3272e-05` -> `5.3272e-05` (held)
+
+Current blocker after this pass:
+
+- Nonlinear optimum still tends to push shift/phase bounds for this case,
+  indicating remaining mismatch in objective/regularization behavior vs
+  Fortran `STARTV`/`TWOREG` (`PLINLS`/`RFALSI`) internals.

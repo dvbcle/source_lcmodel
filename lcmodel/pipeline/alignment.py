@@ -41,6 +41,7 @@ def align_vector_by_integer_shift(
     max_shift_points: int,
     *,
     circular: bool = True,
+    fit_config: FitConfig | None = None,
 ) -> AlignmentResult:
     """Find shift in [-max_shift_points, max_shift_points] minimizing residual."""
 
@@ -52,11 +53,12 @@ def align_vector_by_integer_shift(
     best_resid = float("inf")
     best_energy = -1.0
     best_vector = [float(v) for v in vector]
+    fit_cfg = fit_config if fit_config is not None else FitConfig(baseline_order=-1)
     for shift in range(-max_shift, max_shift + 1):
         # Fortran SHIFTD analogue:
         # test candidate integer shifts of the analysis window.
         shifted = _shift_vector(vector, shift, circular=circular)
-        stage = run_fit_stage(matrix, shifted, FitConfig(baseline_order=-1))
+        stage = run_fit_stage(matrix, shifted, fit_cfg)
         energy = sum(abs(v) for v in shifted)
         if stage.residual_norm < best_resid - 1e-12:
             best_resid = stage.residual_norm
@@ -99,6 +101,7 @@ def align_vector_by_fractional_shift(
     *,
     circular: bool = True,
     iterations: int = 18,
+    fit_config: FitConfig | None = None,
 ) -> FractionalAlignmentResult:
     """Refine alignment shift continuously in [-max_shift_points, max_shift_points]."""
 
@@ -106,9 +109,11 @@ def align_vector_by_fractional_shift(
     if max_shift == 0.0:
         return FractionalAlignmentResult(shift_points=0.0, vector=tuple(float(v) for v in vector))
 
+    fit_cfg = fit_config if fit_config is not None else FitConfig(baseline_order=-1)
+
     def objective(shift: float) -> tuple[float, float]:
         shifted = _shift_vector_fractional(vector, shift, circular=circular)
-        stage = run_fit_stage(matrix, shifted, FitConfig(baseline_order=-1))
+        stage = run_fit_stage(matrix, shifted, fit_cfg)
         energy = sum(abs(v) for v in shifted)
         # Tie-breaker mirrors LCModel preference for retaining signal support.
         return stage.residual_norm, -energy
