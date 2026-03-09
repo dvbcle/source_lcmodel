@@ -29,6 +29,11 @@ from lcmodel.pipeline.spectral import (
     prepare_basis_frequency_matrix_from_time_domain,
 )
 from lcmodel.pipeline.mydata import MyDataConfig, run_mydata_stage
+from lcmodel.pipeline.h2o_reference import (
+    WaterReferenceConfig,
+    apply_klose_ecc,
+    compute_water_scale_factor,
+)
 from lcmodel.pipeline.sptype_presets import apply_sptype_preset, validate_sptype_config
 from lcmodel.pipeline.setup import prepare_fit_inputs
 from lcmodel.core.text import split_title_lines
@@ -317,6 +322,7 @@ class LCModelRunner:
         basis_names: list[str] | None = None
         phase0_deg: float | None = None
         phase1_deg_per_ppm: float | None = None
+        h2o_td: list[complex] | None = None
         if self.config.basis_names_file:
             basis_names = load_basis_names(self.config.basis_names_file)
         if self.config.time_domain_input:
@@ -351,6 +357,23 @@ class LCModelRunner:
                 # Fortran MYDATA:
                 # read NUNFIL complex time-domain data into DATAT.
                 raw_td = load_complex_vector(self.config.raw_data_file)
+            if self.config.h2o_data_file:
+                # Fortran MYDATA FILH2O path:
+                # read non-water-suppressed time-domain data into H2OT.
+                h2o_td = load_complex_vector(self.config.h2o_data_file)
+            if self.config.unsupr and h2o_td is not None:
+                # Fortran MYDATA UNSUPR:
+                # use the unsuppressed signal as DATAT and disable ECC.
+                raw_td = list(h2o_td[: len(raw_td)])
+            if (
+                self.config.doecc
+                and h2o_td is not None
+                and self.config.average_mode not in {3, 31, 32}
+                and not self.config.unsupr
+            ):
+                # Fortran ECC_TRUNCATE:
+                # apply Klose eddy-current phase correction in time domain.
+                raw_td = apply_klose_ecc(raw_td, h2o_td)
             if is_lcmodel_basis_file(self.config.basis_file):
                 basis_cache_key = (
                     str(Path(self.config.basis_file).resolve()),
@@ -421,6 +444,35 @@ class LCModelRunner:
             if data_stage.frequency_domain is None:
                 raise RuntimeError("MYDATA stage did not produce frequency domain data")
             vector = [float(v.real) for v in data_stage.frequency_domain]
+            if self.config.dows and h2o_td is not None:
+                # Fortran WATER_SCALE:
+                # compute FCALIB from water + metabolite reference areas.
+                basis_reference = self._select_water_reference_spectrum(matrix, basis_names)
+                fcalib = compute_water_scale_factor(
+                    h2o_td=h2o_td,
+                    basis_reference_frequency=basis_reference,
+                    nunfil=self.config.nunfil if self.config.nunfil > 0 else len(raw_td),
+                    dwell_time_s=self.config.dwell_time_s,
+                    hzpppm=self.config.hzpppm,
+                    config=WaterReferenceConfig(
+                        iaverg=self.config.average_mode,
+                        iareaw=self.config.iareaw,
+                        nwsst=self.config.nwsst,
+                        nwsend=self.config.nwsend,
+                        atth2o=self.config.atth2o,
+                        wconc=self.config.wconc,
+                        ppmh2o=self.config.ppmh2o,
+                        hwdwat=self.config.hwdwat,
+                        ppmbas=self.config.ppmbas,
+                        wsppm=self.config.wsppm,
+                        rfwbas=self.config.rfwbas,
+                        fwhmba=self.config.fwhmba,
+                        n1hmet=self.config.n1hmet,
+                        attmet=self.config.attmet,
+                    ),
+                )
+                if fcalib is not None and fcalib > 0.0:
+                    vector = [float(v) * float(fcalib) for v in vector]
             if data_stage.zero_order_phase_radians is not None:
                 phase0_deg = float(data_stage.zero_order_phase_radians) * (180.0 / 3.141592653589793)
             if len(matrix) != len(vector):
@@ -446,6 +498,33 @@ class LCModelRunner:
             )
             ppm_axis = [4.0 - i * ppminc for i in range(len(vector))]
         return matrix, vector, ppm_axis, basis_names, phase0_deg, phase1_deg_per_ppm
+
+    def _select_water_reference_spectrum(
+        self,
+        matrix: list[list[float]],
+        basis_names: list[str] | None,
+    ) -> list[float]:
+        # Fortran WSMET behavior:
+        # select metabolite reference spectrum used by AREABA (default Cr).
+        if not matrix:
+            return []
+        ncols = len(matrix[0])
+        if ncols <= 0:
+            return []
+        target = str(self.config.wsmet).strip().lower()
+        index = 0
+        if basis_names:
+            for j, name in enumerate(basis_names):
+                if str(name).strip().lower() == target:
+                    index = j
+                    break
+            else:
+                for j, name in enumerate(basis_names):
+                    if str(name).strip().lower().startswith(target):
+                        index = j
+                        break
+        index = max(0, min(index, ncols - 1))
+        return [float(row[index]) for row in matrix]
 
     def _compute_integration_areas(
         self,

@@ -314,6 +314,107 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
             average_mode = int(nml["iaverg"])
         except Exception:
             average_mode = 0
+    dows = False
+    if average_mode in {1, 4}:
+        # Fortran MYCONT defaults DOWS based on IAVERG when DOWS is omitted.
+        dows = True
+    elif average_mode == 2:
+        dows = False
+    if "dows" in nml:
+        dows = bool(nml.get("dows"))
+    doecc = bool(nml.get("doecc", False))
+    unsupr = bool(nml.get("unsupr", False))
+    atth2o = 0.7
+    if "atth2o" in nml:
+        try:
+            atth2o = float(nml["atth2o"])
+        except Exception:
+            atth2o = 0.7
+    wconc = 35880.0
+    if "wconc" in nml:
+        try:
+            wconc = float(nml["wconc"])
+        except Exception:
+            wconc = 35880.0
+    iareaw = 2
+    if "iareaw" in nml:
+        try:
+            iareaw = int(nml["iareaw"])
+        except Exception:
+            iareaw = 2
+    nwsst = 10
+    if "nwsst" in nml:
+        try:
+            nwsst = max(1, int(nml["nwsst"]))
+        except Exception:
+            nwsst = 10
+    nwsend = 50
+    if "nwsend" in nml:
+        try:
+            nwsend = max(1, int(nml["nwsend"]))
+        except Exception:
+            nwsend = 50
+    ppmh2o = 4.65
+    if "ppmh2o" in nml:
+        try:
+            ppmh2o = float(nml["ppmh2o"])
+        except Exception:
+            ppmh2o = 4.65
+    hwdwat = (1.0, 2.0)
+    if isinstance(nml.get("hwdwat"), list):
+        raw_hwdwat = [float(v) for v in nml["hwdwat"] if str(v).strip()]
+        if len(raw_hwdwat) >= 2:
+            hwdwat = (float(raw_hwdwat[0]), float(raw_hwdwat[1]))
+    elif "hwdwat" in nml:
+        try:
+            val = float(nml["hwdwat"])
+            hwdwat = (val, val)
+        except Exception:
+            hwdwat = (1.0, 2.0)
+    ppmbas = (0.1, 0.2)
+    if isinstance(nml.get("ppmbas"), list):
+        raw_ppmbas = [float(v) for v in nml["ppmbas"] if str(v).strip()]
+        if len(raw_ppmbas) >= 2:
+            ppmbas = (float(raw_ppmbas[0]), float(raw_ppmbas[1]))
+    elif "ppmbas" in nml:
+        try:
+            val = float(nml["ppmbas"])
+            ppmbas = (val, val)
+        except Exception:
+            ppmbas = (0.1, 0.2)
+    wsmet = "Cr"
+    if isinstance(nml.get("wsmet"), str) and nml["wsmet"].strip():
+        wsmet = str(nml["wsmet"]).strip()
+    wsppm = 3.027
+    if "wsppm" in nml:
+        try:
+            wsppm = float(nml["wsppm"])
+        except Exception:
+            wsppm = 3.027
+    rfwbas = 10.0
+    if "rfwbas" in nml:
+        try:
+            rfwbas = float(nml["rfwbas"])
+        except Exception:
+            rfwbas = 10.0
+    fwhmba = 0.013
+    if "fwhmba" in nml:
+        try:
+            fwhmba = float(nml["fwhmba"])
+        except Exception:
+            fwhmba = 0.013
+    n1hmet = 3
+    if "n1hmet" in nml:
+        try:
+            n1hmet = max(1, int(nml["n1hmet"]))
+        except Exception:
+            n1hmet = 3
+    attmet = 1.0
+    if "attmet" in nml:
+        try:
+            attmet = float(nml["attmet"])
+        except Exception:
+            attmet = 1.0
     average_nback_start = 64
     average_nback_end = 1
     if isinstance(nml.get("nback"), list):
@@ -370,6 +471,7 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
         output_filename=output_filename,
         table_output_file=table_output_file,
         raw_data_file=str(raw_data_file) if raw_data_file else None,
+        h2o_data_file=str(nml["filh2o"]) if isinstance(nml.get("filh2o"), str) and nml["filh2o"].strip() else None,
         raw_data_list_file=str(nml["filrawl"]) if isinstance(nml.get("filrawl"), str) and nml["filrawl"].strip() else None,
         batch_csv_file=str(nml["filcsv"]) if isinstance(nml.get("filcsv"), str) and nml["filcsv"].strip() else None,
         basis_file=str(basis_file) if basis_file else None,
@@ -409,6 +511,23 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
         average_mode=average_mode,
         average_nback_start=average_nback_start,
         average_nback_end=average_nback_end,
+        doecc=doecc,
+        dows=dows,
+        unsupr=unsupr,
+        atth2o=atth2o,
+        wconc=wconc,
+        iareaw=iareaw,
+        nwsst=nwsst,
+        nwsend=nwsend,
+        ppmh2o=ppmh2o,
+        hwdwat=hwdwat,
+        ppmbas=ppmbas,
+        wsmet=wsmet,
+        wsppm=wsppm,
+        rfwbas=rfwbas,
+        fwhmba=fwhmba,
+        n1hmet=n1hmet,
+        attmet=attmet,
     )
     if config.apply_sptype_presets:
         config = apply_sptype_preset(config)
