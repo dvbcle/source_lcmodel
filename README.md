@@ -3,7 +3,9 @@
 Plan to reframe this project as a spec-driven AI assisted porting, where Codex 
 first generates detailed specifications based on review of the Fortran code.
 This pivot is because the current code in a state where AI based debug and fix
-isn't making any progress
+isn't making any progress.
+
+See https://github.com/dvbcle/lcmodel_pyport for updates.
 
 # LCModel Python Port
 
