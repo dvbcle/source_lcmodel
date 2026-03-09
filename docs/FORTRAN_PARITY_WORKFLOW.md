@@ -74,3 +74,29 @@ Latest stored example:
   normalization and half-spectrum rearrangement). After this fix, intermediate
   vector RMS errors dropped substantially but full parity still depends on
   deeper PHASTA/REPHAS nonlinear behavior.
+
+## 7. Latest Iteration (2026-03-09 09:09 -04:00)
+
+- Baseline artifact: `artifacts/parity_iteration_20260309_090229/`
+- Post-fix artifact: `artifacts/parity_iteration_20260309_090928/`
+- Code changes applied:
+  - `FILCOR` export now applies a Fortran `FINOUT`-style correction pass
+    (phase/shift then FFT-domain phase path) before writing `debug.cor`.
+  - Plot/debug vectors now use the refined nonlinear system
+    (`nonlinear.fit_matrix` / `nonlinear.fit_vector`) rather than pre-refinement
+    setup vectors.
+
+Measured impact from comparison tables:
+
+- `coo.phased_data` RMS: `9.5597e-05` -> `9.5597e-05` (no change)
+- `coo.fit_data` RMS: `9.3338e-05` -> `9.3338e-05` (no change)
+- `cor.real` RMS: `6.1137e-05` -> `4.9579e-05` (improved)
+- `cor.imag` RMS: `7.1202e-05` -> `5.3272e-05` (improved)
+
+Current likely dominant parity gap:
+
+- Missing deep `STARTV`/`TWOREG` behavior in Python (phase/shift/linewidth
+  search path). Fortran debug output for this case reports nonzero final
+  corrections (`Data shift = 0.008 ppm`, `Ph: 9 deg, 2.2 deg/ppm`,
+  `FWHM = 0.084 ppm`) while the current Python run remains at near-zero
+  nonlinear shift/linewidth estimates in this fixture path.

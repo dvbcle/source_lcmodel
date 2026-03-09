@@ -1,6 +1,6 @@
 # Conversion Statistics Snapshot
 
-Generated on: 2026-03-09 07:37:48 -04:00
+Generated on: 2026-03-09 09:32:20 -04:00
 
 This snapshot compares original Fortran source size with the resulting Python codebase.
 
@@ -20,11 +20,11 @@ This snapshot compares original Fortran source size with the resulting Python co
 | Scope | Files | Total | Code | Comment | Blank |
 |---|---:|---:|---:|---:|---:|
 | Fortran (`*.f`, `*.inc`) | 7 | 19,469 | 14,267 | 4,919 | 283 |
-| Python (all `*.py`) | 92 | 13,755 | 11,796 | 225 | 1,734 |
-| Python runtime (`lcmodel/`) | 55 | 10,045 | 8,599 | 204 | 1,242 |
+| Python (all `*.py`) | 92 | 13,863 | 11,885 | 232 | 1,746 |
+| Python runtime (`lcmodel/`) | 55 | 10,149 | 8,684 | 211 | 1,254 |
 | Python tests (`tests/`) | 31 | 2,728 | 2,368 | 17 | 343 |
-| Python tools (`tools/`) | 6 | 982 | 829 | 4 | 149 |
-| Python pure runtime surface (`lcmodel/` excl. `overrides/`) | 50 | 7,595 | 6,490 | 141 | 964 |
+| Python tools (`tools/`) | 6 | 986 | 833 | 4 | 149 |
+| Python pure runtime surface (`lcmodel/` excl. `overrides/`) | 50 | 7,699 | 6,575 | 148 | 976 |
 | Python legacy routine-reference overrides (`lcmodel/overrides/`) | 5 | 2,450 | 2,109 | 63 | 278 |
 
 ## Notes
@@ -32,6 +32,6 @@ This snapshot compares original Fortran source size with the resulting Python co
 - Fortran comments are identified via fixed-form first-column markers (`C/c`, `*`, `!`).
 - Python comments count only `#...` lines; triple-quoted docstrings count as code.
 - Statistics reflect the post-cutover pure runtime surface where generated scaffold files are removed from runtime.
-- Refreshed and re-verified on 2026-03-09 07:37:48 -04:00 after adding
-  Fortran-style debug output writers (FILCOO/FILCOR analogs), debug parsers,
-  and a comparison-table utility for intermediate-output parity checks.
+- Refreshed and re-verified on 2026-03-09 09:32:20 -04:00 after
+  `FINOUT`-style FILCOR correction updates, parity-debug workflow updates, and
+  additional runtime comments in the Python implementation.

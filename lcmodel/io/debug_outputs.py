@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+import cmath
+import math
 from pathlib import Path
 from typing import Sequence
 
+from lcmodel.core.fftpack_compat import cfft_r, cfftin_r
 from lcmodel.models import FitResult
 
 
@@ -116,10 +119,24 @@ def write_corrected_raw_file(
     *,
     corrected_time_domain: Sequence[complex],
     hzpppm: float,
+    nunfil: int | None = None,
+    dwell_time_s: float | None = None,
+    phase0_deg: float | None = None,
+    phase1_deg_per_ppm: float | None = None,
+    shift_points: float | None = None,
 ) -> str:
     """Write corrected time-domain RAW output (FILCOR analog)."""
 
     p = Path(path)
+    corrected = _apply_finout_like_corrections(
+        corrected_time_domain,
+        nunfil=nunfil,
+        dwell_time_s=dwell_time_s,
+        hzpppm=hzpppm,
+        phase0_deg=phase0_deg,
+        phase1_deg_per_ppm=phase1_deg_per_ppm,
+        shift_points=shift_points,
+    )
     lines: list[str] = []
     lines.append("&SEQPAR")
     lines.append(f" HZPPPM={float(hzpppm):13.6f}    ,")
@@ -132,9 +149,66 @@ def write_corrected_raw_file(
     lines.append(" TRAMP=  1.00000000    ,")
     lines.append(" VOLUME=  1.00000000    ,")
     lines.append(" /")
-    for value in corrected_time_domain:
+    for value in corrected:
         z = complex(value)
         lines.append(f"{float(z.real):15.6E}{float(z.imag):15.6E}")
     p.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return str(p)
 
+
+def _apply_finout_like_corrections(
+    time_domain: Sequence[complex],
+    *,
+    nunfil: int | None,
+    dwell_time_s: float | None,
+    hzpppm: float,
+    phase0_deg: float | None,
+    phase1_deg_per_ppm: float | None,
+    shift_points: float | None,
+) -> tuple[complex, ...]:
+    """Apply FINOUT-style phase/shift corrections before writing FILCOR.
+
+    Fortran FINOUT flow:
+    1) apply zero-order phase + shift ramp in time domain
+    2) zero-fill to `2*NUNFIL` and FFT (`CFFT_r`)
+    3) apply first-order phase in ppm domain
+    4) inverse FFT (`CFFTIN_r` equivalent) and emit first `NUNFIL` points
+    """
+
+    n = int(nunfil) if nunfil is not None and int(nunfil) > 0 else len(time_domain)
+    if n <= 0:
+        return ()
+
+    datat = [complex(v) for v in time_domain[:n]]
+    if len(datat) < n:
+        datat.extend([0j] * (n - len(datat)))
+
+    rad = math.pi / 180.0
+    phase0 = float(phase0_deg) if phase0_deg is not None else 0.0
+    phase1 = float(phase1_deg_per_ppm) if phase1_deg_per_ppm is not None else 0.0
+    dwell = float(dwell_time_s) if dwell_time_s is not None else 0.0
+
+    shift_ppm = 0.0
+    ppminc = 0.0
+    if n > 0 and dwell > 0.0 and float(hzpppm) > 0.0:
+        ppminc = 1.0 / (dwell * float(2 * n) * float(hzpppm))
+        shift_ppm = float(shift_points) * ppminc if shift_points is not None else 0.0
+
+    cterm = cmath.exp(1j * rad * phase0)
+    cfactor = cmath.exp(1j * (-2.0 * math.pi * float(hzpppm) * dwell * shift_ppm))
+    for idx in range(n):
+        datat[idx] *= cterm
+        cterm *= cfactor
+
+    ndata = 2 * n
+    datat.extend([0j] * n)
+    dataf = list(cfft_r(datat))
+
+    if phase1 != 0.0 and ppminc > 0.0:
+        delta_ppm = float(n) * ppminc
+        for idx in range(ndata):
+            dataf[idx] *= cmath.exp(1j * rad * delta_ppm * phase1)
+            delta_ppm -= ppminc
+
+    corrected = cfftin_r(dataf)
+    return tuple(corrected[:n])

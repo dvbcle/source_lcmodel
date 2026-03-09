@@ -58,6 +58,7 @@ class _FitRenderPayload:
     corrected_time_domain: tuple[complex, ...] = ()
     phase0_deg: float | None = None
     phase1_deg_per_ppm: float | None = None
+    alignment_shift_fractional_points: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -186,6 +187,11 @@ class LCModelRunner:
                 self.config.corrected_raw_output_file,
                 corrected_time_domain=render_payload.corrected_time_domain,
                 hzpppm=self.config.hzpppm,
+                nunfil=self.config.nunfil if self.config.nunfil > 0 else None,
+                dwell_time_s=self.config.dwell_time_s if self.config.dwell_time_s > 0.0 else None,
+                phase0_deg=render_payload.phase0_deg,
+                phase1_deg_per_ppm=render_payload.phase1_deg_per_ppm,
+                shift_points=render_payload.alignment_shift_fractional_points,
             )
 
         return RunResult(
@@ -252,8 +258,13 @@ class LCModelRunner:
                 tolerance=self.config.nonlinear_tolerance,
             ),
         )
-        fit_matrix = [list(row) for row in nonlinear.fit_matrix]
-        fit_vector = [float(v) for v in nonlinear.fit_vector]
+        # Fortran STARTV/TWOREG handoff:
+        # downstream reporting should use the refined (shift/linewidth-adjusted)
+        # system, not the initial SETUP matrices.
+        analysis_matrix = [list(row) for row in nonlinear.fit_matrix]
+        analysis_vector = [float(v) for v in nonlinear.fit_vector]
+        fit_matrix = [row[:] for row in analysis_matrix]
+        fit_vector = [float(v) for v in analysis_vector]
         if self.config.priors_file:
             # Fortran priors rows in SOLVE:
             # append soft constraints as extra equations in the linear system.
@@ -286,31 +297,34 @@ class LCModelRunner:
         # Fortran FINOUT table metrics:
         # derive residual and SNR-style quality summaries for reporting.
         relative_residual, snr_estimate = compute_fit_quality_metrics(
-            setup.matrix,
-            setup.vector,
+            analysis_matrix,
+            analysis_vector,
             stage.coefficients,
             baseline=stage.baseline,
         )
-        plot_data_values = tuple(float(v) for v in setup.vector)
+        plot_data_values = tuple(float(v) for v in analysis_vector)
         if ppm_axis is not None:
             plot_x_values = tuple(float(ppm_axis[i]) for i in setup.row_indices)
         else:
-            plot_x_values = tuple(float(i) for i in range(len(setup.vector)))
-        if stage.baseline and len(stage.baseline) == len(setup.vector):
+            plot_x_values = tuple(float(i) for i in range(len(analysis_vector)))
+        baseline_for_plot: tuple[float, ...] = ()
+        if stage.baseline and len(stage.baseline) >= len(analysis_vector):
+            baseline_for_plot = tuple(float(v) for v in stage.baseline[: len(analysis_vector)])
+        if baseline_for_plot:
             plot_fit_values = tuple(
-                sum(float(setup.matrix[i][j]) * float(stage.coefficients[j]) for j in range(len(stage.coefficients)))
-                + float(stage.baseline[i])
-                for i in range(len(setup.vector))
+                sum(float(analysis_matrix[i][j]) * float(stage.coefficients[j]) for j in range(len(stage.coefficients)))
+                + float(baseline_for_plot[i])
+                for i in range(len(analysis_vector))
             )
-            plot_background_values = tuple(float(v) for v in stage.baseline)
+            plot_background_values = baseline_for_plot
         else:
             plot_fit_values = tuple(
-                sum(float(setup.matrix[i][j]) * float(stage.coefficients[j]) for j in range(len(stage.coefficients)))
-                for i in range(len(setup.vector))
+                sum(float(analysis_matrix[i][j]) * float(stage.coefficients[j]) for j in range(len(stage.coefficients)))
+                for i in range(len(analysis_vector))
             )
             plot_background_values = ()
         integrated_data_area, integrated_fit_area = self._compute_integration_areas(
-            setup_vector=setup.vector,
+            setup_vector=tuple(analysis_vector),
             plot_fit_values=plot_fit_values,
             ppm_axis=ppm_axis,
             row_indices=setup.row_indices,
@@ -342,6 +356,7 @@ class LCModelRunner:
             corrected_time_domain=corrected_time_domain,
             phase0_deg=phase0_deg,
             phase1_deg_per_ppm=phase1_deg_per_ppm,
+            alignment_shift_fractional_points=float(nonlinear.alignment_shift_fractional_points),
         )
 
     def _load_fit_system(
@@ -517,7 +532,9 @@ class LCModelRunner:
                 if fcalib is not None and fcalib > 0.0:
                     vector = [float(v) * float(fcalib) for v in vector]
             if data_stage.zero_order_phase_radians is not None:
-                phase0_deg = float(data_stage.zero_order_phase_radians) * (180.0 / 3.141592653589793)
+                # Python phasing rotates spectrum by exp(-i*phi); Fortran REPHAS/
+                # FINOUT conventions store +phi, so negate for FILCOR-style export.
+                phase0_deg = -float(data_stage.zero_order_phase_radians) * (180.0 / 3.141592653589793)
             if len(matrix) != len(vector):
                 raise ValueError("raw and basis frequency lengths do not match")
         else:
