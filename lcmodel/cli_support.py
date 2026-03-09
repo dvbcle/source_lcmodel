@@ -12,6 +12,8 @@ _DIRECT_FIELDS: tuple[tuple[str, str], ...] = (
     ("title", "title"),
     ("ntitle", "ntitle"),
     ("output_filename", "output_filename"),
+    ("coord_output_file", "coordinate_output_file"),
+    ("corrected_raw_output_file", "corrected_raw_output_file"),
     ("table_output_file", "table_output_file"),
     ("traceability_log_file", "traceability_log_file"),
     ("fft_backend", "fft_backend"),

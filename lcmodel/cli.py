@@ -29,6 +29,16 @@ def build_parser() -> argparse.ArgumentParser:
         help="Output filename to split for voxel identifier insertion.",
     )
     parser.add_argument(
+        "--coord-output-file",
+        default=None,
+        help="Optional LCModel-style coordinate/debug output file (FILCOO analog).",
+    )
+    parser.add_argument(
+        "--corrected-raw-output-file",
+        default=None,
+        help="Optional corrected RAW export file (FILCOR analog).",
+    )
+    parser.add_argument(
         "--table-output-file",
         default=None,
         help="Optional output path for fit summary table.",

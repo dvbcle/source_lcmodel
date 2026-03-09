@@ -4,9 +4,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass, replace
 from pathlib import Path
+from struct import pack, unpack
 from lcmodel.io.batch import load_path_list, write_batch_csv
 
 from lcmodel.io.basis import is_lcmodel_basis_file, load_basis_names, load_lcmodel_basis
+from lcmodel.io.debug_outputs import write_coordinate_debug_file, write_corrected_raw_file
 from lcmodel.io.numeric import (
     load_complex_matrix,
     load_complex_vector,
@@ -52,6 +54,8 @@ class _FitRenderPayload:
     plot_x_values: tuple[float, ...]
     plot_data_values: tuple[float, ...]
     plot_fit_values: tuple[float, ...]
+    plot_background_values: tuple[float, ...] = ()
+    corrected_time_domain: tuple[complex, ...] = ()
     phase0_deg: float | None = None
     phase1_deg_per_ppm: float | None = None
 
@@ -157,6 +161,32 @@ class LCModelRunner:
                     ),
                 },
             )
+        if fit_result is not None and self.config.coordinate_output_file:
+            write_coordinate_debug_file(
+                self.config.coordinate_output_file,
+                fit_result=fit_result,
+                ppm_values=render_payload.plot_x_values if render_payload else (),
+                phased_data_values=render_payload.plot_data_values if render_payload else (),
+                fit_values=render_payload.plot_fit_values if render_payload else (),
+                background_values=(
+                    render_payload.plot_background_values if render_payload else ()
+                ),
+                phase0_deg=render_payload.phase0_deg if render_payload else None,
+                phase1_deg_per_ppm=(
+                    render_payload.phase1_deg_per_ppm if render_payload else None
+                ),
+            )
+        if (
+            fit_result is not None
+            and self.config.corrected_raw_output_file
+            and render_payload is not None
+            and render_payload.corrected_time_domain
+        ):
+            write_corrected_raw_file(
+                self.config.corrected_raw_output_file,
+                corrected_time_domain=render_payload.corrected_time_domain,
+                hzpppm=self.config.hzpppm,
+            )
 
         return RunResult(
             title_layout=title_layout,
@@ -174,6 +204,7 @@ class LCModelRunner:
             basis_names,
             phase0_deg,
             phase1_deg_per_ppm,
+            corrected_time_domain,
         ) = self._load_fit_system()
         ppm_start = self.config.fit_ppm_start
         ppm_end = self.config.fit_ppm_end
@@ -271,11 +302,13 @@ class LCModelRunner:
                 + float(stage.baseline[i])
                 for i in range(len(setup.vector))
             )
+            plot_background_values = tuple(float(v) for v in stage.baseline)
         else:
             plot_fit_values = tuple(
                 sum(float(setup.matrix[i][j]) * float(stage.coefficients[j]) for j in range(len(stage.coefficients)))
                 for i in range(len(setup.vector))
             )
+            plot_background_values = ()
         integrated_data_area, integrated_fit_area = self._compute_integration_areas(
             setup_vector=setup.vector,
             plot_fit_values=plot_fit_values,
@@ -305,6 +338,8 @@ class LCModelRunner:
             plot_x_values=plot_x_values,
             plot_data_values=plot_data_values,
             plot_fit_values=plot_fit_values,
+            plot_background_values=plot_background_values,
+            corrected_time_domain=corrected_time_domain,
             phase0_deg=phase0_deg,
             phase1_deg_per_ppm=phase1_deg_per_ppm,
         )
@@ -318,11 +353,18 @@ class LCModelRunner:
         list[str] | None,
         float | None,
         float | None,
+        tuple[complex, ...],
     ]:
+        def _fortran_real(value: float) -> float:
+            """Round through IEEE-754 single precision to mirror Fortran REAL."""
+
+            return unpack("f", pack("f", float(value)))[0]
+
         basis_names: list[str] | None = None
         phase0_deg: float | None = None
         phase1_deg_per_ppm: float | None = None
         h2o_td: list[complex] | None = None
+        corrected_time_domain: tuple[complex, ...] = ()
         if self.config.basis_names_file:
             basis_names = load_basis_names(self.config.basis_names_file)
         if self.config.time_domain_input:
@@ -443,6 +485,7 @@ class LCModelRunner:
             )
             if data_stage.frequency_domain is None:
                 raise RuntimeError("MYDATA stage did not produce frequency domain data")
+            corrected_time_domain = tuple(complex(v) for v in data_stage.time_domain)
             vector = [float(v.real) for v in data_stage.frequency_domain]
             if self.config.dows and h2o_td is not None:
                 # Fortran WATER_SCALE:
@@ -489,15 +532,30 @@ class LCModelRunner:
             and self.config.dwell_time_s > 0.0
             and self.config.nunfil > 0
         ):
-            # Fortran MYCONT:
-            # PPMINC = 1 / (DELTAT * FNDATA * HZPPPM), where FNDATA=2*NUNFIL.
-            ppminc = 1.0 / (
-                float(self.config.dwell_time_s)
-                * float(2 * self.config.nunfil)
-                * float(self.config.hzpppm)
-            )
-            ppm_axis = [4.0 - i * ppminc for i in range(len(vector))]
-        return matrix, vector, ppm_axis, basis_names, phase0_deg, phase1_deg_per_ppm
+            # Fortran INITIA:
+            # PPMINC is formed in REAL precision and PPM(JY) is updated by
+            # iterative subtraction (PPM(JY)=PPM(JY-1)-PPMINC). Matching this
+            # avoids small cumulative drift vs a direct double-precision formula.
+            fndata = _fortran_real(float(2 * self.config.nunfil))
+            ppminc = _fortran_real(float(self.config.dwell_time_s))
+            ppminc = _fortran_real(ppminc * fndata)
+            ppminc = _fortran_real(ppminc * _fortran_real(float(self.config.hzpppm)))
+            ppminc = _fortran_real(1.0 / ppminc)
+            ppm_axis = []
+            ppm_value = _fortran_real(4.0)
+            for idx in range(len(vector)):
+                if idx > 0:
+                    ppm_value = _fortran_real(ppm_value - ppminc)
+                ppm_axis.append(float(ppm_value))
+        return (
+            matrix,
+            vector,
+            ppm_axis,
+            basis_names,
+            phase0_deg,
+            phase1_deg_per_ppm,
+            corrected_time_domain,
+        )
 
     def _select_water_reference_spectrum(
         self,

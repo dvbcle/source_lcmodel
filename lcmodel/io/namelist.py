@@ -451,11 +451,17 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
         combine_expressions = _DEFAULT_COMBINE_EXPRESSIONS
 
     output_filename = None
-    for key in ("filps", "filcoo", "filpri"):
+    for key in ("filps", "filpri"):
         value = nml.get(key)
         if isinstance(value, str) and value.strip():
             output_filename = value
             break
+    coordinate_output_file = None
+    if isinstance(nml.get("filcoo"), str) and nml["filcoo"].strip():
+        coordinate_output_file = str(nml["filcoo"])
+    corrected_raw_output_file = None
+    if isinstance(nml.get("filcor"), str) and nml["filcor"].strip():
+        corrected_raw_output_file = str(nml["filcor"])
     table_output_file = None
     if isinstance(nml.get("filtab"), str) and nml["filtab"].strip():
         table_output_file = str(nml["filtab"])
@@ -469,6 +475,8 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
         title=title,
         ntitle=ntitle,
         output_filename=output_filename,
+        coordinate_output_file=coordinate_output_file,
+        corrected_raw_output_file=corrected_raw_output_file,
         table_output_file=table_output_file,
         raw_data_file=str(raw_data_file) if raw_data_file else None,
         h2o_data_file=str(nml["filh2o"]) if isinstance(nml.get("filh2o"), str) and nml["filh2o"].strip() else None,

@@ -68,7 +68,7 @@ $END
             ctl.write_text(
                 (
                     "$LCMODL\n"
-                    " TITLE='Control Title', NTITLE=1, FILRAW='a.txt', FILH2O='h2o.txt', FILRAWL='raw_list.txt', FILCSV='batch.csv', FILBAS='b.txt', FILPS='c.ps', FILTAB='tab.out', FILPRR='priors.txt', SPTYPE='tumor', IAVERG=1, DOECC=.true., DOWS=.true., UNSUPR=.false., WCONC=45000., ATTH2O=.8, IAREAW=1, NWSST=12, NWSEND=40, PPMH2O=4.7, HWDWAT(1)=0.8, HWDWAT(2)=1.9, PPMBAS(1)=0.08, PPMBAS(2)=0.15, WSMET='Cr', WSPPM=3.03, RFWBAS=8., FWHMBA=.02, N1HMET=3, ATTMET=.95, NBACK(1)=70, NBACK(2)=5, NDEGZ=2, NSHIFW=3, SHFTCYC=.false., FSHREF=.true., NSHIFIT=14, NLWSCN=5, LWSCMX=2.5, NLREF=.true., NLITER=6, NLTOL=1E-7, TIMDOM=.true., AUTOPH0=.true., AUTOPH1=.true., NUNFIL=1024, HZPPPM=127.8, DELTAT=0.0005, LBHZ=4.0, NBACKG=8, ALPHAB=0.25, NWNDO=5, IPOWPH=7,\n"
+                    " TITLE='Control Title', NTITLE=1, FILRAW='a.txt', FILH2O='h2o.txt', FILRAWL='raw_list.txt', FILCSV='batch.csv', FILBAS='b.txt', FILPS='c.ps', FILCOO='debug.coo', FILCOR='debug.cor', FILTAB='tab.out', FILPRR='priors.txt', SPTYPE='tumor', IAVERG=1, DOECC=.true., DOWS=.true., UNSUPR=.false., WCONC=45000., ATTH2O=.8, IAREAW=1, NWSST=12, NWSEND=40, PPMH2O=4.7, HWDWAT(1)=0.8, HWDWAT(2)=1.9, PPMBAS(1)=0.08, PPMBAS(2)=0.15, WSMET='Cr', WSPPM=3.03, RFWBAS=8., FWHMBA=.02, N1HMET=3, ATTMET=.95, NBACK(1)=70, NBACK(2)=5, NDEGZ=2, NSHIFW=3, SHFTCYC=.false., FSHREF=.true., NSHIFIT=14, NLWSCN=5, LWSCMX=2.5, NLREF=.true., NLITER=6, NLTOL=1E-7, TIMDOM=.true., AUTOPH0=.true., AUTOPH1=.true., NUNFIL=1024, HZPPPM=127.8, DELTAT=0.0005, LBHZ=4.0, NBACKG=8, ALPHAB=0.25, NWNDO=5, IPOWPH=7,\n"
                     " CHUSE1(1)='NAA', CHUSE1(2)='Cr', CHCOMB(1)='NAA+Cr', PPMST=3.2, PPMEND=2.0, PPMGAP(1,1)=4.9, PPMGAP(2,1)=4.5, FILPPM='ppm.txt', FILNAM='names.txt', /\n"
                 ),
                 encoding="utf-8",
@@ -80,6 +80,8 @@ $END
             self.assertEqual("h2o.txt", cfg.h2o_data_file)
             self.assertEqual("b.txt", cfg.basis_file)
             self.assertEqual("c.ps", cfg.output_filename)
+            self.assertEqual("debug.coo", cfg.coordinate_output_file)
+            self.assertEqual("debug.cor", cfg.corrected_raw_output_file)
             self.assertEqual("tab.out", cfg.table_output_file)
             self.assertEqual("priors.txt", cfg.priors_file)
             self.assertEqual("raw_list.txt", cfg.raw_data_list_file)

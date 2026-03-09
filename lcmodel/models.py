@@ -18,6 +18,8 @@ class RunConfig:
     title: str = ""
     ntitle: int = 2
     output_filename: str | None = None
+    coordinate_output_file: str | None = None
+    corrected_raw_output_file: str | None = None
     traceability_log_file: str | None = None
     raw_data_file: str | None = None
     h2o_data_file: str | None = None

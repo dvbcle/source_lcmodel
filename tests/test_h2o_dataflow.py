@@ -57,12 +57,12 @@ class TestH2ODataFlow(unittest.TestCase):
             runner_baseline = LCModelRunner(
                 RunConfig(raw_data_file=str(raw_clean_file), **common)
             )
-            _, baseline, _, _, _, _ = runner_baseline._load_fit_system()
+            _, baseline, _, _, _, _, _ = runner_baseline._load_fit_system()
 
             runner_no_ecc = LCModelRunner(
                 RunConfig(raw_data_file=str(raw_phase_file), **common)
             )
-            _, no_ecc, _, _, _, _ = runner_no_ecc._load_fit_system()
+            _, no_ecc, _, _, _, _, _ = runner_no_ecc._load_fit_system()
 
             runner_ecc = LCModelRunner(
                 RunConfig(
@@ -72,7 +72,7 @@ class TestH2ODataFlow(unittest.TestCase):
                     **common,
                 )
             )
-            _, with_ecc, _, _, _, _ = runner_ecc._load_fit_system()
+            _, with_ecc, _, _, _, _, _ = runner_ecc._load_fit_system()
 
             self.assertGreater(
                 sum(abs(a - b) for a, b in zip(baseline, no_ecc)),
@@ -118,7 +118,7 @@ class TestH2ODataFlow(unittest.TestCase):
                 nwsend=50,
             )
             runner_off = LCModelRunner(RunConfig(**common))
-            _, vec_off, _, _, _, _ = runner_off._load_fit_system()
+            _, vec_off, _, _, _, _, _ = runner_off._load_fit_system()
 
             runner_on = LCModelRunner(
                 RunConfig(
@@ -127,7 +127,7 @@ class TestH2ODataFlow(unittest.TestCase):
                     **common,
                 )
             )
-            _, vec_on, _, _, _, _ = runner_on._load_fit_system()
+            _, vec_on, _, _, _, _, _ = runner_on._load_fit_system()
 
             self.assertEqual(len(vec_off), len(vec_on))
             ratios = [vec_on[i] / vec_off[i] for i in range(len(vec_on)) if abs(vec_off[i]) > 1.0e-12]
@@ -141,4 +141,3 @@ class TestH2ODataFlow(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

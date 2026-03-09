@@ -10,6 +10,7 @@ from lcmodel.io.numeric import (
     load_numeric_vector,
     save_numeric_vector,
 )
+from lcmodel.io.debug_outputs import write_coordinate_debug_file, write_corrected_raw_file
 from lcmodel.io.pathing import split_output_filename_for_voxel
 from lcmodel.io.postscript import build_fit_postscript, write_fit_postscript
 from lcmodel.io.priors import load_soft_priors
@@ -19,6 +20,8 @@ __all__ = [
     "build_fit_table_text",
     "load_path_list",
     "load_basis_names",
+    "write_coordinate_debug_file",
+    "write_corrected_raw_file",
     "load_complex_matrix",
     "load_complex_vector",
     "load_run_config_from_control_file",
