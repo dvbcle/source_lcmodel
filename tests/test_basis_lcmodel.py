@@ -94,7 +94,9 @@ class TestLcmodelBasisLoader(unittest.TestCase):
                     dwell_time_s=1.0,
                 )
             )
-            matrix, _vector, _ppm_axis, basis_names = runner._load_fit_system()
+            matrix, _vector, _ppm_axis, basis_names, _phase0_deg, _phase1_deg_per_ppm = (
+                runner._load_fit_system()
+            )
             self.assertEqual(
                 [
                     [1.0, 10.0],

@@ -276,7 +276,7 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
             line_broadening_hz = max(0.0, float(nml["lbhz"]))
         except Exception:
             line_broadening_hz = 0.0
-    phase_objective = "imag_abs"
+    phase_objective = "smooth_real" if time_domain_input else "imag_abs"
     if isinstance(nml.get("phobj"), str):
         obj = str(nml["phobj"]).strip().lower()
         if obj in {"imag_abs", "smooth_real"}:
@@ -379,7 +379,7 @@ def load_run_config_from_control_file(path: str | Path) -> RunConfig:
         time_domain_input=time_domain_input,
         # Fortran time-domain path applies zero-order phasing by default.
         auto_phase_zero_order=bool(nml.get("autoph0", time_domain_input)),
-        auto_phase_first_order=bool(nml.get("autoph1", False)),
+        auto_phase_first_order=bool(nml.get("autoph1", time_domain_input)),
         phase_objective=phase_objective,
         phase_smoothness_power=phase_smoothness_power,
         dwell_time_s=dwell_time_s,

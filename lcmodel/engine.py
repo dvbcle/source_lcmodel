@@ -27,8 +27,8 @@ from lcmodel.pipeline.postprocess import compute_combinations
 from lcmodel.pipeline.priors import augment_system_with_soft_priors
 from lcmodel.pipeline.spectral import (
     prepare_basis_frequency_matrix_from_time_domain,
-    prepare_frequency_vector_from_time_domain,
 )
+from lcmodel.pipeline.mydata import MyDataConfig, run_mydata_stage
 from lcmodel.pipeline.sptype_presets import apply_sptype_preset, validate_sptype_config
 from lcmodel.pipeline.setup import prepare_fit_inputs
 from lcmodel.core.text import split_title_lines
@@ -47,6 +47,8 @@ class _FitRenderPayload:
     plot_x_values: tuple[float, ...]
     plot_data_values: tuple[float, ...]
     plot_fit_values: tuple[float, ...]
+    phase0_deg: float | None = None
+    phase1_deg_per_ppm: float | None = None
 
 
 @dataclass(frozen=True)
@@ -144,8 +146,10 @@ class LCModelRunner:
                         )
                         else None
                     ),
-                    "phase0_deg": None,
-                    "phase1_deg_per_ppm": None,
+                    "phase0_deg": render_payload.phase0_deg if render_payload else None,
+                    "phase1_deg_per_ppm": (
+                        render_payload.phase1_deg_per_ppm if render_payload else None
+                    ),
                 },
             )
 
@@ -158,7 +162,14 @@ class LCModelRunner:
         )
 
     def _run_fit_workflow(self) -> _FitRenderPayload:
-        matrix, vector, ppm_axis, basis_names = self._load_fit_system()
+        (
+            matrix,
+            vector,
+            ppm_axis,
+            basis_names,
+            phase0_deg,
+            phase1_deg_per_ppm,
+        ) = self._load_fit_system()
         ppm_start = self.config.fit_ppm_start
         ppm_end = self.config.fit_ppm_end
         if (
@@ -289,12 +300,23 @@ class LCModelRunner:
             plot_x_values=plot_x_values,
             plot_data_values=plot_data_values,
             plot_fit_values=plot_fit_values,
+            phase0_deg=phase0_deg,
+            phase1_deg_per_ppm=phase1_deg_per_ppm,
         )
 
     def _load_fit_system(
         self,
-    ) -> tuple[list[list[float]], list[float], list[float] | None, list[str] | None]:
+    ) -> tuple[
+        list[list[float]],
+        list[float],
+        list[float] | None,
+        list[str] | None,
+        float | None,
+        float | None,
+    ]:
         basis_names: list[str] | None = None
+        phase0_deg: float | None = None
+        phase1_deg_per_ppm: float | None = None
         if self.config.basis_names_file:
             basis_names = load_basis_names(self.config.basis_names_file)
         if self.config.time_domain_input:
@@ -384,17 +406,23 @@ class LCModelRunner:
 
             # Fortran FTDATA/PHASTA/REPHAS:
             # transform raw data to frequency domain and apply initial phase behavior.
-            vector = list(
-                prepare_frequency_vector_from_time_domain(
+            data_stage = run_mydata_stage(
                 raw_td,
-                auto_phase_zero_order=self.config.auto_phase_zero_order,
-                auto_phase_first_order=self.config.auto_phase_first_order,
-                phase_objective=self.config.phase_objective,
-                phase_smoothness_power=self.config.phase_smoothness_power,
-                dwell_time_s=self.config.dwell_time_s,
-                line_broadening_hz=self.config.line_broadening_hz,
-                )
+                MyDataConfig(
+                    compute_fft=True,
+                    auto_phase_zero_order=self.config.auto_phase_zero_order,
+                    auto_phase_first_order=self.config.auto_phase_first_order,
+                    phase_objective=self.config.phase_objective,
+                    phase_smoothness_power=self.config.phase_smoothness_power,
+                    dwell_time_s=self.config.dwell_time_s,
+                    line_broadening_hz=self.config.line_broadening_hz,
+                ),
             )
+            if data_stage.frequency_domain is None:
+                raise RuntimeError("MYDATA stage did not produce frequency domain data")
+            vector = [float(v.real) for v in data_stage.frequency_domain]
+            if data_stage.zero_order_phase_radians is not None:
+                phase0_deg = float(data_stage.zero_order_phase_radians) * (180.0 / 3.141592653589793)
             if len(matrix) != len(vector):
                 raise ValueError("raw and basis frequency lengths do not match")
         else:
@@ -417,7 +445,7 @@ class LCModelRunner:
                 * float(self.config.hzpppm)
             )
             ppm_axis = [4.0 - i * ppminc for i in range(len(vector))]
-        return matrix, vector, ppm_axis, basis_names
+        return matrix, vector, ppm_axis, basis_names, phase0_deg, phase1_deg_per_ppm
 
     def _compute_integration_areas(
         self,
